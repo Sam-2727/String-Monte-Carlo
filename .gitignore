@@ -1,0 +1,28 @@
+# Project instructions
+Claude.md
+
+# AI reasoning files
+claude code reasoning/
+claude-code-reasoning.md
+codex code reasoning/
+codex-reasoning.md
+Agents.md
+
+# Images
+Image from iOS.jpg
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+# Claude Code
+.claude/
