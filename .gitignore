@@ -16,10 +16,10 @@ __pycache__/
 .DS_Store
 
 # LaTeX build artifacts
-tex/*.aux
-tex/*.log
-tex/*.out
-tex/*.synctex.gz
+*.aux
+*.log
+*.out
+*.synctex.gz
 
 # Claude Code
 .claude/

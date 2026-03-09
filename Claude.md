@@ -8,12 +8,13 @@
 
 
 # Repository outline
-- `tex/string MC_modifed.tex` is the human text explanation of the various procedures that we hope to perform. Not all sections are implemented in code currently, but the core code methods are explained there. It is important to refer to this file when confused about the purpose of something, before trying to reason through yourself.
-- `python/partition_function.py` constructs the numerical formulation of the matter and bc ghost partition functions at genus one, which is what we ultimately want to do for arbitrary genus
-- `python/ell_to_tau.py` constructs analytic formula that allow comparison to the
-- `notebooks/` contains .ipynb files to test the various formula in partition_function.py and ell_to_tau.py
+- All code and notes live under `covariant formalism/`
+- `covariant formalism/tex/string MC_modifed.tex` is the human text explanation of the various procedures that we hope to perform. Not all sections are implemented in code currently, but the core code methods are explained there. It is important to refer to this file when confused about the purpose of something, before trying to reason through yourself.
+- `covariant formalism/python/partition_function.py` constructs the numerical formulation of the matter and bc ghost partition functions at genus one, which is what we ultimately want to do for arbitrary genus
+- `covariant formalism/python/ell_to_tau.py` constructs analytic formula that allow comparison to the
+- `covariant formalism/notebooks/` contains .ipynb files to test the various formula in partition_function.py and ell_to_tau.py
 - Right now, the .ipynb files contain some contradictory information on the bc ghost and free fermion, as we are testing various potential formula for the two.
-- `mathematica/` contains Mathematica notebooks for symbolic computations
+- `covariant formalism/mathematica/` contains Mathematica notebooks for symbolic computations
 
 # Claude-code-reasoning.md file
 - claude-code-reasoning.md gives an outline to reasoning documents you have created with explanations of various topics
