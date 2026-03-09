@@ -1,0 +1,118 @@
+\documentclass[12pt]{article}
+\pdfoutput=1
+
+\usepackage{draft} 
+\usepackage{hyperref}
+\usepackage{graphicx,color,subfig}
+\usepackage{cite}
+\usepackage{mciteplus}
+\usepackage{skak}
+\usepackage{empheq}
+\usepackage{anyfontsize}
+% Use Chancery Font
+\DeclareFontFamily{OT1}{pzc}{}
+\DeclareFontShape{OT1}{pzc}{m}{it}{<-> s * [1.10] pzcmi7t}{}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+%\usepackage{chngcntr}
+%\counterwithout{equation}{section}
+
+\newcommand{\wt}[1]{\widetilde{#1}}
+\newcommand{\vv}[1]{\left\langle #1 \right\rangle}
+\newcommand{\un}[1]{\underline{#1}}
+\newcommand{\BL}[1]{{ {\color{blue}[#1]}}}
+
+
+\newcommand{\fixme}[1]{{\bf {\color{red}[#1]}}}
+\def\be#1\ee{\begin{align}#1\end{align}}
+\newcommand\nn{\nonumber}
+
+\begin{document}
+
+ 
+\unitlength = .8mm
+
+
+\section{3-pt vertex}
+Consider the light cone 3-pt vertex between three tachyon states. Let the incoming momenta (in $d-2$ transverse directions) be $p, p_1, p_2$ and the string lengths $p^+ = p_1^+ +p_2^+$. The corresponding tachyon wavefunctional defined on the unit disk takes the form
+\ie
+\Psi[p; X^{i}] \propto \exp \left[ -\frac{1}{\A'} \sum_m m X_m \cdot X_{-m} + i p \cdot X_0 \right], \qquad i = 1, \hdots, d-2.
+\fe
+Discretizing three unit circles into $L$ positions $z_k = e^{i 2 k \pi / L}$ for the first, and $L^{(r)} = \frac{p_r^+}{p^+} L$ positions for the second and third unit circles, we can then consider the product of the wavefunctionals, with the identification imposed \fixme{for now we assume that the singular point where the boundaries of all three cylinders touch is not one of the discretization points}:
+\ie
+&X^i(k) = X^{(1),i}(k), \text{ for } k = 1, \hdots, L^{(1)}\\
+&X^i(k) = X^{(2),i}(k-L_1), \text{ for } k = L^{(1)} + 1, \hdots, L^{(1)} + L^{(2)} = L,
+\fe
+with the Fourier modes
+\ie
+X^i_m = \frac{1}{L} \sum_{k=1}^{L} X^i(k) e^{2 \pi i \frac{ k m}{L} },
+\fe
+and dispersion relation
+\ie
+m \to \frac{L}{\pi} \sin( \frac{\pi m}{L} ),
+\fe
+appropriately defined in the discretization.\\
+\\
+The 3-pt vertex is then given by
+\ie
+\propto \int& \prod_{i=1}^{d-2} \left(\left[\prod_{k=1}^{L} X^i(k) \right]\prod_{r=1,2}\left[\prod_{m= 1}^{L^{(r)} } X^{(r),i}(k) \right]\right) \delta_{\text{identification} }\\
+\exp\Bigg[ & - \frac{1}{\pi \A' L }  \bigg( \sum_{m=1}^{L/2} \sin \frac{\pi m}{L}  \sum_{k,\ell}^L e^{2 \pi i \frac{(k-\ell) m}{L} } X(k) \cdot X(\ell) \bigg) \\
+& - \frac{1}{\pi \A'} \sum_{r=1,2}  \bigg( \sum_{m=1}^{L^{(r)}/2 }\frac{1}{L^{(r)}} \sin \frac{\pi m}{L^{(r)} }  \sum_{k,\ell}^{L^{(r)} } e^{2 \pi i \frac{(k-\ell) m}{L^{(r)} } } X^{(r)}(k) \cdot X^{(r)}(\ell) \bigg)\\
++&i \bigg( \frac{p}{L} \cdot \sum_k^L X(k) + \sum_{r=1,2} \frac{p_r}{L^{(r)}} \cdot \sum_k^{L^{(r)} } X^{(r)}(k) \bigg)
+\Bigg].
+\fe
+After applying the identification, we can consider how the zero mode $X_0$ appears, which will only be in the linear term, which we can rewrite as
+\ie
+i \frac{(p + p_1 + p_2)}{L} \cdot  \sum_k^L X(k) + i \frac{(L^{(2)} p_1 - L^{(1)} p_2)}{L} \cdot\left(   \frac{1}{L^{(1)} }\sum_{k=1}^{L^{(1)}} X(k) - \frac{1}{L^{(2)} }\sum_{k=L^{(1)}+ 1}^{L} X(k)\right),
+\fe
+the first term being precisely proportional to the zero mode $X^i_0 = \frac{1}{L} \sum_{k=1}^L X(k) $ and generating the momentum conservation for transverse momenta. The second term is orthogonal to the zero mode, since 
+\ie
+\frac{1}{L^{(1)} }\sum_{k=1}^{L^{(1)}} 1 - \frac{1}{L^{(2)} }\sum_{k=L^{(1)}+ 1}^{L} 1 = 0,
+\fe
+and will contribute to the Gaussian integration. We can write the 3-pt vertex as
+\ie
+\propto \int \left[ \prod_{k=1}^L X^i(k) \right] \exp \left[ - \frac{1}{2\A'}  (X^i)^T \cdot M  \cdot X^i +i J^i \cdot X^i \right]e^{i (p + p_1 + p_2) \cdot X_0 }
+\fe
+with
+\ie
+M_{k\ell} = &\frac{1}{\pi L}(\frac{-\sin \frac{\pi}{L} + (-1)^{k-\ell} (\cos \frac{\pi}{L} - e^{2 i \pi \frac{k- \ell}{L} })}{ \cos \frac{\pi}{L} - \cos \frac{\pi (k-\ell)}{L} } ) \\
++ \sum_{r=1,2}& \chi_r(k) \chi_r(\ell) \frac{1}{\pi L^{(r)} }(\frac{-\sin \frac{\pi}{L^{(r)}} + (-1)^{k_r-\ell_r} (\cos \frac{\pi}{L^{(r)}} - e^{2 i \pi \frac{k_r- \ell_r}{L^{(r)}} })}{ \cos \frac{\pi}{L^{(r)}} - \cos \frac{\pi (k_r-\ell_r)}{L^{(r)}} } ) ,
+\fe
+where 
+\ie
+&k_1 \equiv k,\\
+&k_2 \equiv k - L^{(1)}
+\fe
+and
+\ie
+\chi_r(k_r) = 
+\begin{cases}
+1, 1 \leq k_r \leq L^{(r)}\\
+0, \text{ otherwise } 
+\end{cases}
+\fe
+just tests if $k$ is in the appropriate range so that $X^i(k)$ can be identified with $X^{(r),i}(k)$. $M$ should have one zero eignevector corresponding precisely to the zero mode. And,
+\ie
+J_k^i = \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } \right)
+\fe
+satisfies $\sum_k J_k^i = 0$.\\
+\\
+The 3-pt function then becomes
+\ie
+\propto \delta^{(d-2)}(p + p_1 + p_2)\,  ({\det}' M )^{-\frac{d-2}{2} } \, \exp(-\frac{\A'}{2} J^{i,T} \cdot \wt{M}^{+} \cdot J^i ),
+\fe
+where ${\det}'$ denotes product of all nonzero eigenvalues, and $M^+$ is the Moore-Penrose pseudoinverse
+\ie
+M^+ = \sum_{s=1}^{L-1} \frac{1}{\lambda_s} \xi_s \xi_s^T 
+\fe
+for $\xi_s$ the eigenvectors of $M$ with eigenvalues $\lambda_s \neq 0$.\\
+\\ 
+Or equivalently, picking some gauge, e.g. $X_0 = 0$, implemented as $X(L) = - \sum_{k=1}^{L-1} X(k)$ we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$ then the 3-pt function becomes proportional to 
+\ie
+\propto \delta^{(d-2)}(p + p_1 + p_2)\,  (\det \wt{M} )^{-\frac{d-2}{2} } \, \exp(-\frac{\A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i ).
+\fe
+
+A key test is that this should recover full Lorentz invariance for $d=26$ as $L \to \infty$.
+
+\end{document}
+
