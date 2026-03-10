@@ -56,8 +56,8 @@ appropriately defined in the discretization.\\
 The 3-pt vertex is then given by
 \ie
 \propto \int& \prod_{i=1}^{d-2} \left(\left[\prod_{k=1}^{L} X^i(k) \right]\prod_{r=1,2}\left[\prod_{m= 1}^{L^{(r)} } X^{(r),i}(k) \right]\right) \delta_{\text{identification} }\\
-\exp\Bigg[ & - \frac{1}{\pi \A' L }  \bigg( \sum_{m=1}^{L/2} \sin \frac{\pi m}{L}  \sum_{k,\ell}^L e^{2 \pi i \frac{(k-\ell) m}{L} } X(k) \cdot X(\ell) \bigg) \\
-& - \frac{1}{\pi \A'} \sum_{r=1,2}  \bigg( \sum_{m=1}^{L^{(r)}/2 }\frac{1}{L^{(r)}} \sin \frac{\pi m}{L^{(r)} }  \sum_{k,\ell}^{L^{(r)} } e^{2 \pi i \frac{(k-\ell) m}{L^{(r)} } } X^{(r)}(k) \cdot X^{(r)}(\ell) \bigg)\\
+\exp\Bigg[ & - \frac{1}{\pi \A' L }  \bigg( \sum_{m=1}^{L} \sin \frac{\pi m}{L}  \sum_{k,\ell}^L e^{2 \pi i \frac{(k-\ell) m}{L} } X(k) \cdot X(\ell) \bigg) \\
+& - \frac{1}{\pi \A'} \sum_{r=1,2}  \bigg( \sum_{m=1}^{L^{(r)} }\frac{1}{L^{(r)}} \sin \frac{\pi m}{L^{(r)} }  \sum_{k,\ell}^{L^{(r)} } e^{2 \pi i \frac{(k-\ell) m}{L^{(r)} } } X^{(r)}(k) \cdot X^{(r)}(\ell) \bigg)\\
 +&i \bigg( \frac{p}{L} \cdot \sum_k^L X(k) + \sum_{r=1,2} \frac{p_r}{L^{(r)}} \cdot \sum_k^{L^{(r)} } X^{(r)}(k) \bigg)
 \Bigg].
 \fe
@@ -71,12 +71,15 @@ the first term being precisely proportional to the zero mode $X^i_0 = \frac{1}{L
 \fe
 and will contribute to the Gaussian integration. We can write the 3-pt vertex as
 \ie
-\propto \int \left[ \prod_{k=1}^L X^i(k) \right] \exp \left[ - \frac{1}{2\A'}  (X^i)^T \cdot M  \cdot X^i +i J^i \cdot X^i \right]e^{i (p + p_1 + p_2) \cdot X_0 }
+\propto \int \left[ \prod_{k=1}^L X^i(k) \right] \exp \left[ - \frac{1}{2 \pi \A'}  (X^i)^T \cdot M  \cdot X^i +i J^i \cdot X^i \right]e^{i (p + p_1 + p_2) \cdot X_0 }
 \fe
 with
 \ie
-M_{k\ell} = &\frac{1}{\pi L}(\frac{-\sin \frac{\pi}{L} + (-1)^{k-\ell} (\cos \frac{\pi}{L} - e^{2 i \pi \frac{k- \ell}{L} })}{ \cos \frac{\pi}{L} - \cos \frac{\pi (k-\ell)}{L} } ) \\
-+ \sum_{r=1,2}& \chi_r(k) \chi_r(\ell) \frac{1}{\pi L^{(r)} }(\frac{-\sin \frac{\pi}{L^{(r)}} + (-1)^{k_r-\ell_r} (\cos \frac{\pi}{L^{(r)}} - e^{2 i \pi \frac{k_r- \ell_r}{L^{(r)}} })}{ \cos \frac{\pi}{L^{(r)}} - \cos \frac{\pi (k_r-\ell_r)}{L^{(r)}} } ) ,
+%%% OLD FORMULA FOR SUM UP TO L/2, also before factoring out 1/\pi
+%M_{k\ell} = &\frac{1}{\pi L}(\frac{-\sin \frac{\pi}{L} + (-1)^{k-\ell} (\cos \frac{\pi}{L} - e^{2 i \pi \frac{k- \ell}{L} })}{ \cos \frac{\pi}{L} - \cos \frac{2\pi (k-\ell)}{L} } ) \\
+%+ \sum_{r=1,2}& \chi_r(k) \chi_r(\ell) \frac{1}{\pi L^{(r)} }(\frac{-\sin \frac{\pi}{L^{(r)}} + (-1)^{k_r-\ell_r} (\cos \frac{\pi}{L^{(r)}} - e^{2 i \pi \frac{k_r- \ell_r}{L^{(r)}} })}{ \cos \frac{\pi}{L^{(r)}} - \cos \frac{2\pi (k_r-\ell_r)}{L^{(r)}} } ) ,
+M_{k\ell} = &\frac{1}{ L}(\frac{-\sin \frac{\pi}{L}}{ \cos \frac{\pi}{L} - \cos \frac{2\pi (k-\ell)}{L} } ) \\
++ \sum_{r=1,2}& \chi_r(k) \chi_r(\ell) \frac{1}{ L^{(r)} }(\frac{-\sin \frac{\pi}{L^{(r)}} }{ \cos \frac{\pi}{L^{(r)}} - \cos \frac{2\pi (k_r-\ell_r)}{L^{(r)}} } ) ,
 \fe
 where 
 \ie
@@ -91,7 +94,9 @@ and
 0, \text{ otherwise } 
 \end{cases}
 \fe
-just tests if $k$ is in the appropriate range so that $X^i(k)$ can be identified with $X^{(r),i}(k)$. $M$ should have one zero eignevector corresponding precisely to the zero mode. And,
+just tests if $k$ is in the appropriate range so that $X^i(k)$ can be identified with $X^{(r),i}(k)$. $M$ should have one zero eignevector corresponding precisely to the zero mode. 
+%We note that the eigenvalues $\lambda_s$ of $M$, with $s=1,...,L$ are close to $\lambda_s = 2 \cos(\frac{\pi (s-1)}{2(L-1)} )$. 
+And,
 \ie
 J_k^i = \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } \right)
 \fe
@@ -99,7 +104,7 @@ satisfies $\sum_k J_k^i = 0$.\\
 \\
 The 3-pt function then becomes
 \ie
-\propto \delta^{(d-2)}(p + p_1 + p_2)\,  ({\det}' M )^{-\frac{d-2}{2} } \, \exp(-\frac{\A'}{2} J^{i,T} \cdot {M}^{+} \cdot J^i ),
+\propto \delta^{(d-2)}(p + p_1 + p_2)\,  ({\det}' M )^{-\frac{d-2}{2} } \, \exp(-\frac{\pi \A'}{2} J^{i,T} \cdot {M}^{+} \cdot J^i ),
 \fe
 where ${\det}'$ denotes product of all nonzero eigenvalues, and $M^+$ is the Moore-Penrose pseudoinverse
 \ie
@@ -109,10 +114,32 @@ for $\xi_s$ the eigenvectors of $M$ with eigenvalues $\lambda_s \neq 0$.\\
 \\ 
 Or equivalently, picking some gauge, e.g. $X_0 = 0$, implemented as $X(L) = - \sum_{k=1}^{L-1} X(k)$ we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$ then the 3-pt function becomes proportional to 
 \ie
-\propto \delta^{(d-2)}(p + p_1 + p_2)\,  (\det \wt{M} )^{-\frac{d-2}{2} } \, \exp(-\frac{\A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i ).
+\propto \delta^{(d-2)}(p + p_1 + p_2)\,  (\det \wt{M} )^{-\frac{d-2}{2} } \, \exp(-\frac{\pi \A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i ).
 \fe
-
-Note that $\delta_{(p^+ - p_1^+ - p_2^+),0}$ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$.
+We note that for this choice of gauge, $\det \wt{M} = L \,  {\det}' M$. The ratio $\frac{\det \wt{M}(L^{(1)}, L^{(2)}) }{\det \wt{M}(L^{(1)}{}', L^{(2)}{}')}$ converges quickly, but depends on $(L^{(1)}, L^{(2)})$.  Meanwhile, 
+\ie
+{\wt J}^i_k &= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } + \frac{1}{L^{(2)} }   \right)\\
+&= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{ L^{(2)} L^{(1)} } \{1,\hdots,1,0,\hdots,0\}\\
+&= \frac{p^+}{L} \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right) \{1,\hdots,1,0,\hdots,0\}
+\fe
+with $L^{(1)}$ ones and $(L^{(2)}-1)$ zeros. $\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i$ is proportional to the sum of all the terms in the first $L^{(1)} \times L^{(1)}$ block of $\wt{M}^{-1}$. We checked that $\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i = J^{i,T} \cdot {M}^{+} \cdot J^i $, and that its value
+\ie
+\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i=(p^+)^2  \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right)^2 f( p_1^+, p_2^+,L)
+\fe
+with $f$ converging fairly rapidly, but depending explicitly on $p_1^+,\,p_2^+$. Using transverse momentum conservation, we can rewrite this as 
+\ie
+\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i = \frac{(p^+)^3}{p_1^+ p_2^+} \left( \frac{(p_1^i)^2}{p_1^+} +  \frac{(p_2^i)^2}{p_2^+} -  \frac{(p^i)^2}{p^+} \right) f(p_1^+, p_2^+,L),
+\fe
+and for on-shell tachyons $-\frac{4}{\A'} = m^2 = 2 p^+ p^- - (p^i)^2$ and this becomes
+\ie
+\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i =  \frac{(p^+)^3}{p_1^+ p_2^+}   f( p_1^+, p_2^+,L) \left(2(p_1^- +p_2^- - p^-) + \frac{4}{\A'} (\frac{1}{p_1^+} + \frac{1}{p_2^+} - \frac{1}{p^+}) \right).
+\fe
+Putting everything together, the 3-pt function becomes (assuming on-shell momenta and using conservation of $p^+$ and $p^i$:
+\ie
+\propto ~~ &\delta_{(p^+ - p_1^+ - p_2^+),0} \delta^{(d-2)}(p^i + p_1^i + p_2^i) e^{- \pi \A' \frac{(p^+)^3}{p_1^+ p_2^+} f(p_1^+, p_2^+, L) (p_1^- +p_2^- - p^-)} \\
+& ~~ \left(\frac{\det \wt{M}(p_1^+,p_2^+,L) }{L} \right)^{-\frac{d-2}{2} }  \exp\left(-\pi \frac{(p^+)^2}{(p_1^+ p_2^+)^2} f(p_1^+, p_2^+, L) ((p^+)^2 + (p_1^+)^2 + (p_2^+)^2)  \right)
+\fe
+Note that $\delta_{(p^+ - p_1^+ - p_2^+),0}$ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$. Conservation of energy should set the first exponential to 1. Therefore we might expect for $d=26$ that the expressions on the second line evaluate to a constant (for fixed $L$ and varying $p_1^+, \, p_2^+$) \fixme{but numerically this doesn't seem to work yet}.
 
 \end{document}
 
