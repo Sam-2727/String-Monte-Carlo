@@ -218,6 +218,7 @@ X_1 X_{-1} \delta_{\text{identification}} \sim \sum_{k,\ell = 1}^{L/2}  C_{k\ell
 \fe
 If we denote the shift used in the identification rule (\ref{pairthree}) as
 \ie
+\label{shiftRule}
 s(n) = 
 	\begin{cases}
 	\frac{L}{2}+\ell_1+1, \qquad 1 \leq n \leq \ell_1\\
@@ -371,19 +372,31 @@ R\Theta(4i R^2 T')= R^{-1}\Theta(4i R^{-2} T')
 \section{Moduli and Weyl anomaly in disc coordinate}
 \label{sec:WeylAnomaly}
 
-Let $z=e^{-iw}$ with the unit disc parameterized by $|z|<1$ or ${\rm Im}(w)>0$. The holomorphic 1-form on the torus can be expressed in the disc coordinate as
+Let $z=e^{-iw}$ with the unit disc parameterized by $|z|<1$ or ${\rm Im}(w)>0$. The holomorphic 1-form on the torus can be expressed in the disc coordinate as a power series in $z$. By the expected divergence of $f(z\to z_i)$ for $z_i$ the points on the boundary of the disk that map to the vertices of the ribbon graph in the torus, we can make a convenient ansatz
 \ie\label{fzoneform}
-f(z) dz = \sum_{n=1}^\infty a_n z^{n-1} dz = -i \sum_{n=1}^\infty a_n e^{-inw} dw.
+f(z) dz &= \frac{\sum_{n=1}^\infty a_n z^{n-1}}{(1-z^2)^{\frac13} (1-z^2 e^{-4 \pi i \frac{\ell_1}{ L}})^{\frac13} (1-z^2 e^{-4 \pi i \frac{\ell_1 +\ell_2}{L}})^{\frac13}} dz\\
+& = i  \frac{\sum_{n=1}^\infty a_n e^{inw} }{(1-e^{2iw})^{\frac13} (1- e^{2i(w-2 \pi \frac{\ell_1}{L})})^{\frac13} (1- e^{2i(w-2 \pi i \frac{\ell_1 +\ell_2}{L}) })^{\frac13}}  dw.
 \fe
-We can normalize with $a_1=1$, and solve $a_2,\cdots, a_L$ numerically by imposing
-\ie{}
-& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} (\tfrac{L}{2} + \ell_1+1 - k) n} = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} k n},~~~~ 1\leq k \leq \ell_1,
-\\
-& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} (\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - k)n } = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L}  k n},~~~~ \ell_1+1 \leq k \leq \ell_1 + \ell_2,
-\\
-& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L}  (L+\ell_1 + \ell_2+1 - k) n} = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} k n},~~~~ \ell_1+\ell_2+1 \leq k \leq \tfrac{L}{2},
+We can normalize with $a_1=1$, and solve $a_2,\cdots, a_L$ numerically by imposing the appropriate matching at discretized points
+%\ie{}
+%& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} (\tfrac{L}{2} + \ell_1+1 - k) n} = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} k n},~~~~ 1\leq k \leq \ell_1,
+%\\
+%& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} (\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - k)n } = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L}  k n},~~~~ \ell_1+1 \leq k \leq \ell_1 + \ell_2,
+%\\
+%& \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L}  (L+\ell_1 + \ell_2+1 - k) n} = - \sum_{n=1}^{L\over 2} a_n e^{{2\pi i\over L} k n},~~~~ \ell_1+\ell_2+1 \leq k \leq \tfrac{L}{2},
+%\fe
+
+\ie
+{}&\frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k-\frac 12}{L})} }{(1-e^{4i\pi \frac{k-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}\\
+&\qquad\qquad = - \frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k'-\frac 12}{L})} }{(1-e^{4i\pi \frac{k'-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k'-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k'-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}, ~~~~1 \leq k \leq \tfrac{L}{2}.
 \fe
-The relative sign is due to flipping the orientation on $dw$ in the identification. Evaluating the periods of $f(z) dz$ along $\A$ and $\B$ cycle then determines $\tau$ in terms of $\ell_1, \ell_2, \ell_3$.
+The relative sign is due to flipping the orientation on $dw$ in the identification. The shift of $k$ by $\frac12$ is to put the Strebel vertices $z_i$, which are halfway between the discretized points at the edges of identified sections of the boundary, precisely at the angles in the ansatz. Evaluating the periods of $f(z) dz$ along $\A$ and $\B$ cycle then determines $\tau$ in terms of $\ell_1, \ell_2, \ell_3$.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/mapping_diagram.pdf}
+  \caption{How $f(z)$ maps the circle to the torus, shown for the specific case of $\ell_i = \{ 11, 15,19\}$. Note that the three black and three blue points correspond to one of the two Strebel vertices, respectively. The arcs in the $z$ plane show how the sides of the cirle are identified with opposite orientation.}
+\end{figure}
 
 The flat coordinate on the torus (up to a constant rescaling) can be written as
 \ie\label{uflatz}
@@ -411,11 +424,27 @@ near $u=u_i$. Therefore we have
 \ie
 S_L = {\log |b_1| + \log |b_2|\over 24} + {\rm universal ~divergence}.
 \fe
-Here the cutoff is assumed to be $|u-u_i|>\delta$. But should we impose the cutoff on $z$ instead? Near $u=u_i$, we have $z-z_i \approx {2\over 3 b_i} (u-u_i)^{3\over 2}$, and $f(z) \approx b_i ({3b_i\over 2})^{-{1\over 3}} (z-z_i)^{-{1\over 3}}$. If we impose the cutoff in $z$, which would seem to be the more compatible with the discretization scheme on the disc, the moduli dependent part of the Weyl anomaly would be given by
+Here the cutoff is assumed to be $|u-u_i|>\delta$. But should we impose the cutoff on $z$ instead? Near $u=u_i$, we have $z-z_i \approx {2\over 3 b_i} (u-u_i)^{3\over 2}$, and $f(z) \approx b_i ({3b_i\over 2})^{-{1\over 3}} (z-z_i)^{-{1\over 3}} \equiv \nu_i (1-z/z_i)^{-\frac13}$. If we impose the cutoff in $z$, which would seem to be the more compatible with the discretization scheme on the disc, the moduli dependent part of the Weyl anomaly would be given by
 \ie
 S_L = {\log |b_1| + \log |b_2|\over 36} + {\rm universal ~divergence}.
 \fe
 
+\subsection{Special case: $\ell_3=0$}
+In the special case when one of the $\ell_i = 0$ (we take $\ell_3=0$ without loss of generality), the corresponding torus has pure imaginary $\tau$, and 
+\ie
+f(z)dz = \frac{1}{(1-z^2)^{\frac12}(1-z^2 e^{-4i \pi \frac{\ell_1}{L} })^{\frac12}} dz
+\fe
+exactly. Defining $\theta_1 \equiv 2 \pi \frac{\ell_1}{L}$, the periods of $f$ are given by
+\ie
+\alpha \text{-cycle: } &e^{i\frac{\theta_1}{2}} K(\cos \frac{\theta_1}{2} )\\
+\beta \text{-cycle: } &i e^{i\frac{\theta_1}{2}} K(\sin \frac{\theta_1}{2} )\\
+\tau = & i \frac{K(\sin \frac{\theta_1}{2} )}{K(\cos \frac{\theta_1}{2} )}.
+\fe
+$K(k)$ is the complete elliptic integral of the first kind (\texttt{EllipticK[$k^2$]} in \textbf{Mathematica}). In addition $f(z) \approx \nu_i (z-z_i)^{-\frac12}$, with 
+\ie
+\nu_i = \frac{1}{\sqrt{\pm4i e^{\mp i \theta_1} \sin \theta_1}}.
+\fe
+Note that $\nu_1^2 + \nu_2^2 = \frac12$ while $(|\nu_1| + |\nu_2|)^2 = \frac{1}{ \sin(\theta_1) }$.
 \section{The $bc$ system}
 
 The identity wave functional of $bc$ system on the unit circle can be written as
@@ -431,15 +460,19 @@ where $c_n$ is the $n$-th Fourier mode of $c(\sigma)$ (up to a factor of $i$ due
 
 Now discretizing the unit circle into $L$ sites, we have the approximation
 \ie
-\Psi_1[c] \propto \prod_{m=2}^{L\over 2} \sum_{k=1}^L c(k) e^{2\pi i {m k\over L}}.
+\Psi_1[c] \propto \prod_{m=2}^{L\over 2} \sum_{k=1}^L c(k) e^{2\pi i {(m-1) k\over L}}.
 \fe
-Next, we identify pairs of $c(k)$'s according to 
+Next, we identify pairs of $c(k)$'s according to $k'=s(k)-k$ for $s(k)$ defined in (\ref{shiftRule}). Note that $c(z)$ should transform as a vector field so under $z \to z' = \frac{q}{z}$ for $q$ a phase, ${c(z) \over z} = - {c(z') \over z'}$, i.e. 
+\ie
+c(k') = - e^{2\pi i \frac{k' - k}{L}} c(k).
+\fe
+More explicitly
 \ie\label{pairthreec}
-& c(\tfrac{L}{2} + \ell_1+1 - n) = - c(n),~~~~ 1\leq n \leq \ell_1,
+& c(\tfrac{L}{2} + \ell_1+1 - n) = - e^{\frac{2 \pi i}{L} (\tfrac{L}{2} + \ell_1 + 1 -2n)} c(n),~~~~ 1\leq n \leq \ell_1,
 \\
-& c(\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - n) = - c(n),~~~~ \ell_1+1 \leq n \leq \ell_1 + \ell_2,
+& c(\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - n) = -  e^{\frac{2 \pi i}{L} (\tfrac{L}{2} + 2\ell_1 +\ell_2 + 1 -2n)}  c(n),~~~~ \ell_1+1 \leq n \leq \ell_1 + \ell_2,
 \\
-& c(L+\ell_1 + \ell_2+1 - n) = - c(n),~~~~ \ell_1+\ell_2+1 \leq n \leq \tfrac{L}{2},
+& c(L+\ell_1 + \ell_2+1 - n) = -  e^{\frac{2 \pi i}{L} (L+ \ell_1 +\ell_2 + 1 -2n)}  c(n),~~~~ \ell_1+\ell_2+1 \leq n \leq \tfrac{L}{2},
 \fe
 leaving $L\over 2$ independent variables $c(k)$, $k=1, \cdots, {L\over 2}$. We then integrate the constrained $\Psi_1[c]$ over these ${L\over 2}$ independent variables. To obtain a nonzero result requires removing the constant mode of $c$.
 
@@ -449,11 +482,11 @@ Let us consider the constrained $\Psi_c[c]$, which can be put in the form
 \fe
 The ${L\over 2}\times {L\over 2}$ matrix $B$ is given by 
 \ie{}
-& B_{mn} = e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (\tfrac{L}{2} + \ell_1+1 - n) },~~~~ 1\leq n \leq \ell_1,
+& B_{mn} =e^{-2\pi i \frac n L} (e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (\tfrac{L}{2} + \ell_1+1 - n) }),~~~~ 1\leq n \leq \ell_1,
 \\
-& B_{mn} =  e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - n)},~~~~ \ell_1+1 \leq n \leq \ell_1 + \ell_2,
+& B_{mn} = e^{-2\pi i \frac n L} ( e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - n)}),~~~~ \ell_1+1 \leq n \leq \ell_1 + \ell_2,
 \\
-& B_{mn} =  e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (L+\ell_1 + \ell_2+1 - n) },~~~~ \ell_1+\ell_2+1 \leq n \leq \tfrac{L}{2}.
+& B_{mn} = e^{-2\pi i \frac n L} ( e^{2\pi i {mn\over L}} - e^{2\pi i {m\over L} (L+\ell_1 + \ell_2+1 - n) }),~~~~ \ell_1+\ell_2+1 \leq n \leq \tfrac{L}{2}.
 \fe
 The result of integrating (\ref{prodcca}) over $c(k)$, $k=1,\cdots,{L\over 2}$, is $\det B$.
 
@@ -467,23 +500,14 @@ dt_1 dt_2 \langle {\cal B}_{t_1} {\cal B}_{t_2} c\widetilde c(0) \rangle_{D^2(t_
 \fe
 where $\widehat f(z)$ is proportional to $f(z)$ of (\ref{fzoneform}), normalized such that the period of $\widehat f(z) dz$ along the $\A$-cycle is 1.
 
-If we include $bc$ system with 26 free bosons $X^\mu$, so that the Weyl anomalies cancel, one might guess the disc frame correlator to be
+If we include $bc$ system with 26 free bosons $X^\mu$, so that the Weyl anomalies cancel, we expect the disc frame correlator to give
 \ie
-\label{eq:79}
 \langle {\cal B}_{t_1} {\cal B}_{t_2} c\widetilde c(0) \rangle_{D^2(t_1, t_2)}^{X^\mu bc}  \propto {d\tau d\bar\tau\over dt_1 dt_2} |\widehat f(0)|^{-2} \tau_2^{-13} |\eta(\tau)|^{-48}.
 \fe
-However, the RHS is uncertain, and it is not giving the correct result, so is probably wrong to some extent as a guess. All that can be said is that the answer is modular invariant, since the numerical answer is modular invariant. but we don't have a particular good guess of why. See the attached python files for how this is computed currently. Various things that could be wrong: maybe we have the wrong numerical guess for the b-c determinant, or the wrong analytic formula because we aren't able to guess the position of the b ghosts correctly, or the prefactor that the b-ghost gives near its position is not calculated correctly (perhaps it includes some factor of $b_i$, defined above as the coefficient of the holomorphic one-form near poles).
-
-There are various functions that put together the multiple ingredients present on the RHS of equation \ref{eq:79}. I've tested various combinations of these ingredients in python, using the help of claude code, but none have resulted in an exact match. Much of testing3.ipynb is not useful to our current objectives as it is testing the free fermion (which is a separate problem that we'll get to later), but the final two lines in testing3.ipynb show that, to very high precision, the matter part matches the analytic guess exactly (this is including the Weyl anomaly factor that must be included). 
-
-The goal then is to find the correct guess for \ref{eq:79}, but to do so, it is first important to understand the logic behind the current guess, and also to understand the code that produces that guess and demonstrates that it does not produce the numerical computation, as is computed in the LHS of \ref{eq:79}, as described below.
-
 The LHS is calculated in the discretized model, up to a moduli-independent normalization factor (that depends on $L$), as
 \ie
 (\det{}' A)^{-13} |\det B|^2.
 \fe
-
-This is observed empirically to be modular invariant.
 
 \subsection{Dependence on $c$ position}
 Instead of inserting the $c$ ghost at $z=0$ in the disk frame, which gives $\Psi_c[c]$, we can consider $c(z) = \sum_{n \leq 1} c_n z^{1-n}$ inserted at a generic $|z|<1$ and the corresponding $\Psi_{c(z)}[c]$, which will be built from
@@ -546,15 +570,15 @@ D_{mn}&=\exp\left(\tfrac{2\pi i}{L}(m-\tfrac{1}{2})n\right)\pm i\exp\left(\tfrac
 D_{mn}&=\exp\left(\tfrac{2\pi i}{L}(m-\tfrac{1}{2})n\right)\pm i\exp\left(\tfrac{2\pi i}{L}(m-\tfrac{1}{2})(L+\ell_1+\ell_2+1-n)\right),~~~~ \ell_1+\ell_2+1\leq n \leq \frac{L}{2}.\\
 \fe
 
-Analagously to the $bc$-ghost correlator, the result of integrating the fermion vacuum wavefunctional over $\psi_r$ is $\det D$.
+Analagously to the $bc$-ghost correlator, the result of integrating the fermion vacuum wavefunctional over $\psi_r$ is $|\det D|$.
 
 The NS-NS sector amplitude on the flat torus is
 \begin{align}
-\sqrt{\frac{\theta_3(0,\tau)}{\eta(\tau)}}
+\bigg|\frac{\theta_3(0,\tau)}{\eta(\tau)}\bigg|^2
 \end{align}
-with similar contributions from the NS/R and R/NS sectors. The R/R sector should evaluate to zero without an insertion of the Ramond sector zero mode. The guess is that $|\det D|^2$ is equivalent to $|\tfrac{\theta_3(0,\tau)}{\eta(\tau)}|e^{1/24 \log|b_i|}$, where $b_i$ is as described in the ``Weyl anomaly'' section, with both $b_i$ empirically having the same magnitude but different phases.
+with similar contributions from the NS/R and R/NS sectors. The Weyl anomaly is $1/2$ the Weyl anomaly of the Empirically, one finds that, proceeding counterclockwise along the bottom segment of the disc, NS/NS corresponds to $-i,-i,+i$, NS/R corresponds to $-i,+i,-i$, and R/NS corresponds to $+i,-i,-i$.
 
-
+The R/R sector should evaluate to zero without an insertion of the Ramond sector zero mode, which we have not yet inserted.
 \section{Analytic construction}
 
 \subsection{Trinion vertex}
