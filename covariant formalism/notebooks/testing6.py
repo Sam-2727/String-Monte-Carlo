@@ -155,15 +155,16 @@ def data1_log(k_start: int = 1, k_end: int = 40, k_step: int = 2):
         rows.append(row)
 
     return np.array(k_vals, dtype=int), np.array(rows, dtype=np.complex128)
+
+# This is a guess for the matter determinant
 kvals,data1=data1_log()
 eq79MatterPart = (np.abs(data1[:, 4]) ** (-13.0)) * \
              (np.abs(data1[:, 3]) ** (-52.0)) * \
              (data1[:, 5] ** (26.0/18.0))
 
-# If you want a real-valued plot, plot the magnitude or real part:
-y = np.real(eq79MatterPart)   # or np.abs(eq79Guess1)
+y = np.abs(eq79MatterPart)  
 matterDet = data1[:,1]
-y2 = np.real(matterDet)
+y2 = np.abs(matterDet)
 
 plt.figure()
 plt.plot(kvals, y, marker="o", linestyle="-")
@@ -201,6 +202,7 @@ def test_formula5(l1_scaling_num,l2_scaling_num,l1_scaling_den,l2_scaling_den,L,
                 bs_arr_ref = np.array(et.average_b(L_formula, l1_den_f, l2_den_f, bs_ref))
                 theta_ref = [2 * np.pi * li / L_formula for li in [l1_den_f, l2_den_f, l3_den_f]]
                 trig_ref = 2 + 2 * sum(np.cos(np.pi - 2 * th) for th in theta_ref)
+                # I take the 1/abs(period)^2 here because it has the same scaling as f as a function of \tau, which is normalized by the period such that f(0)/period=1/period
                 ref_terms = (
                         1 / abs(P1_ref)**2,
                         abs(np.mean(bs_arr_ref**2))**2,
@@ -216,6 +218,8 @@ def test_formula5(l1_scaling_num,l2_scaling_num,l1_scaling_den,l2_scaling_den,L,
                 tau_num = P2_num / P1_num
                 eta_num = et.dedekind_eta(tau_num)
                 # this is a better version of the calculation of b that converges quicker in the L\to\infty limit
+                # You should use this version when computing the b_i/nu_i as it is more careful with the phases
+                # don't use the pole_intercept_average in data1_log as it only calculates absolute values.
                 bs_num = et.calculate_b(L_formula, l1_num_f, l2_num_f)
                 bs_arr_num = np.array(et.average_b(L_formula, l1_num_f, l2_num_f, bs_num))
                 theta_num = [2 * np.pi * li / L_formula for li in [l1_num_f, l2_num_f, l3_num_f]]
