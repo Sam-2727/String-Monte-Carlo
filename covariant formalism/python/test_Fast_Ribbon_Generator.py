@@ -1,7 +1,7 @@
 import unittest
 from itertools import permutations, product
 
-import ribbon_graph_generator as rgg
+import Fast_Ribbon_Generator as rgg
 
 
 class TestRibbonGraphGenerator(unittest.TestCase):
