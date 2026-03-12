@@ -1,0 +1,559 @@
+{
+  "cells": [
+    {
+      "kind": 2,
+      "value": "prec=15;",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "\\[Chi][{L1_,L2_},r_][k_]:=Module[{},\nIf[r==1,\nReturn[HeavisideTheta[k-1/2]-HeavisideTheta[k-L1-1/2],Module];\n];\nIf[r==2,\nReturn[HeavisideTheta[k-L1-1/2]-HeavisideTheta[k-L1-L2-1/2],Module];\n];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "J[{L1_,L2_},{p1_,p2_}][k_]:=Outer[Times, {(L2 p1- L1 p2)/(L1+L2)}//Flatten,((\\[Chi][{L1,L2},1][k])/(L1)-(\\[Chi][{L1,L2},2][k])/(L2))]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "RedJ[{L1_,L2_},{p1_,p2_}][k_]:=Outer[Times, {(L2 p1- L1 p2)/(L1+L2)}//Flatten,{((\\[Chi][{L1,L2},1][k])/(L1)-(\\[Chi][{L1,L2},2][k])/(L2)+(1)/(L2))}//Flatten]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{L1_,L2_},{p1_,p2_}]:=J[{L1,L2},{p1,p2}][Range[1,L1+L2]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "RedJvector[{L1_,L2_},{p1_,p2_}]:=RedJ[{L1,L2},{p1,p2}][Range[1,L1+L2-1]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Mkernelfunc[L_,x_]:=(-Sin[Pi/L](*+(-1)^x(Cos[Pi/L]-Exp[2Pi I *x/L])*))/(Cos[Pi/L]-Cos[2Pi x/L])",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MMatrix[{L1_,L2_}]:=Module[{Mkernel,Mkernel1,Mkernel2,k1,k2,M,L=L1+L2},\nMkernel=Table[Mkernelfunc[L,x],{x,0,L-1}];\nMkernel1=Table[Mkernelfunc[L1,x],{x,0,L1-1}];\nMkernel2=Table[Mkernelfunc[L2,x],{x,0,L2-1}];\nk1=Table[k*\\[Chi][{L1,L2},1][k],{k,1,L}];\nk2=Table[(k-L1)*\\[Chi][{L1,L2},2][k],{k,1,L}];\n\nM=Table[\n(*multiply by Pi to kill exponential scaling of det*)\nPi((1)/(Pi*L)Mkernel[[Mod[k-l,L]+1]]+(\\[Chi][{L1,L2},1][k]\\[Chi][{L1,L2},1][l])/(Pi*L1)Mkernel1[[Mod[k1[[k]]-k1[[l]],L1]+1]]+(\\[Chi][{L1,L2},2][k]\\[Chi][{L1,L2},2][l])/(Pi*L2)Mkernel2[[Mod[k2[[k]]-k2[[l]],L2]+1]])\n,{k,1,L},\n{l,1,L}];\nReturn[M,Module];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MMatrixN[{L1_,L2_}]:=Module[{Mkernel,Mkernel1,Mkernel2,k1,k2,M,L=L1+L2},\nMkernel=Table[N[Mkernelfunc[L,x],prec],{x,0,L-1}];\nMkernel1=Table[N[Mkernelfunc[L1,x],prec],{x,0,L1-1}];\nMkernel2=Table[N[Mkernelfunc[L2,x],prec],{x,0,L2-1}];\nk1=Table[k*\\[Chi][{L1,L2},1][k],{k,1,L}];\nk2=Table[(k-L1)*\\[Chi][{L1,L2},2][k],{k,1,L}];\n\nM=Table[\n(*multiply by Pi to kill exponential scaling of det*)\nPi*N[(1)/(Pi*L)Mkernel[[Mod[k-l,L]+1]]+(\\[Chi][{L1,L2},1][k]\\[Chi][{L1,L2},1][l])/(Pi*L1)Mkernel1[[Mod[k1[[k]]-k1[[l]],L1]+1]]+(\\[Chi][{L1,L2},2][k]\\[Chi][{L1,L2},2][l])/(Pi*L2)Mkernel2[[Mod[k2[[k]]-k2[[l]],L2]+1]],prec]\n,{k,1,L},\n{l,1,L}];\nReturn[M,Module];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "RedMMatrixN[{L1_,L2_}]:=Module[{Mkernel,Mkernel1,Mkernel2,LastRow,k1,k2,M,L=L1+L2},\nMkernel=Table[N[Mkernelfunc[L,x],prec],{x,0,L-1}];\nMkernel1=Table[N[Mkernelfunc[L1,x],prec],{x,0,L1-1}];\nMkernel2=Table[N[Mkernelfunc[L2,x],prec],{x,0,L2-1}];\nk1=Table[k*\\[Chi][{L1,L2},1][k],{k,1,L}];\nk2=Table[(k-L1)*\\[Chi][{L1,L2},2][k],{k,1,L}];\nLastRow=Table[Pi*N[(1)/(Pi*L)Mkernel[[Mod[k-L,L]+1]]+(\\[Chi][{L1,L2},1][k]\\[Chi][{L1,L2},1][L])/(Pi*L1)Mkernel1[[Mod[k1[[k]]-k1[[L]],L1]+1]]+(\\[Chi][{L1,L2},2][k]\\[Chi][{L1,L2},2][L])/(Pi*L2)Mkernel2[[Mod[k2[[k]]-k2[[L]],L2]+1]],prec],{k,1,L}];\nM=Table[\n(*multiply by Pi to kill exponential scaling of det*)\nPi*N[(1)/(Pi*L)Mkernel[[Mod[k-l,L]+1]]+(\\[Chi][{L1,L2},1][k]\\[Chi][{L1,L2},1][l])/(Pi*L1)Mkernel1[[Mod[k1[[k]]-k1[[l]],L1]+1]]+(\\[Chi][{L1,L2},2][k]\\[Chi][{L1,L2},2][l])/(Pi*L2)Mkernel2[[Mod[k2[[k]]-k2[[l]],L2]+1]],prec]-LastRow[[k]]-LastRow[[l]]+LastRow[[L]]\n,{k,1,L-1},\n{l,1,L-1}];\nReturn[M,Module];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "RedJMJ[{L1_,L2_}]:=Module[{MInv,L=L1+L2},\nMInv = Inverse[RedMMatrixN[{L1,L2}]];\nReturn[(1)/(L^2)Total[Total[MInv[[1;;L1,1;;L1]]]]]\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "### Some random tests",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{2k,RedJMJ[{2k,200-2k}]},{k,1,50}],k]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "fp1Plus=%341",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "{(#[[1]])/(200),(-1)/(2)(#[[2]])/(p1P*p2P)*4Pi*((1)/(p1P)+(1)/(p2P)-1)/.{p1P->(#[[1]])/(200),p2P->(200-#[[1]])/(200)}}&/@fp1Plus\nListPlot[%]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "T1={(#[[1]])/(200),-Pi(#[[2]])/((p1P*p2P)^2)*(1+p1P^2+p2P^2)/.{p1P->(#[[1]])/(200),p2P->(200-#[[1]])/(200)}}&/@fp1Plus\nListPlot[T1]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "T2={(#[[1]])/(200),Log[Sqrt[(#[[1]])/(200)*(1-(#[[1]])/(200))]#[[2]]]}&/@detTable\nListPlot[T2]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MapThread[{#1[[1]],#1[[2]]-12#2[[2]]}&,{T1,T2}]\nListPlot[%]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Manipulate[ListPlot[MapThread[{#1[[1]],#1[[2]]+a#2[[2]]}&,{T1,T2}],PlotRange->All],{a,-3,-4}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[%341]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "(1)/(p1P)+(1)/(p2P)-(1)/(pP)//Together",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Show[%362,Plot[0.05578471814947499614730876597528202376`14.68321513480475(((x(200-x)))/(((200)/(2)(200-(200)/(2)))))^26/15,{x,0,100}]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(200-#[[1]]),#[[2]]}&/@%341]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{2j,Det[Developer`ToPackedArray[RedMMatrixN[{2j,200-2j}],Real]]},{j,1,50}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detTable=%365",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(200),(#[[2]])/(200^2)}&/@%365]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(200-#[[1]]),(#[[2]])/(200^2)}&/@%365]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{8j,Det[Developer`ToPackedArray[RedMMatrixN[{4j,4j}],Real]],Det[Developer`ToPackedArray[RedMMatrixN[{6j,2j}],Real]]},{j,2,50,2}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{#[[1]],Log[(#[[2]])/(#[[3]])]}&/@%388]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{8j,Det[Developer`ToPackedArray[RedMMatrixN[{4j,4j}],Real]],Det[Developer`ToPackedArray[RedMMatrixN[{7j,1j}],Real]]},{j,2,50,2}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{#[[1]],Log[(#[[2]])/(#[[3]])]}&/@%386]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{10,10},{p1,p2}][[1]].PseudoInverse[MMatrixN[{10,10}]].Jvector[{10,10},{p1,p2}][[1]]//FullSimplify",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{20,20},{p1,p2}][[1]].PseudoInverse[MMatrixN[{20,20}]].Jvector[{20,20},{p1,p2}][[1]]//FullSimplify",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{30,30},{p1,p2}][[1]].PseudoInverse[MMatrixN[{30,30}]].Jvector[{30,30},{p1,p2}][[1]]//FullSimplify",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{100,100},{p1,p2}][[1]].PseudoInverse[MMatrixN[{100,100}]].Jvector[{100,100},{p1,p2}][[1]]//FullSimplify",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "0.05578471814947499614730876597528202376`14.68321513480475 * 2^2(p1-p2)^2//Expand",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Jvector[{40,160},{p1,p2}][[1]].PseudoInverse[MMatrixN[{40,160}]].Jvector[{40,160},{p1,p2}][[1]]//FullSimplify",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "0.02588620239180119311760031958400601025`14.69875937564892 * (200)^2((p1)/(40)-(p2)/(160))^2//Expand",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{20n,RedJMJ[{10n,10n}]},{n,1,16}],n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{20n,RedJMJ[{4n,16n}]},{n,1,16}],n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{%311,%313}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "103/80//N",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "116/90//N",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "128.796/100",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Det[RedMMatrixN[{40,50}]]/90\nTimes@@(MMatrixN[{40,50}]//Eigenvalues)[[;;-2]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Det[RedMMatrixN[{40,60}]]\nTimes@@(MMatrixN[{40,60}]//Eigenvalues)[[;;-2]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[(MMatrixN[{44,36}]//Eigenvalues)[[;;-2]]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[(MMatrixN[{2,78}]//Eigenvalues)[[;;-2]],PlotStyle->Black]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Plot[2Cos[(Pi)/(2) (x-1)/(79)],{x,0,80},PlotStyle->Red]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Show[%235,%250]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Show[%248,%250]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Table[{10n,Log[Times@@(MMatrixN[{4n,6n}]//Eigenvalues)[[;;-2]]]},{n,1,10}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[%228]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Table[{10n,Log[Times@@(MMatrixN[{2n,8n}]//Eigenvalues)[[;;-2]]]},{n,1,10}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[%231]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "singleMMatrixN[{L1_,L2_}]:=Module[{Mkernel,Mkernel1,Mkernel2,k1,k2,M,L=L1+L2},\nMkernel=Table[N[Mkernelfunc[L,x],prec],{x,0,L-1}];\nMkernel1=Table[N[Mkernelfunc[L1,x],prec],{x,0,L1-1}];\nMkernel2=Table[N[Mkernelfunc[L2,x],prec],{x,0,L2-1}];\nk1=Table[k*\\[Chi][{L1,L2},1][k],{k,1,L}];\nk2=Table[(k-L1)*\\[Chi][{L1,L2},2][k],{k,1,L}];\n\nM=Table[\n(*multiply by Pi to kill exponential scaling of det*)\nPi*N[(2)/(Pi*L)Mkernel[[Mod[k-l,L]+1]],prec]\n,{k,1,L},\n{l,1,L}];\nReturn[M,Module];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Product[2Sin[m (Pi)/(L)],{m,1,L-1}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MMatrixN[{44,36}]//Eigenvalues//ListPlot",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "orderingList[L_]:=Join[{{0,1}},Table[{(-1)^2kFloor[k/2],k},{k,2,L-1}]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "orderList[list_]:=Map[{#1[[1]],list[[#1[[2]]]]}&,orderingList[(list//Length)+1]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{orderList[(singleMMatrixN[{44,36}]//Eigenvalues)[[;;-2]]],orderList[(MMatrixN[{44,36}]//Eigenvalues)[[;;-2]]]}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "### Scaling of det\\[CloseCurlyQuote]M",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{4j,(1)/(4j)Det[Developer`ToPackedArray[RedMMatrixNFast[{2j,2j}],Real]]},{j,1,300,10}]\n,j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "LinearModelFit[{Log[#[[1]]],Log[#[[2]]]}&/@%161,{1,x},x]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "%262[\"BestFitParameters\"]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListLogLogPlot[%161]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detMlist={#[[1]],(#[[2]])/(#[[1]]^5/4)}&/@%161",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[detMlist]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "derDetMlist=MapThread[{#1[[1]],#2}&,{detMlist[[;;-2]],1/40Differences[detMlist[[;;,2]]]}];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[derDetMlist,PlotRange->All]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{6j,(1)/(6j)Det[Developer`ToPackedArray[RedMMatrixNFast[{2j,4j}],Real]]},{j,1,200,8}]\n,j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "LinearModelFit[{Log[#[[1]]],Log[#[[2]]]}&/@%167,{1,x},x]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "%266[\"BestFitParameters\"]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListLogLogPlot[%167]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detMlist2={#[[1]],(#[[2]])/(#[[1]]^5/4)}&/@%167",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[detMlist2]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{20j,(1)/(20j)Det[Developer`ToPackedArray[RedMMatrixNFast[{2j,18j}],Real]]},{j,1,50,1}]\n,j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "LinearModelFit[{Log[#[[1]]],Log[#[[2]]]}&/@%170,{1,x},x]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "%269[\"BestFitParameters\"]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListLogLogPlot[%170]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detMlist3={#[[1]],(#[[2]])/(#[[1]]^5/4)}&/@%170",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "### Testing convergence of J M J",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{20j,RedJMJFast[{2j,18j}]},{j,1,40,2}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "fitform=c+(a)/(L-b);\nfit=FindFit[%394,fitform,{a,b,c},L]\nShow[ListPlot[%394],Plot[fitform/.fit,{L,1,800},PlotStyle->Red]]\nClear[fit,fitform]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[%394]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "(-1)/(Pi)x(1-x)(x Log[x]+(1-x)Log[1-x])/.x->1/10\n%//N",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{4j,RedJMJFast[{2j,2j}]},{j,1,200,10}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "fitform=c+(a)/(L-b);\nfit=FindFit[%225,fitform,{a,b,c},L]\nShow[ListPlot[%225],Plot[fitform/.fit,{L,1,800},PlotStyle->Red]]\nClear[fit,fitform]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "(-1)/(Pi)x(1-x)(x Log[x]+(1-x)Log[1-x])/.x->1/2\n%//N",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[%225]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Monitor[Table[{2j,RedJMJFast[{2j,400-2j}]},{j,2,100,2}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "fp1Plus={(#[[1]])/(400),#[[2]]}&/@%219",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "T1={#[[1]],((-Pi)/((p1P p2P)^2)(1+(p1P)^2+(p2P)^2)/.{p1P->#[[1]],p2P->(1-#[[1]])})*#[[2]]}&/@fp1Plus;",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "{(#[[1]])/(200),Log[#[[2]]]}&/@detTable",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[T1]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{#[[1]],Exp[#[[2]]]}&/@T1]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[fp1Plus]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Show[Plot[(-1)/(Pi)x(1-x)(x Log[x]+(1-x)Log[1-x]),{x,0,1/2},PlotStyle->Red],ListPlot[fp1Plus]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "(((-1)/(Pi)x(1-x)(x Log[x]+(1-x)Log[1-x])/.x->#[[1]])-#[[2]])&/@fp1Plus",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "### Comparison to Weyl Factor",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(200),-12Log[(#[[2]])/(200^9/4)]}&/@detTable]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detTable2=Monitor[Table[{4j,Det[Developer`ToPackedArray[RedMMatrixNFast[{4j,400-4j}],Real]]},{j,1,50}],j]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(400),-12Log[(#[[2]])/(400^9/4)]}&/@detTable2]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ListPlot[{(#[[1]])/(400),Log[(#[[2]])/(400^9/4)]}&/@detTable2]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Manipulate[Show[Plot[a+Log[(Exp[-2(-x Log[x]-(1-x)Log[(1-x)])*(1-(1)/(x)-(1)/(1-x))])/(x(1-x))],{x,0.01,1/2},PlotRange->All],%346],{a,0,5}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Show[Plot[4.6+Log[(Exp[-2(-x Log[x]-(1-x)Log[(1-x)])*(1-(1)/(x)-(1)/(1-x))])/(x(1-x))],{x,0.01,1/2},PlotRange->All,PlotStyle->Red],%346]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Plot[Log[x(1-x)],{x,0,1/2}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Plot[-x(1-x)(x Log[x]+(1-x)Log[1-x]),{x,0,1/2}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "detTable2",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "fp1Plus",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "T3=MapThread[{(#1[[1]])/(400),-12Log[(#1[[2]])/(400^9/4)]+(-1)/(2)(#2[[2]])/(p1P*p2P)*4Pi*((1)/(p1P)+(1)/(p2P)-1)/.{p1P->#2[[1]],p2P->1-#2[[1]]}}&,{detTable2,fp1Plus}]\nListPlot[T3]\nShow[Plot[4.59-Log[x(1-x)],{x,0,1/2},PlotStyle->Red],ListPlot[T3]]",
+      "languageId": "wolfram"
+    }
+  ]
+}
