@@ -36,7 +36,7 @@
 \section{3-pt vertex}
 Consider the light cone 3-pt vertex between three tachyon states. Let the incoming momenta (in $d-2$ transverse directions) be $p, p_1, p_2$ and the string lengths $p^+ = p_1^+ +p_2^+$. The corresponding tachyon wavefunctional defined on the unit disk takes the form
 \ie
-\Psi[p; X^{i}] \propto \exp \left[ -\frac{1}{\A'} \sum_m m X_m \cdot X_{-m} + i p \cdot X_0 \right], \qquad i = 1, \hdots, d-2.
+\Psi[p^i; X^{i}] \propto \exp \left[ -\frac{1}{\A'} \sum_m m X^i_m  X^i_{-m} + i p^i  X^i_0 \right], \qquad i = 1, \hdots, d-2.
 \fe
 Discretizing three unit circles into $L$ positions $z_k = e^{i 2 k \pi / L}$ for the first, and $L^{(r)} = \frac{p_r^+}{p^+} L$ positions for the second and third unit circles, we can then consider the product of the wavefunctionals, with the identification imposed \fixme{for now we assume that the singular point where the boundaries of all three cylinders touch is not one of the discretization points}:
 \ie
@@ -55,7 +55,7 @@ appropriately defined in the discretization.\\
 \\
 The 3-pt vertex is then given by
 \ie
-\propto \int& \prod_{i=1}^{d-2} \left(\left[\prod_{k=1}^{L} X^i(k) \right]\prod_{r=1,2}\left[\prod_{m= 1}^{L^{(r)} } X^{(r),i}(k) \right]\right) \delta_{\text{identification} }\\
+\propto \int& \prod_{i=1}^{d-2} \left(\left[\prod_{k=1}^{L} dX^i(k) \right]\prod_{r=1,2}\left[\prod_{m= 1}^{L^{(r)} } dX^{(r),i}(k) \right]\right) \delta_{\text{identification} }\\
 \exp\Bigg[ & - \frac{1}{\pi \A' L }  \bigg( \sum_{m=1}^{L} \sin \frac{\pi m}{L}  \sum_{k,\ell}^L e^{2 \pi i \frac{(k-\ell) m}{L} } X(k) \cdot X(\ell) \bigg) \\
 & - \frac{1}{\pi \A'} \sum_{r=1,2}  \bigg( \sum_{m=1}^{L^{(r)} }\frac{1}{L^{(r)}} \sin \frac{\pi m}{L^{(r)} }  \sum_{k,\ell}^{L^{(r)} } e^{2 \pi i \frac{(k-\ell) m}{L^{(r)} } } X^{(r)}(k) \cdot X^{(r)}(\ell) \bigg)\\
 +&i \bigg( \frac{p}{L} \cdot \sum_k^L X(k) + \sum_{r=1,2} \frac{p_r}{L^{(r)}} \cdot \sum_k^{L^{(r)} } X^{(r)}(k) \bigg)
@@ -71,7 +71,7 @@ the first term being precisely proportional to the zero mode $X^i_0 = \frac{1}{L
 \fe
 and will contribute to the Gaussian integration. We can write the 3-pt vertex as
 \ie
-\propto \int \left[ \prod_{k=1}^L X^i(k) \right] \exp \left[ - \frac{1}{2 \pi \A'}  (X^i)^T \cdot M  \cdot X^i +i J^i \cdot X^i \right]e^{i (p + p_1 + p_2) \cdot X_0 }
+\propto \int \prod_{i=1}^{d-2} \left[ \prod_{k=1}^L dX^i(k) \right] \exp \left[ - \frac{1}{2 \pi \A'}  (X^i)^T \cdot M  \cdot X^i +i J^i \cdot X^i \right]e^{i (p + p_1 + p_2) \cdot X_0 }
 \fe
 with
 \ie
@@ -94,8 +94,7 @@ and
 0, \text{ otherwise } 
 \end{cases}
 \fe
-just tests if $k$ is in the appropriate range so that $X^i(k)$ can be identified with $X^{(r),i}(k)$. $M$ should have one zero eignevector corresponding precisely to the zero mode. 
-%We note that the eigenvalues $\lambda_s$ of $M$, with $s=1,...,L$ are close to $\lambda_s = 2 \cos(\frac{\pi (s-1)}{2(L-1)} )$. 
+just tests if $k$ is in the appropriate range so that $X^i(k)$ can be identified with $X^{(r),i}(k)$. $M$ should have one zero eignevector corresponding precisely to the zero mode.  
 And,
 \ie
 J_k^i = \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } \right)
@@ -104,19 +103,33 @@ satisfies $\sum_k J_k^i = 0$.\\
 \\
 The 3-pt function then becomes
 \ie
-\propto \delta^{(d-2)}(p + p_1 + p_2)\,  ({\det}' M )^{-\frac{d-2}{2} } \, \exp(-\frac{\pi \A'}{2} J^{i,T} \cdot {M}^{+} \cdot J^i ),
+\propto ~~ (2\pi)^{d-2} \delta^{(d-2)}(p + p_1 + p_2)\, \left( {\det}' M   \right)^{-\frac{d-2}{2} } \,e^{-\frac{\pi \A'}{2} J^{i,T} \cdot {M}^{+} \cdot J^i },
 \fe
 where ${\det}'$ denotes product of all nonzero eigenvalues, and $M^+$ is the Moore-Penrose pseudoinverse
 \ie
 M^+ = \sum_{s=1}^{L-1} \frac{1}{\lambda_s} \xi_s \xi_s^T 
 \fe
-for $\xi_s$ the eigenvectors of $M$ with eigenvalues $\lambda_s \neq 0$.\\
-\\ 
-Or equivalently, picking some gauge, e.g. $X_0 = 0$, implemented as $X(L) = - \sum_{k=1}^{L-1} X(k)$ we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$ then the 3-pt function becomes proportional to 
+for $\xi_s$ the eigenvectors of $M$ with eigenvalues $\lambda_s \neq 0$. At this point it's also useful to be careful about the normalization. Considering the sphere 2-pt function in terms of the disk wavefunctionals, we should demand that 
 \ie
-\propto \delta^{(d-2)}(p + p_1 + p_2)\,  (\det \wt{M} )^{-\frac{d-2}{2} } \, \exp(-\frac{\pi \A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i ).
+\int \prod_{i=1}^{d-2}\left[ \prod_{k=1}^L dX^i(k) \right] \Psi[p^i; X^i] \Psi^{\text{c}}[q^i; X^i] = (2\pi)^{d-2} \delta^{(d-2)}(p^i+q^i)
 \fe
-We note that for this choice of gauge, $\det \wt{M} = L \,  {\det}' M$. The ratio $\frac{\det \wt{M}(L^{(1)}, L^{(2)}) }{\det \wt{M}(L^{(1)}{}', L^{(2)}{}')}$ converges quickly, but depends on $(L^{(1)}, L^{(2)})$.  Meanwhile, 
+with $\Psi^{\text{c}}$ the conjugate wavefunctional, where $X^i_n \leftrightarrow X^i_{-n}$. We note that in the case that $q^i = - p^i$, the nonzero modes just give a Gaussian integral of $\exp(- \frac{1}{2\pi \A'} (X^i)^T \cdot M' \cdot X^i )$ where 
+\ie
+M'_{k \ell} =  \frac{2}{ L}(\frac{-\sin \frac{\pi}{L}}{ \cos \frac{\pi}{L} - \cos \frac{2\pi (k-\ell)}{L} } )
+\fe
+whose ${\det}' M' = \prod_{m=1}^{L-1}2  \sin \frac{\pi m}{L} = L$. We make the change of variables
+%  $X^i(L) = LX_0 - \sum_{k=1}^{L-1} X(k)$ 
+\ie
+X(k) &= X_0 + \tilde{X}(k), \qquad k = 1,\hdots, L-1\\
+ X(L) &= X_0 - \sum_{k=1}^{L-1} \tilde{X}(k)
+\fe
+and define the corresponding $(L-1) \times (L-1)$ matrix $\wt{M}'$ whose $\det \wt{M}' = L^2$. But the change of variables comes with its own Jacobian factor $L$ which precisely cancels $(\det \wt{M}')^{-\frac{1}{2}}$. So the normalization factor for $\Psi[p^i;X^i]$ on the disk with boundary discretized into $L$ steps is $\left((2\pi^2 \A')^{L-1} \right)^{-\frac{d-2}{4}}$. With the same change of variables we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$. Using the normalizations the 3-pt function becomes 
+\ie
+= (2\pi)^{d-2} \delta^{(d-2)}(p + p_1 + p_2)\, (2\pi^2 \A')^{ \frac{d-2}{4} }\left(\frac{ {\det} \wt{M}  }{L^2}    \right)^{-\frac{d-2}{2} } \,e^{-\frac{\pi \A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i }.
+\fe
+We note that $\det \wt{M} = L \,  {\det}' M$. The ratio $\frac{\det \wt{M}(L^{(1)}, L^{(2)}) }{\det \wt{M}(L^{(1)}{}', L^{(2)}{}')}$ converges quickly, but depends on $(L^{(1)}, L^{(2)})$. Numerically we checked that $\det \wt{M}$ itself seems to scale as $L^{9/4}$, i.e. ${\det}' M$ scales as $L^{5/4}$.\\
+\\
+Meanwhile, 
 \ie
 {\wt J}^i_k &= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } + \frac{1}{L^{(2)} }   \right)\\
 &= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{ L^{(2)} L^{(1)} } \{1,\hdots,1,0,\hdots,0\}\\
@@ -132,14 +145,49 @@ with $f$ converging fairly rapidly, but depending explicitly on $p_1^+,\,p_2^+$.
 \fe
 and for on-shell tachyons $-\frac{4}{\A'} = m^2 = 2 p^+ p^- - (p^i)^2$ and this becomes
 \ie
+\label{eq:JMJ}
 \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i =  \frac{(p^+)^3}{p_1^+ p_2^+}   f( p_1^+, p_2^+,L) \left(2(p_1^- +p_2^- - p^-) + \frac{4}{\A'} (\frac{1}{p_1^+} + \frac{1}{p_2^+} - \frac{1}{p^+}) \right).
 \fe
-Putting everything together, the 3-pt function becomes (assuming on-shell momenta and using conservation of $p^+$ and $p^i$:
+Putting everything together, the 3-pt vertex becomes (assuming on-shell momenta and using conservation of $p^+$ and $p^i$:
 \ie
-\propto ~~ &\delta_{(p^+ - p_1^+ - p_2^+),0} \delta^{(d-2)}(p^i + p_1^i + p_2^i) e^{- \pi \A' \frac{(p^+)^3}{p_1^+ p_2^+} f(p_1^+, p_2^+, L) (p_1^- +p_2^- - p^-)} \\
-& ~~ \left(\frac{\det \wt{M}(p_1^+,p_2^+,L) }{L} \right)^{-\frac{d-2}{2} }  \exp\left(-\pi \frac{(p^+)^2}{(p_1^+ p_2^+)^2} f(p_1^+, p_2^+, L) ((p^+)^2 + (p_1^+)^2 + (p_2^+)^2)  \right)
+\label{eq:3ptvertex}
+= ~~ & (2\pi^2 \A')^{\frac{d-2}{4} }\delta_{p^+,  p_1^+ + p_2^+} (2\pi)^{d-2} \delta^{(d-2)}(p^i + p_1^i + p_2^i) e^{- \pi \A' \frac{(p^+)^3}{p_1^+ p_2^+} f(p_1^+, p_2^+, L) (p_1^- +p_2^- - p^-)} \\
+& ~~ \left(\frac{\det \wt{M}(p_1^+,p_2^+,L) }{L^2 } \right)^{-\frac{d-2}{2} }  \exp\left(-\pi \frac{(p^+)^2}{(p_1^+ p_2^+)^2} f(p_1^+, p_2^+, L) ((p^+)^2 + (p_1^+)^2 + (p_2^+)^2)  \right)
 \fe
-Note that $\delta_{(p^+ - p_1^+ - p_2^+),0}$ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$. Conservation of energy should set the first exponential to 1. Therefore we might expect for $d=26$ that the expressions on the second line evaluate to a constant (for fixed $L$ and varying $p_1^+, \, p_2^+$) \fixme{but numerically this doesn't seem to work yet}.
-
+Note that $\delta_{p^+,  p_1^+ + p_2^+} $ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$. Conservation of energy, once it is recovered from integrating over the time $x^+$ at which the interaction occurs, should set the first exponential to 1. Therefore we might expect for $d=26$ that the expressions on the second line evaluate to a constant (for fixed $L$ and varying $p_1^+, \, p_2^+$) \fixme{but numerically this doesn't seem to work yet}.\\
+\\
+We note that one should consider the contribution of the Weyl anomaly at the interaction point. From (2.4) in [1102.2751] the Weyl anomaly factor is (let $x \equiv \frac{p_1^+}{p^+}$ and $1-x = \frac{p_2^+}{p^+} $):
+\ie
+e^{-\frac{d-2}{24}\Gamma[\log (\partial \rho \bar \partial \rho)]} \equiv \left(\frac{\exp [-2 \hat{\tau}_0 \sum_r \frac{1}{\alpha_r} ] }{ \prod_r \alpha_r  } \right)^{\frac{d-2}{24} } = \left(\frac{\exp [-2 \frac{\hat{\tau}_0}{2p^+} (1 - \frac{1}{x} - \frac{1}{1-x} ) ] }{(2 p^+)^3 x(1-x)  } \right)^{\frac{d-2}{24} }
+\fe
+where $\frac{d-2}{24}$ \fixme{came from chatGPT, in the paper they are using d=26 so it is just 1},  
+\ie
+\hat{\tau}_0 \equiv \sum_r \alpha_r \log|\alpha_r| = 2p^+ (-x \log x - (1-x) \log(1-x) ),
+\fe
+$\rho(z)$ is the Mandelstam mapping of the Mandelstam diagram to the complex plane, and in our conventions $\alpha_3 = 2p^+$, $\alpha_1 = -2p_1^+=-2p^+ x$, $\alpha_2 = -2p_2^+= -2p^+(1-x)$.\\
+We find that, as functions of $x$,
+\ie
+{}&-\Gamma[\log (\partial \rho \bar\partial \rho)](x) - 3\log(2p^+)\\
+ &\qquad= \log \left[ \frac{\exp [2 (x \log x + (1-x) \log(1-x)) (1 - \frac{1}{x} - \frac{1}{1-x} ) ] }{ x(1-x)  } \right] \\
+&\qquad=\text{const} - 12 \lim_{L\to\infty}\log \frac{\det \wt{M}(x,L)}{L^{9/4} }
+\fe
+and
+\ie
+-\frac{1}{\pi} x(1-x) \left( x \log x + (1-x) \log(1-x) \right) = \lim_{L\to\infty} f(x,L).
+\fe
+Comparing to the last exponential in (\ref{eq:3ptvertex}), or the second term in (\ref{eq:JMJ}), we see that it takes the form
+\ie
+-2\pi &\frac{1}{x(1-x)} f(x,L) \left(\frac{1}{x}+\frac{1}{1-x}-1 \right) \\
+&\qquad\to -2\left( x \log x + (1-x) \log(1-x) \right)\left(1-\frac{1}{x}-\frac{1}{1-x} \right),
+\fe
+which precisely cancels the exponential piece of $e^{-\Gamma}$ coming from $(\frac{\det \wt{M}}{L^{9/4} })^{-\frac{d-2}{2} } =C e^{- \frac{d-2}{24} \Gamma }$, provided $d=26$!\\
+\\
+inputting the conjectured forms of $f(x,L)$ and $\det \wt{M}(x,L)$ for $L \to \infty$, we get the 3-pt vertex
+\ie
+\label{eq:3ptvertexConj}
+=&C\,\frac{(2\pi^2 \A')^6}{L^3} \frac{1}{x(1-x)} \delta_{p^+, p_1^+ +  p_2^+}  (2\pi)^{24} \delta^{(24)}\Big(p^i + p_1^i + p_2^i\Big)\\
+&~~ \exp\left[\A' p^+(p_1^- +p_2^- -p^-) (x \log x + (1-x) \log (1-x)) \right].
+\fe
+Note that when calculating the \textit{amplitude}, one must integrate over LC time $x^+$, giving a $\delta(p^- -  p_1^- - p_2^-)$ that kills the exponential term. \fixme{The first factor above, including the $\frac{1}{L}$'s should somehow be related to integrating over $dp^+ dp_1^+ dp_2^+$ with the appropriate measure factor. For example in [[1102.2751] (2.2), each $dp_r^+$ comes with a factor of $p_r^+$, which would cancel against the $x(1-x)$ in the denominator, which is the last remaining $x$ dependence. The $L$'s should turn the sums into integrals because for a fixed $p^+$ and $L$, $x$ can only take discrete values $x = \frac{1}{L}, \frac{2}{L}, \hdots \frac{L-1}{L}$ with $\Delta p_1^+ = \frac{p^+}{L} \to dp_1^+$ as $L \to \infty$. But then it seems there's too many $L$'s in the denominator.  }
 \end{document}
 
