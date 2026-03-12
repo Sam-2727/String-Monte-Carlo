@@ -23,6 +23,8 @@ __pycache__/
 *.log
 *.out
 *.synctex.gz
+*.fls
+*.fdb_latexmk
 
 # Claude Code
 .claude/
