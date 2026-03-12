@@ -111,9 +111,9 @@ M^+ = \sum_{s=1}^{L-1} \frac{1}{\lambda_s} \xi_s \xi_s^T
 \fe
 for $\xi_s$ the eigenvectors of $M$ with eigenvalues $\lambda_s \neq 0$. At this point it's also useful to be careful about the normalization. Considering the sphere 2-pt function in terms of the disk wavefunctionals, we should demand that 
 \ie
-\int \prod_{i=1}^{d-2}\left[ \prod_{k=1}^L dX^i(k) \right] \Psi[p^i; X^i] \Psi^{\text{c}}[q^i; X^i] = (2\pi)^{d-2} \delta^{(d-2)}(p^i+q^i)
+\int \prod_{i=1}^{d-2}\left[ \prod_{k=1}^L dX^i(k) \right] \Psi[p^i; X^i] \Psi^{\text{c}}[q^i; X^i] = (2|p^+|) (2\pi)^{d-2} \delta^{(d-2)}(p^i+q^i)
 \fe
-with $\Psi^{\text{c}}$ the conjugate wavefunctional, where $X^i_n \leftrightarrow X^i_{-n}$. We note that in the case that $q^i = - p^i$, the nonzero modes just give a Gaussian integral of $\exp(- \frac{1}{2\pi \A'} (X^i)^T \cdot M' \cdot X^i )$ where 
+with $\Psi^{\text{c}}$ the conjugate wavefunctional, where $X^i_n \leftrightarrow X^i_{-n}$. We note that the nonzero modes just give a Gaussian integral of $\exp(- \frac{1}{2\pi \A'} (X^i)^T \cdot M' \cdot X^i )$ where 
 \ie
 M'_{k \ell} =  \frac{2}{ L}(\frac{-\sin \frac{\pi}{L}}{ \cos \frac{\pi}{L} - \cos \frac{2\pi (k-\ell)}{L} } )
 \fe
@@ -123,9 +123,9 @@ whose ${\det}' M' = \prod_{m=1}^{L-1}2  \sin \frac{\pi m}{L} = L$. We make the c
 X(k) &= X_0 + \tilde{X}(k), \qquad k = 1,\hdots, L-1\\
  X(L) &= X_0 - \sum_{k=1}^{L-1} \tilde{X}(k)
 \fe
-and define the corresponding $(L-1) \times (L-1)$ matrix $\wt{M}'$ whose $\det \wt{M}' = L^2$. But the change of variables comes with its own Jacobian factor $L$ which precisely cancels $(\det \wt{M}')^{-\frac{1}{2}}$. So the normalization factor for $\Psi[p^i;X^i]$ on the disk with boundary discretized into $L$ steps is $\left((2\pi^2 \A')^{L-1} \right)^{-\frac{d-2}{4}}$. With the same change of variables we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$. Using the normalizations the 3-pt function becomes 
+and define the corresponding $(L-1) \times (L-1)$ matrix $\wt{M}'$ whose $\det \wt{M}' = L^2$. But the change of variables comes with its own Jacobian factor $L$ which precisely cancels $(\det \wt{M}')^{-\frac{1}{2}}$. So the normalization factor for $\Psi[p^i;X^i]$ on the disk with boundary discretized into $L$ steps is $\sqrt{2 |p^+|\,}\left((2\pi^2 \A')^{L-1} \right)^{-\frac{d-2}{4}}$. With the same change of variables we can define a reduced matrix and vector $\wt{M}_{k\ell}$ and $\wt{J}^i_k$ where $k$ now runs from 1 to $L-1$. Using the normalizations the 3-pt function becomes 
 \ie
-= (2\pi)^{d-2} \delta^{(d-2)}(p + p_1 + p_2)\, (2\pi^2 \A')^{ \frac{d-2}{4} }\left(\frac{ {\det} \wt{M}  }{L^2}    \right)^{-\frac{d-2}{2} } \,e^{-\frac{\pi \A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i }.
+=\sqrt{8 |p^+ p_1^+ p_2^+|\,} (2\pi)^{d-2} \delta^{(d-2)}(p + p_1 + p_2)\, (2\pi^2 \A')^{ \frac{d-2}{4} }\left(\frac{ {\det} \wt{M}  }{L^2}    \right)^{-\frac{d-2}{2} } \,e^{-\frac{\pi \A'}{2} \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i }.
 \fe
 We note that $\det \wt{M} = L \,  {\det}' M$. The ratio $\frac{\det \wt{M}(L^{(1)}, L^{(2)}) }{\det \wt{M}(L^{(1)}{}', L^{(2)}{}')}$ converges quickly, but depends on $(L^{(1)}, L^{(2)})$. Numerically we checked that $\det \wt{M}$ itself seems to scale as $L^{9/4}$, i.e. ${\det}' M$ scales as $L^{5/4}$.\\
 \\
@@ -151,10 +151,12 @@ and for on-shell tachyons $-\frac{4}{\A'} = m^2 = 2 p^+ p^- - (p^i)^2$ and this 
 Putting everything together, the 3-pt vertex becomes (assuming on-shell momenta and using conservation of $p^+$ and $p^i$:
 \ie
 \label{eq:3ptvertex}
-= ~~ & (2\pi^2 \A')^{\frac{d-2}{4} }\delta_{p^+,  p_1^+ + p_2^+} (2\pi)^{d-2} \delta^{(d-2)}(p^i + p_1^i + p_2^i) e^{- \pi \A' \frac{(p^+)^3}{p_1^+ p_2^+} f(p_1^+, p_2^+, L) (p_1^- +p_2^- - p^-)} \\
+= ~~ & \sqrt{8 |p^+ p_1^+ p_2^+|\,} (2\pi^2 \A')^{\frac{d-2}{4} }\delta_{p^+,  p_1^+ + p_2^+} (2\pi)^{d-2} \delta^{(d-2)}(p^i + p_1^i + p_2^i) e^{- \pi \A' \frac{(p^+)^3}{p_1^+ p_2^+} f(p_1^+, p_2^+, L) (p_1^- +p_2^- - p^-)} \\
 & ~~ \left(\frac{\det \wt{M}(p_1^+,p_2^+,L) }{L^2 } \right)^{-\frac{d-2}{2} }  \exp\left(-\pi \frac{(p^+)^2}{(p_1^+ p_2^+)^2} f(p_1^+, p_2^+, L) ((p^+)^2 + (p_1^+)^2 + (p_2^+)^2)  \right)
 \fe
-Note that $\delta_{p^+,  p_1^+ + p_2^+} $ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$. Conservation of energy, once it is recovered from integrating over the time $x^+$ at which the interaction occurs, should set the first exponential to 1. Therefore we might expect for $d=26$ that the expressions on the second line evaluate to a constant (for fixed $L$ and varying $p_1^+, \, p_2^+$) \fixme{but numerically this doesn't seem to work yet}.\\
+Note that $\delta_{p^+,  p_1^+ + p_2^+} $ is imposed at the level of the discretization scheme. A key test is that we should recover full Lorentz invariance \fixme{of precisely what expression?} for $d=26$ as $L \to \infty$. Conservation of energy, once it is recovered from integrating over the time $x^+$ at which the interaction occurs, should set the first exponential to 1.
+%Therefore we might expect for $d=26$ that the expressions on the second line evaluate to a constant (for fixed $L$ and varying $p_1^+, \, p_2^+$) \fixme{but numerically this doesn't seem to work yet}.
+\\
 \\
 We note that one should consider the contribution of the Weyl anomaly at the interaction point. From (2.4) in [1102.2751] the Weyl anomaly factor is (let $x \equiv \frac{p_1^+}{p^+}$ and $1-x = \frac{p_2^+}{p^+} $):
 \ie
@@ -185,9 +187,12 @@ which precisely cancels the exponential piece of $e^{-\Gamma}$ coming from $(\fr
 inputting the conjectured forms of $f(x,L)$ and $\det \wt{M}(x,L)$ for $L \to \infty$, we get the 3-pt vertex
 \ie
 \label{eq:3ptvertexConj}
-=&C\,\frac{(2\pi^2 \A')^6}{L^3} \frac{1}{x(1-x)} \delta_{p^+, p_1^+ +  p_2^+}  (2\pi)^{24} \delta^{(24)}\Big(p^i + p_1^i + p_2^i\Big)\\
+=&\sqrt{8 |p^+|^3\,} C\,\frac{(2\pi^2 \A')^6}{L^3} \frac{1}{ \sqrt{x(1-x) } } \delta_{p^+, p_1^+ +  p_2^+}  (2\pi)^{24} \delta^{(24)}\Big(p^i + p_1^i + p_2^i\Big)\\
 &~~ \exp\left[\A' p^+(p_1^- +p_2^- -p^-) (x \log x + (1-x) \log (1-x)) \right].
 \fe
-Note that when calculating the \textit{amplitude}, one must integrate over LC time $x^+$, giving a $\delta(p^- -  p_1^- - p_2^-)$ that kills the exponential term. \fixme{The first factor above, including the $\frac{1}{L}$'s should somehow be related to integrating over $dp^+ dp_1^+ dp_2^+$ with the appropriate measure factor. For example in [[1102.2751] (2.2), each $dp_r^+$ comes with a factor of $p_r^+$, which would cancel against the $x(1-x)$ in the denominator, which is the last remaining $x$ dependence. The $L$'s should turn the sums into integrals because for a fixed $p^+$ and $L$, $x$ can only take discrete values $x = \frac{1}{L}, \frac{2}{L}, \hdots \frac{L-1}{L}$ with $\Delta p_1^+ = \frac{p^+}{L} \to dp_1^+$ as $L \to \infty$. But then it seems there's too many $L$'s in the denominator.  }
+Note that when calculating the \textit{amplitude}, one must integrate over LC time $x^+$, giving a $\delta(p^- -  p_1^- - p_2^-)$ that kills the exponential term.  \fixme{Check that this works out, I still hacen't hunted down all the normalizations} In addition, the $\frac{1}{\sqrt{x(1-x)} }$ precisely corresponds to $\prod_r (\A_r)^{-1/2}$ in GSW (11.2.7). The remaining issue is to explain the factor $\frac{1}{L^3}$. In fact $ L \delta_{p^+,p_1^+ + p_2^+} \to \delta(p^+ - p_1^+ - p_2^+) $, so it is an overall factor of $\frac{1}{L^4}$ that must be explained.
+%
+%
+%\fixme{The first factor above, including the $\frac{1}{L}$'s should somehow be related to integrating over $dp^+ dp_1^+ dp_2^+$ with the appropriate measure factor. For example in [[1102.2751] (2.2), each $dp_r^+$ comes with a factor of $p_r^+$, which would cancel against the $x(1-x)$ in the denominator, which is the last remaining $x$ dependence. The $L$'s should turn the sums into integrals because for a fixed $p^+$ and $L$, $x$ can only take discrete values $x = \frac{1}{L}, \frac{2}{L}, \hdots \frac{L-1}{L}$ with $\Delta p_1^+ = \frac{p^+}{L} \to dp_1^+$ as $L \to \infty$. But then it seems there's too many $L$'s in the denominator.  }
 \end{document}
 
