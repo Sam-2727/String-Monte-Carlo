@@ -242,7 +242,7 @@ Thus the factor $\frac{1}{\sqrt{x(1-x)}}$ appearing in (\ref{eq:3ptvertexConj}) 
 \section{3-pt vertex 2 tachyons, one massless}
 Now we want to consider the 3-pt vertex where one tachyon has been replaced with a massless state, whose wavefunctional takes the form
 \ie
-\Psi[e_{ij},p^i; X^i] \propto e_{ij} X_1^i X_{-1}^j \exp \left[ -\frac{1}{\A'} \sum_m m X_m^i X_{-m}^i + i p^i X^i_0 \right],
+\Psi[e_{ij},p^i; X^i] \propto e_{ij} (X_1^i X_{-1}^j - \frac{\A'}{2} \delta^{ij}) \exp \left[ -\frac{1}{\A'} \sum_m m X_m^i X_{-m}^i + i p^i X^i_0 \right],
 \fe
 with $e_{ij} p^i = e_{ij} p^j = 0$ and $2p^+ p^- - (p^i)^2 = 0$. It is not very difficult to see how the story of the 3 tachyon case generalizes here. \fixme{calculate normalization for the massless state - not done yet. Call it $N_L(p^+)$ }. For simplicity we will put the massless state into the longest string. The Fourier modes are $X^i_{\pm 1} = \frac{1}{L} \sum_k e^{ \mp 2 \pi i \frac{k}{L} } X^i(k)$, which under (\ref{eq:changeOfVars}) becomes
 \ie
@@ -250,8 +250,9 @@ X^i_{\pm 1} = \frac{1}{L} \sum_{k=1}^{L-1} ( e^{ \mp 2 \pi i \frac{k}{L} } -1 ) 
 \fe,
 while the Gaussian exponential is exactly the same as before, so we can calculate the Gaussian integral by Wick contraction, being careful of the fact that the linear term will contribute to $\langle X \rangle$. We get that the 3-pt vertex is, ignoring normalization and $\delta$ functions for now, 
 \ie
+\label{eq:TTM3pt}
 \propto& \left(\frac{ {\det} \wt{M}  }{L^2}    \right)^{-12 } \,e^{-\frac{\pi \A'}{2} \wt{J}^{i} \cdot \wt{M}^{-1} \cdot \wt{J}^i } \pi \A' e_{ij} \\
-&\qquad \left [ \delta^{ij} v_1 \cdot \wt{M}^{-1} \cdot v_{-1} - \pi \A' (v_1 \cdot \wt{M}^{-1} \cdot \wt{J}^i) (v_{-1} \cdot \wt{M}^{-1} \cdot \wt{J}^j)  \right].
+&\qquad \left [ \delta^{ij} (v_1 \cdot \wt{M}^{-1} \cdot v_{-1} -\frac{1}{2\pi})- \pi \A' (v_1 \cdot \wt{M}^{-1} \cdot \wt{J}^i) (v_{-1} \cdot \wt{M}^{-1} \cdot \wt{J}^j)  \right].
 \fe
 $\wt{M}$ and $\wt{J}$ are completely unchanged from before. Firstly we note that there is no contribution from antisymmetric polarization as both terms in the square brackets above are symmetric under $i\leftrightarrow j$ (recall that $\wt{J}^i_k =\chi_1(k) \frac{p^+}{L} \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right) $  so the second term is symmetric in $i$ and $j$). Making use of transversality of $e_{ij}$ and momentum conservation, we can rewrite the transverse momentum-dependent factor as
 \ie
@@ -269,8 +270,12 @@ x^{2x} (1-x)^{2(1-x)}.
 \fe
 Finally we find that numerically it turns out that
 \ie
-\lim_{L\to \infty} \left|\frac{1}{L^2} v_1 \cdot \wt{M}^{-1} \cdot \chi_1 \right| = (\text{const}) ~  \frac{(x (1-x))^2}{x^{2x} (1-x)^{2(1-x)}},
+\lim_{L\to \infty} \left| v_1 \cdot \wt{M}^{-1} \cdot \frac{\chi_1}{L} \right|(x,L) = (\text{const}) ~  \frac{(x (1-x))^2}{x^{2x} (1-x)^{2(1-x)}},
 \fe
-precisely canceling the extra factors contributed by (\ref{eq:edotJ}) and (\ref{eq:extraScaling})! Thus besides the expected transverse momentum dependence $e_{ij} (p_1^i - p_2^i) (p_1^j - p_2^j)$, the only other dependence on $p_1$ and $p_2$ is exactly the same $\frac{1}{\sqrt{x(1-x)}}$ as in the 3 tachyon case. \fixme{make sure the trace term works as well} 
+precisely canceling the extra factors contributed by (\ref{eq:edotJ}) and (\ref{eq:extraScaling})! In addition, we find that numerically 
+\ie
+\lim_{L\to\infty} \Big(v_1 \cdot \wt{M}^{-1} \cdot v_{-1}\Big)(x,L) = \frac{1}{2\pi}
+\fe
+canceling against $-\frac{1}{2\pi}$ in (\ref{eq:TTM3pt}). \fixme{note that $\frac{1}{2\pi}$ is the free value $v_1 \cdot ({\wt M}')^{-1} v_{-1}$, ChatGPT guessed that it should converge to the free value, but the reasoning is unclear.} Thus besides the expected transverse momentum dependence $e_{ij} (p_1^i - p_2^i) (p_1^j - p_2^j)$, the only other dependence on $p_1$ and $p_2$ is exactly the same $\frac{1}{\sqrt{x(1-x)}}$ as in the 3 tachyon case.
 \end{document}
 
