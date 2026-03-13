@@ -85,6 +85,15 @@ At a cubic join, $p_3^+=p_1^++p_2^+$ implies
 N_3=N_1+N_2,
 \end{equation}
 after choosing a common lattice spacing (or an integer-compatible refinement).
+For generic real lightcone momenta there is usually no single finite lattice with exact $\alpha_r=aN_r$ on every leg. The finite-$N$ definition should therefore be understood as a refinement sequence: choose $a_\nu\to 0$ and integers $N_r^{(\nu)}$ such that
+\begin{equation}
+\alpha_r^{(\nu)}\equiv a_\nu N_r^{(\nu)}\longrightarrow \alpha_r
+\end{equation}
+while every cubic join obeys the exact integer overlap rule
+\begin{equation}
+N_3^{(\nu)}=N_1^{(\nu)}+N_2^{(\nu)}.
+\end{equation}
+In practice one approximates the independent external $\alpha_r$ by rationals with a common denominator and then determines all internal $N_e^{(\nu)}$ from the exact vertex conservation laws. Each finite-$\nu$ computation uses exact site-space concatenation, and the physical amplitude is obtained by extrapolating $\nu\to\infty$.
 
 The basic propagator building block is shown in Figure~\ref{fig:discrete-cylinder}.
 
@@ -164,15 +173,23 @@ On the lattice this is implemented by a shift operator $R_N(\varphi)$ acting in 
 \begin{equation}
 \bigl(R_N(\varphi)X\bigr)_n = X_{n+\varphi N \,\, \mathrm{mod}\,N},
 \end{equation}
-while for general $\varphi$ one defines the same operator spectrally by
+while for general $\varphi$ one may use a spectral interpolation operator. Introduce centered lattice frequencies
 \begin{equation}
-R_N(\varphi)=F^\dagger \, \mathrm{diag}\!\left(e^{2\pi \ii k\varphi}\right) F.
+\kappa_k=
+\begin{cases}
+k,& 0\le k\le \lfloor (N-1)/2\rfloor,\\
+k-N,& \lfloor (N+1)/2\rfloor\le k\le N-1,
+\end{cases}
+\end{equation}
+so that $\kappa_{N-k}=-\kappa_k$ except for the self-conjugate Nyquist mode when $N$ is even. Then
+\begin{equation}
+R_N(\varphi)=F^\dagger \, \mathrm{diag}\!\left(e^{2\pi \ii \kappa_k\varphi}\right) F.
 \end{equation}
 The twisted bosonic propagator is then
 \begin{equation}
 K_B(X_f,X_i;T,\varphi)=K_B\bigl(X_f,R_N(\varphi)X_i;T,0\bigr),
 \end{equation}
-so each discrete Fourier mode picks up the phase $e^{2\pi \ii k\varphi}$ in the cross-term.
+so each discrete Fourier mode picks up the phase $e^{2\pi \ii \kappa_k\varphi}$ in the cross-term. For odd $N$ this centered prescription preserves the real site subspace. For even $N$ and generic $\varphi$, however, the self-conjugate Nyquist mode makes $R_N(\varphi)$ a complex interpolation kernel rather than a literal real-site permutation. Thus the geometric-shift interpretation is exact when $\varphi N\in\ZZ$; for generic $\varphi$ one should regard $R_N(\varphi)$ as the finite-$N$ spectral interpolation of the continuum $\sigma$ translation.
 
 \section{Discrete free GS fermions on a cylinder}
 In lightcone GS gauge, the transverse fermions are free. After Fourier transform in $\sigma$, each mode gives a quadratic Grassmann system. A convenient bookkeeping device is to complexify the eight real GS spinor components and use coherent-state labels $\eta_{k,a}$, $\bar\eta_{k,a}$ with $a=1,\dots,8$. This is only a representation choice, not a physical doubling; the equivalent real Majorana formulation and its Pfaffian appear below. In these variables one can write
@@ -193,10 +210,10 @@ K_{F,0}(\bar\eta_f,\eta_i;T)=
 \end{equation}
 independent of $T$. This is the cylinder transport of the GS fermionic zero mode and is the finite-$N$ precursor of the local Grassmann data later organized into $\Lambda^a$.
 
-With a geometric twist in $\sigma$, the fermionic cross-term acquires the same phase,
+With an exact lattice shift, or more generally with the spectral interpolation prescription above, the fermionic cross-term acquires the same phase,
 \begin{equation}
 K_{F,k}(\bar\eta_f,\eta_i;T,\varphi)=
-\exp\!\left[\bar\eta_f\,e^{-\omega_k T}e^{2\pi \ii k\varphi}\eta_i\right],
+\exp\!\left[\bar\eta_f\,e^{-\omega_k T}e^{2\pi \ii \kappa_k\varphi}\eta_i\right],
 \end{equation}
 up to additional sign choices associated with the fermionic spin structure around the loop.
 
@@ -218,21 +235,21 @@ Let $\mu \equiv a/(2\pi\al)$ and let $F$ be the unitary DFT matrix on $N$ sites.
 A(T)&=\mu\,F^\dagger\,
 \mathrm{diag}\!\big(\omega_k\coth(\omega_k T)\big)\,F,\\
 B(T,\varphi)&=\mu\,F^\dagger\,
-\mathrm{diag}\!\big(e^{2\pi \ii k\varphi}\omega_k\mathrm{csch}(\omega_k T)\big)\,F.
+\mathrm{diag}\!\big(e^{2\pi \ii \kappa_k\varphi}\omega_k\mathrm{csch}(\omega_k T)\big)\,F.
 \end{align}
 For the zero mode, use the smooth limits
 \begin{equation}
 \omega_0\coth(\omega_0 T)\to \frac{1}{T},\qquad
 \omega_0\mathrm{csch}(\omega_0 T)\to \frac{1}{T}.
 \end{equation}
-Hence $A(T)$ is circulant in site space, while $B(T,\varphi)$ is a twisted circulant matrix. Both are diagonalized exactly by the same DFT.
+Hence $A(T)$ is circulant in site space, while $B(T,\varphi)$ is a twisted circulant/interpolation matrix. For exact lattice shifts it is real and circulant up to permutation; for generic $\varphi$ it is the finite-$N$ spectral interpolation kernel described above. In all cases it is diagonalized exactly by the same DFT.
 
 For fermions (coherent states),
 \begin{equation}
 K_F(\bar\eta_f,\eta_i;T,\varphi)=
 {\cal N}_F(T)\,
 \exp\!\left[\bar\eta_f^{\!T}U(T,\varphi)\eta_i\right],\qquad
-U(T,\varphi)=F^\dagger\mathrm{diag}\!\big(e^{-\omega_k T}e^{2\pi \ii k\varphi}\big)F.
+U(T,\varphi)=F^\dagger\mathrm{diag}\!\big(e^{-\omega_k T}e^{2\pi \ii \kappa_k\varphi}\big)F.
 \end{equation}
 The $k=0$ entry of $U(T,\varphi)$ is exactly $1$, so the fermionic zero mode propagates without any $T$-dependent damping.
 
@@ -264,7 +281,7 @@ Figure~\ref{fig:twisted-cylinder} shows the geometric meaning of the twist modul
 \node[blue] at (-1.35,-0.85) {initial sites};
 \node[green!50!black] at (-1.35,4.65) {twisted final sites};
 \end{tikzpicture}
-\caption{Twisted propagator cylinder. The lower circle is glued to the upper circle after a translation by $\varphi|\alpha|$ along the $\sigma$ direction. In Fourier space this becomes multiplication by the phase $e^{2\pi \mathrm{i}k\varphi}$; in site space it is the shift operator $R_N(\varphi)$.}
+\caption{Twisted propagator cylinder. The lower circle is glued to the upper circle after a translation by $\varphi|\alpha|$ along the $\sigma$ direction. For exact lattice shifts this is a literal site permutation. More generally, in Fourier space it becomes multiplication by the phase $e^{2\pi \mathrm{i}\kappa_k\varphi}$ and in site space it is represented by the spectral interpolation operator $R_N(\varphi)$.}
 \label{fig:twisted-cylinder}
 \end{figure}
 
@@ -314,7 +331,7 @@ After collecting all edge kernels, one gets a global Gaussian in all internal bo
 \right]
 \times
 \exp\!\left[
-\bar{\bf \Theta}^{\,T}{\cal M}_F(T,\varphi)\,{\bf \Theta}
+-\bar{\bf \Theta}^{\,T}{\cal M}_F(T,\varphi)\,{\bf \Theta}
 +\bar{\bf J}_F^T{\bf \Theta}
 +\bar{\bf \Theta}^{\,T}{\bf J}_F
 \right].
@@ -327,6 +344,7 @@ Gaussian integration is exact:
 e^{-\bar\Theta M\Theta+\bar J\Theta+\bar\Theta J}
 &=\det(M)\,e^{\bar J M^{-1}J}.
 \end{align}
+Here ${\cal M}_F$ is defined precisely as the fermionic matrix appearing with this conventional minus sign in the exponent.
 For real GS fermions one may equivalently pass to the doubled antisymmetric Majorana matrix
 \begin{equation}
 \mathbb A_F=
@@ -682,7 +700,7 @@ q_{N_r-m}^{(r)}=\bigl(q_m^{(r)}\bigr)^*,
 \qquad
 a_{N_r-m}^{(r)}=\bigl(a_m^{(r)}\bigr)^\dagger,
 \end{equation}
-on physical states. Equivalently, one may restrict to an independent half-spectrum. In the complexified basis, the overlap and squeezed-state formulas are written on all nonzero modes, with the understanding that the resulting squeeze matrix respects this involution.
+on physical states. Equivalently, one may restrict to an independent half-spectrum. The linear overlap equations are conveniently written in the full complexified basis, but the actual squeezed-state inversion must be carried out only after passing to an independent half-spectrum or to an equivalent real sine/cosine basis.
 
 For fermions one uses the same DFT matrices. Writing
 \begin{equation}
@@ -841,22 +859,22 @@ The upper block comes from the affine coordinate overlap $C_Qq=-\xi y$, while th
 N_{\mathrm{rows}}(C_Q)+N_{\mathrm{rows}}(C_P)
 =(N_3-1)+(N_1-1+N_2-1)=2N_3-3,
 \end{equation}
-which exactly matches the number of oscillator variables on the three legs. Since each $(\mu_r\Omega_r)^{\pm1/2}$ is invertible on the nonzero-mode sector, nondegeneracy of $\mathbb M$ reduces to linear independence of these exact overlap constraints. This is a finite-dimensional statement that can and should be checked numerically at each lattice resolution $N$. Assuming $\mathbb M$ is nondegenerate on the oscillator subspace, the exact solution is a displaced squeezed state
+which matches the number of nonzero complex mode labels on the three legs. The actual number of independent real oscillators is obtained only after imposing the involution $a_{N_r-m}^{(r)}=(a_m^{(r)})^\dagger$, or equivalently after passing to an independent half-spectrum or real sine/cosine basis. Let $A_{\mathrm{phys}}$ denote such a basis, and let $\mathbb M_{\mathrm{phys}}$, $\mathbb N_{\mathrm{phys}}$, $J_{0,\mathrm{phys}}$ be the corresponding reduced matrices. Since each $(\mu_r\Omega_r)^{\pm1/2}$ is invertible on the nonzero-mode sector, nondegeneracy of $\mathbb M_{\mathrm{phys}}$ reduces to linear independence of the exact overlap constraints on the physical oscillator space. This is a finite-dimensional statement that can and should be checked numerically at each lattice resolution $N$. Assuming $\mathbb M_{\mathrm{phys}}$ is nondegenerate, the exact solution is a displaced squeezed state
 \begin{equation}
 |V_3^{(B)}\rangle =
 {\cal C}_3^{(B)}
 \delta^{(\perpD)}(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)})
 \exp\!\left[
- -\frac12 A^{\dagger T}\,S^{(B)}\,A^\dagger
- -A^{\dagger T}\Lambda^{(B)}(y)
+ -\frac12 A_{\mathrm{phys}}^{\dagger T}\,S^{(B)}\,A_{\mathrm{phys}}^\dagger
+ -A_{\mathrm{phys}}^{\dagger T}\Lambda^{(B)}(y)
  -\frac12\Phi^{(B)}(y)
 \right]|0\rangle,
 \end{equation}
 with
 \begin{equation}
-S^{(B)} = -\mathbb M^{-1}\mathbb N,
+S^{(B)} = -\mathbb M_{\mathrm{phys}}^{-1}\mathbb N_{\mathrm{phys}},
 \qquad
-\Lambda^{(B)} = -\mathbb M^{-1}J_0,
+\Lambda^{(B)} = -\mathbb M_{\mathrm{phys}}^{-1}J_{0,\mathrm{phys}},
 \end{equation}
 while $\Phi^{(B)}(y)$ is the scalar normal-ordering completion. The overall constant ${\cal C}_3^{(B)}$ is likewise not fixed by the annihilation equations alone: at finite $N$ it is a lattice-resolution-dependent analogue of the Mandelstam local normalization and must be fixed by the same Poincare-algebra check that fixes the continuum cubic vertex normalization. Equivalently, one may define $\Phi^{(B)}(y)$ by
 \begin{equation}
@@ -866,11 +884,11 @@ e^{-\Phi^{(B)}(y)/2}
 {{\cal C}_3^{(B)}\,
 \delta^{(\perpD)}(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)})},
 \end{equation}
-so $\Phi^{(B)}(y)$ is a quadratic form in the relative center-of-mass displacement $y$ determined uniquely once the exact overlap state is normalized. The matrix $S^{(B)}$ is the full oscillator squeeze matrix of the vertex. If $\mathcal R=\mathrm{diag}(\mathcal R_1,\mathcal R_2,\mathcal R_3)$ with $(\mathcal R_r)_{mn}=\delta_{m,N_r-n}$, reality requires
+so $\Phi^{(B)}(y)$ is a quadratic form in the relative center-of-mass displacement $y$ determined uniquely once the exact overlap state is normalized. The matrix $S^{(B)}$ is the oscillator squeeze matrix in the chosen physical basis. If one lifts it back to the redundant full-spectrum notation, then with $\mathcal R=\mathrm{diag}(\mathcal R_1,\mathcal R_2,\mathcal R_3)$ and $(\mathcal R_r)_{mn}=\delta_{m,N_r-n}$ one recovers the reality conditions
 \begin{equation}
-S^{(B)}=\mathcal R\,S^{(B)*}\,\mathcal R,
+S^{(B)}_{\mathrm{full}}=\mathcal R\,S^{(B)*}_{\mathrm{full}}\,\mathcal R,
 \qquad
-\Lambda^{(B)}=\mathcal R\,\Lambda^{(B)*}.
+\Lambda^{(B)}_{\mathrm{full}}=\mathcal R\,\Lambda^{(B)*}_{\mathrm{full}}.
 \end{equation}
 The reduced discrete Neumann coefficients used for continuum comparison are extracted from $S^{(B)}$ only after the affine zero-mode pieces have been separated.
 
@@ -948,18 +966,25 @@ with the same overlap matrices $U_r=\widehat F_3P_r\widehat F_r^\dagger$ and aff
 \begin{equation}
 b^{(3)} = U_1 b^{(1)} + U_2 b^{(2)},
 \end{equation}
-or, in a canonical first-order phase-space basis for the real nonzero fermionic modes,
+or, in a Majorana-type bookkeeping basis for the real nonzero fermionic modes,
 \begin{equation}
 \vartheta_m^{(r)}=\frac{b_m^{(r)}+b_{N_r-m}^{(r)\dagger}}{\sqrt2},
 \qquad
 \pi_{\vartheta,m}^{(r)}=\frac{b_m^{(r)}-b_{N_r-m}^{(r)\dagger}}{\mathrm{i}\sqrt2},
 \end{equation}
-with anticommutator
+with anticommutators
 \begin{equation}
-\bigl\{\vartheta_m^{(r)},\pi_{\vartheta,n}^{(s)}\bigr\}
+\bigl\{\vartheta_m^{(r)},\vartheta_n^{(s)}\bigr\}
 =
-\mathrm{i}\,\delta^{rs}\delta_{m,N_r-n}.
+\delta^{rs}\delta_{m,N_r-n},
+\qquad
+\bigl\{\pi_{\vartheta,m}^{(r)},\pi_{\vartheta,n}^{(s)}\bigr\}
+=
+\delta^{rs}\delta_{m,N_r-n},
+\qquad
+\bigl\{\vartheta_m^{(r)},\pi_{\vartheta,n}^{(s)}\bigr\}=0.
 \end{equation}
+Thus $(\vartheta,\pi_\vartheta)$ are a convenient full-spectrum Majorana bookkeeping basis, but not a canonical pair in that redundant basis. As in the bosonic sector, the actual squeezed-state construction should therefore be performed only after restricting to an independent half-spectrum or an equivalent real basis of physical fermionic oscillators.
 Then the fermionic overlap matrices are explicitly
 \begin{equation}
 C_{\Theta}=
@@ -987,19 +1012,9 @@ C_{\Theta}\\
 \mathrm{i}C_{\Pi_{\Theta}}
 \end{pmatrix}.
 \end{equation}
-This is the fermionic analogue of the bosonic overlap system, without the frequency factors $(\mu\Omega)^{\pm1/2}$ because the GS fermions are first order rather than second order in worldsheet time.
-Equivalently, the kinematic overlap state solves linear constraints of the form
+This is the fermionic analogue of the bosonic overlap system, without the frequency factors $(\mu\Omega)^{\pm1/2}$ because the GS fermions are first order rather than second order in worldsheet time. Let $B_{\mathrm{phys}}$ denote an independent fermionic oscillator basis obtained from the full complexified nonzero modes by imposing the involution or, equivalently, by passing to a real half-spectrum basis. Let $\mathbb M_{F,\mathrm{phys}}$, $\mathbb N_{F,\mathrm{phys}}$ be the corresponding reduced overlap matrices. Then the kinematic overlap state solves linear constraints of the form
 \begin{equation}
-(\mathbb M_F B + \mathbb N_F B^\dagger)\,|V^{(F)}_{\mathrm{kin}}\rangle = 0,
-\end{equation}
-for the collective fermionic oscillator vector
-\begin{equation}
-B =
-\begin{pmatrix}
-b^{(1)}\\
-b^{(2)}\\
-b^{(3)}
-\end{pmatrix},
+(\mathbb M_{F,\mathrm{phys}} B_{\mathrm{phys}} + \mathbb N_{F,\mathrm{phys}} B_{\mathrm{phys}}^\dagger)\,|V^{(F)}_{\mathrm{kin}}\rangle = 0,
 \end{equation}
 and hence
 \begin{equation}
@@ -1007,10 +1022,10 @@ and hence
 =
 {\cal C}_3^{(F)}
 \exp\!\left[
-\frac12 B^{\dagger T}S^{(F)} B^\dagger
+\frac12 B_{\mathrm{phys}}^{\dagger T}S^{(F)} B_{\mathrm{phys}}^\dagger
 \right]|0\rangle,
 \qquad
-S^{(F)} = -\mathbb M_F^{-1}\mathbb N_F.
+S^{(F)} = -\mathbb M_{F,\mathrm{phys}}^{-1}\mathbb N_{F,\mathrm{phys}}.
 \end{equation}
 Thus the superstring cubic vertex factorizes into a kinematic overlap state
 \begin{equation}
@@ -1374,9 +1389,9 @@ Conversely, the long-cylinder limit $T\to\infty$ projects onto low modes and giv
 
 \section{Operational roadmap}
 \begin{enumerate}
-\item Choose a common lattice scheme with $aN_r=\alpha_r$ and exact full-boundary concatenation $N_3=N_1+N_2$ at every cubic join, imposed directly in $\sigma$ position space.
+\item Choose a refinement sequence $a_\nu\to 0$ with $\alpha_r^{(\nu)}=a_\nu N_r^{(\nu)}\to \alpha_r$ and exact full-boundary concatenation $N_3^{(\nu)}=N_1^{(\nu)}+N_2^{(\nu)}$ at every cubic join, imposed directly in $\sigma$ position space at each finite $\nu$.
 \item Separate zero modes from oscillators on every propagator cylinder.
-\item For each internal edge, build $A_e(T_e)$, $B_e(T_e,\varphi_e)$, and $U_e(T_e,\varphi_e)$ from the FFT-diagonal formulas on the oscillator sector.
+\item For each internal edge, build $A_e(T_e)$, $B_e(T_e,\varphi_e)$, and $U_e(T_e,\varphi_e)$ from the FFT-diagonal formulas on the oscillator sector, using exact lattice shifts when $N_e\varphi_e\in\ZZ$ and the stated spectral interpolation prescription otherwise.
 \item At each cubic vertex, impose the full-boundary overlap matrix $C_I=(P_1\ P_2\ -I_{N_3})$ and construct the kinematic overlap state.
 \item Determine the GS interaction prefactor from the discrete dynamical supercharge constraints, using continuum lightcone results as boundary data.
 \item Assemble the global oscillator matrices ${\cal M}_{B,\mathrm{osc}}(T,\varphi)$, $\mathbb A_{F,\mathrm{osc}}(T,\varphi)$, and the explicit loop-momentum dependence.
@@ -1395,7 +1410,7 @@ I_{\cal D}(T,\varphi)=
 \section{Minimal first deliverables}
 \begin{enumerate}
 \item Reproduce exact free-cylinder normalization and two-point propagation at finite $N$.
-\item Add the discrete $\sigma$-twist operator $R_N(\varphi)$ and verify the twisted propagator against the Fourier-phase formula.
+\item Add the discrete $\sigma$-twist operator $R_N(\varphi)$ and verify the twisted propagator against the centered-frequency Fourier/interpolation formula, distinguishing exact lattice shifts from generic spectral interpolation.
 \item Implement one cubic join with the full overlap matrix $C_I=(P_1\ P_2\ -I_{N_3})$ and verify the bosonic sewing formula.
 \item Extract the discrete coefficients $\bar N^{rs}_{mn}(N)$ and compare them with the continuum Neumann coefficients.
 \item Construct the lattice dynamical supercharges and solve for the GS prefactor at cubic order.
