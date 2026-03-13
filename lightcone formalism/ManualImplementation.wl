@@ -170,3 +170,11 @@ RedMInv=Inverse[Developer`ToPackedArray[RedMMatrixNFast[{L1,L2}],Real]];
 x=Total[#[[1;;L1]]]&/@RedMInv;
 Return[1/L^2 v . x,Module];
 ]
+
+
+(* ::Input::Initialization:: *)
+RedvMu[{L1_,L2_},v_,u_]:=Module[{RedMInv,x,L=L1+L2},
+RedMInv=Inverse[Developer`ToPackedArray[RedMMatrixNFast[{L1,L2}],Real]];
+
+Return[1/L^2 v . RedMInv . u,Module];
+]
