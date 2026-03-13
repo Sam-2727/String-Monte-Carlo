@@ -120,6 +120,7 @@ M'_{k \ell} =  \frac{2}{ L}(\frac{-\sin \frac{\pi}{L}}{ \cos \frac{\pi}{L} - \co
 whose ${\det}' M' = \prod_{m=1}^{L-1}2  \sin \frac{\pi m}{L} = L$. We make the change of variables
 %  $X^i(L) = LX_0 - \sum_{k=1}^{L-1} X(k)$ 
 \ie
+\label{eq:changeOfVars}
 X(k) &= X_0 + \tilde{X}(k), \qquad k = 1,\hdots, L-1\\
  X(L) &= X_0 - \sum_{k=1}^{L-1} \tilde{X}(k)
 \fe
@@ -132,14 +133,18 @@ We note that $\det \wt{M} = L \,  {\det}' M$. The ratio $\frac{\det \wt{M}(L^{(1
 Meanwhile, 
 \ie
 {\wt J}^i_k &= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{L}  \left( \frac{\chi_1(k)}{L^{(1)} } - \frac{\chi_2(k)}{L^{(2)} } + \frac{1}{L^{(2)} }   \right)\\
-&= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{ L^{(2)} L^{(1)} } \{1,\hdots,1,0,\hdots,0\}\\
+&= \frac{(L^{(2)} p_1^i - L^{(1)} p_2^i)}{ L^{(2)} L^{(1)} } \chi_1(k) \\
 &= \frac{p^+}{L} \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right) \{1,\hdots,1,0,\hdots,0\}
 \fe
 with $L^{(1)}$ ones and $(L^{(2)}-1)$ zeros. $\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i$ is proportional to the sum of all the terms in the first $L^{(1)} \times L^{(1)}$ block of $\wt{M}^{-1}$. We checked that $\wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i = J^{i,T} \cdot {M}^{+} \cdot J^i $, and that its value
 \ie
 \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i=(p^+)^2  \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right)^2 f( p_1^+, p_2^+,L)
 \fe
-with $f$ converging fairly rapidly, but depending explicitly on $p_1^+,\,p_2^+$. Using transverse momentum conservation, we can rewrite this as 
+with 
+\ie
+f(p_1^+, p_2^+, L) \equiv \frac{1}{L^2} \chi_1 \cdot \wt{M}^{-1} \cdot \chi_1
+\fe
+ converging fairly rapidly, but depending explicitly on $p_1^+,\,p_2^+$. Using transverse momentum conservation, we can rewrite this as 
 \ie
 \wt{J}^{i,T} \cdot \wt{M}^{-1} \cdot \wt{J}^i = \frac{(p^+)^3}{p_1^+ p_2^+} \left( \frac{(p_1^i)^2}{p_1^+} +  \frac{(p_2^i)^2}{p_2^+} -  \frac{(p^i)^2}{p^+} \right) f(p_1^+, p_2^+,L),
 \fe
@@ -169,12 +174,14 @@ where $\frac{d-2}{24}$ \fixme{came from chatGPT, in the paper they are using d=2
 $\rho(z)$ is the Mandelstam mapping of the Mandelstam diagram to the complex plane, and in our conventions $\alpha_3 = 2p^+$, $\alpha_1 = -2p_1^+=-2p^+ x$, $\alpha_2 = -2p_2^+= -2p^+(1-x)$.\\
 We find that, as functions of $x$,
 \ie
+\label{eq:detScaling}
 {}&-\Gamma[\log (\partial \rho \bar\partial \rho)](x) - 3\log(2p^+)\\
  &\qquad= \log \left[ \frac{\exp [2 (x \log x + (1-x) \log(1-x)) (1 - \frac{1}{x} - \frac{1}{1-x} ) ] }{ x(1-x)  } \right] \\
 &\qquad=\text{const} - 12 \lim_{L\to\infty}\log \frac{\det \wt{M}(x,L)}{L^{9/4} }
 \fe
 and
 \ie
+\label{eq:fScaling}
 -\frac{1}{\pi} x(1-x) \left( x \log x + (1-x) \log(1-x) \right) = \lim_{L\to\infty} f(x,L).
 \fe
 Comparing to the last exponential in (\ref{eq:3ptvertex}), or the second term in (\ref{eq:JMJ}), we see that it takes the form
@@ -231,5 +238,39 @@ so the GSW external momentum dressing is
 \prod_{r=1}^3 |\alpha_r|^{-1/2}=\frac{1}{\sqrt{|\alpha_1\alpha_2\alpha_3|}}=\frac{1}{\sqrt{8|p^+p_1^+p_2^+|}}=\frac{1}{(2p^+)^{3/2}\sqrt{x(1-x)}}.
 \fe
 Thus the factor $\frac{1}{\sqrt{x(1-x)}}$ appearing in (\ref{eq:3ptvertexConj}) reproduces the $x$-dependence of the GSW leg factor, but the full GSW factor also contains an overall $(2p^+)^{-3/2}$. Since our wavefunctionals were normalized to relativistic external states from the start, the quantity computed here should be compared directly with $S_3$, not with the amputated $A_3$. The remaining mismatch in the overall powers of $p^+$ and in the factors of $L$ should therefore come from the longitudinal normalization and the conversion of the discrete $p^+$ sums and Kronecker deltas to continuum integrals and Dirac delta functions, rather than from any additional external momentum dressing.
+
+\section{3-pt vertex 2 tachyons, one massless}
+Now we want to consider the 3-pt vertex where one tachyon has been replaced with a massless state, whose wavefunctional takes the form
+\ie
+\Psi[e_{ij},p^i; X^i] \propto e_{ij} X_1^i X_{-1}^j \exp \left[ -\frac{1}{\A'} \sum_m m X_m^i X_{-m}^i + i p^i X^i_0 \right],
+\fe
+with $e_{ij} p^i = e_{ij} p^j = 0$ and $2p^+ p^- - (p^i)^2 = 0$. It is not very difficult to see how the story of the 3 tachyon case generalizes here. \fixme{calculate normalization for the massless state - not done yet. Call it $N_L(p^+)$ }. For simplicity we will put the massless state into the longest string. The Fourier modes are $X^i_{\pm 1} = \frac{1}{L} \sum_k e^{ \mp 2 \pi i \frac{k}{L} } X^i(k)$, which under (\ref{eq:changeOfVars}) becomes
+\ie
+X^i_{\pm 1} = \frac{1}{L} \sum_{k=1}^{L-1} ( e^{ \mp 2 \pi i \frac{k}{L} } -1 ) \tilde{X}^i(k) \equiv v_{\pm1} \cdot \tilde{X}^i
+\fe,
+while the Gaussian exponential is exactly the same as before, so we can calculate the Gaussian integral by Wick contraction, being careful of the fact that the linear term will contribute to $\langle X \rangle$. We get that the 3-pt vertex is, ignoring normalization and $\delta$ functions for now, 
+\ie
+\propto& \left(\frac{ {\det} \wt{M}  }{L^2}    \right)^{-12 } \,e^{-\frac{\pi \A'}{2} \wt{J}^{i} \cdot \wt{M}^{-1} \cdot \wt{J}^i } \pi \A' e_{ij} \\
+&\qquad \left [ \delta^{ij} v_1 \cdot \wt{M}^{-1} \cdot v_{-1} - \pi \A' (v_1 \cdot \wt{M}^{-1} \cdot \wt{J}^i) (v_{-1} \cdot \wt{M}^{-1} \cdot \wt{J}^j)  \right].
+\fe
+$\wt{M}$ and $\wt{J}$ are completely unchanged from before. Firstly we note that there is no contribution from antisymmetric polarization as both terms in the square brackets above are symmetric under $i\leftrightarrow j$ (recall that $\wt{J}^i_k =\chi_1(k) \frac{p^+}{L} \left(\frac{p_1^i}{p_1^+} - \frac{p_2^i}{p_2^+} \right) $  so the second term is symmetric in $i$ and $j$). Making use of transversality of $e_{ij}$ and momentum conservation, we can rewrite the transverse momentum-dependent factor as
+\ie
+\label{eq:edotJ}
+e_{ij} \wt{J}^i_k = \chi_1(k)\frac{1}{L x(1-x)} (p_1^i - p_2^j),
+\fe
+reproducing the transverse momentum dependence we expect. In the exponential factor, $\wt{J}^i \cdot \wt{M}^{-1} \cdot \wt{J}^i$ is unchanged from before, \textbf{but} if we want to isolate the energy-dependent piece, we must recall that the mass-shell condition for $p$ has changed. Removing the last $-\frac{1}{p^+}$ from (\ref{eq:JMJ}) in a suggestive way
+\ie
+-\frac{\pi \A'}{2} \wt{J}^i \cdot \wt{M}^{-1} \cdot \wt{J} = -\pi  \frac{f(x,L)}{x(1-x)}\left( \A' p^+ (p_1^-+p_2^- -p^-) +2(\frac{1}{x} +\frac{1}{1-x} - 1) +2 \right).
+\fe
+As before the first term will disappear once energy conservation is imposed by integrating over LC time, the second term will cancel against $(\det \wt{M})^{-12}$, but the last term is new. In the limit $L\to \infty$ using (\ref{eq:fScaling}), once exponentiated it will contribute
+\ie
+\label{eq:extraScaling}
+x^{2x} (1-x)^{2(1-x)}.
+\fe
+Finally we find that numerically it turns out that
+\ie
+\lim_{L\to \infty} \left|\frac{1}{L^2} v_1 \cdot \wt{M}^{-1} \cdot \chi_1 \right| = (\text{const}) ~  \frac{(x (1-x))^2}{x^{2x} (1-x)^{2(1-x)}},
+\fe
+precisely canceling the extra factors contributed by (\ref{eq:edotJ}) and (\ref{eq:extraScaling})! Thus besides the expected transverse momentum dependence $e_{ij} (p_1^i - p_2^i) (p_1^j - p_2^j)$, the only other dependence on $p_1$ and $p_2$ is exactly the same $\frac{1}{\sqrt{x(1-x)}}$ as in the 3 tachyon case. \fixme{make sure the trace term works as well} 
 \end{document}
 

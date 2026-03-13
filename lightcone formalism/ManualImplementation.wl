@@ -53,7 +53,6 @@ Return[M,Module];
 
 
 (* ::Input::Initialization:: *)
-
 MMatrixN[{L1_,L2_}]:=Module[{Mkernel,Mkernel1,Mkernel2,k1,k2,M,L=L1+L2},
 Mkernel=Table[N[Mkernelfunc[L,x],prec],{x,0,L-1}];
 Mkernel1=Table[N[Mkernelfunc[L1,x],prec],{x,0,L1-1}];
@@ -66,7 +65,7 @@ M=Table[
 Pi*N[1/(Pi*L) Mkernel[[Mod[k-l,L]+1]]+(\[Chi][{L1,L2},1][k]\[Chi][{L1,L2},1][l])/(Pi*L1) Mkernel1[[Mod[k1[[k]]-k1[[l]],L1]+1]]+(\[Chi][{L1,L2},2][k]\[Chi][{L1,L2},2][l])/(Pi*L2) Mkernel2[[Mod[k2[[k]]-k2[[l]],L2]+1]],prec]
 ,{k,1,L},
 {l,1,L}];
-Return[M,Module];
+Return[Developer`ToPackedArray[M,Real],Module];
 ];
 
 
@@ -83,13 +82,15 @@ M=Table[
 Pi*N[1/(Pi*L) Mkernel[[Mod[k-l,L]+1]]+(\[Chi][{L1,L2},1][k]\[Chi][{L1,L2},1][l])/(Pi*L1) Mkernel1[[Mod[k1[[k]]-k1[[l]],L1]+1]]+(\[Chi][{L1,L2},2][k]\[Chi][{L1,L2},2][l])/(Pi*L2) Mkernel2[[Mod[k2[[k]]-k2[[l]],L2]+1]],prec]-LastRow[[k]]-LastRow[[l]]+LastRow[[L]]
 ,{k,1,L-1},
 {l,1,L-1}];
-Return[M,Module];
+Return[Developer`ToPackedArray[M,Real],Module];
 ];
 
 
 (* ::Input::Initialization:: *)
-(* Fast circulant builder: given kernel vector of length n, build n×n circulant matrix *)
+(* Fast circulant builder: given kernel vector of length n, build n\[Times]n circulant matrix *)
 circulantMatrix[kernel_,n_]:=Table[kernel[[Mod[k-l,n]+1]],{k,n},{l,n}]
+
+
 
 (* ::Input::Initialization:: *)
 (* Optimized MMatrixN: build as sum of three circulant blocks *)
@@ -104,8 +105,10 @@ M=circulantMatrix[Mkernel/L,L];
 M[[1;;L1,1;;L1]]+=circulantMatrix[Mkernel1/L1,L1];
 (* Add L2 x L2 circulant in bottom-right block *)
 M[[L1+1;;L,L1+1;;L]]+=circulantMatrix[Mkernel2/L2,L2];
-Return[M,Module];
+Return[Developer`ToPackedArray[M,Real],Module];
 ];
+
+
 
 (* ::Input::Initialization:: *)
 (* Optimized RedMMatrixN: build full matrix then reduce *)
@@ -114,14 +117,19 @@ M=MMatrixNFast[{L1,L2}];
 lastRow=M[[L,1;;L-1]];
 corner=M[[L,L]];
 (* RedM[k,l] = M[k,l] - M[k,L] - M[L,l] + M[L,L] *)
-Return[M[[1;;L-1,1;;L-1]]-ConstantArray[lastRow,L-1]-Transpose[ConstantArray[lastRow,L-1]]+corner,Module];
+Return[Developer`ToPackedArray[M[[1;;L-1,1;;L-1]]-ConstantArray[lastRow,L-1]-Transpose[ConstantArray[lastRow,L-1]]+corner,Real],Module];
 ];
 
+
+
 (* ::Input::Initialization:: *)
-RedJMJ[{L1_,L2_}]:=Module[{MInv,L=L1+L2},
-MInv = Inverse[RedMMatrixN[{L1,L2}]];
+RedJMJ[{L1_,L2_}]:=Module[{RedM,MInv,L=L1+L2},
+RedM = Developer`ToPackedArray[RedMMatrixNFast[{L1,L2}],Real];
+MInv = Inverse[RedM];
 Return[1/L^2 Total[Total[MInv[[1;;L1,1;;L1]]]]]
 ]
+
+
 
 (* ::Input::Initialization:: *)
 RedJMJFast[{L1_,L2_}]:=Module[{RedM,A,B,Cblk,Y,S,x,L=L1+L2},
@@ -129,11 +137,36 @@ RedM=RedMMatrixNFast[{L1,L2}];
 (* Block decomposition: A is L1xL1, Cblk is (L2-1)x(L2-1) *)
 A=RedM[[1;;L1,1;;L1]];
 B=RedM[[1;;L1,L1+1;;L-1]];
-Cblk=RedM[[L1+1;;L-1,L1+1;;L-1]];
+Cblk=Developer`ToPackedArray[RedM[[L1+1;;L-1,L1+1;;L-1]],Real];
 (* Schur complement: (RedM^-1)_{11} = (A - B Cblk^-1 B^T)^-1 *)
-Y=LinearSolve[Cblk,Transpose[B]]; (* Cblk^-1 B^T *)
-S=A-B.Y;
+Y=LinearSolve[Cblk,Developer`ToPackedArray[Transpose[B],Real]]; (* Cblk^-1 B^T *)
+S=Developer`ToPackedArray[A-B . Y];
 (* ones^T S^-1 ones = Total[x] where S x = ones *)
-x=LinearSolve[S,ConstantArray[N[1,prec],L1]];
+x=LinearSolve[S,Developer`ToPackedArray[ConstantArray[1.0,L1]],Real];
 Return[1/L^2 Total[x],Module];
+]
+
+
+(* ::Input::Initialization:: *)
+(*DO NOT USE NOT WORKING YET, Need the _{12} block too*)
+RedvMJFast[{L1_,L2_},v_]:=Module[{RedM,A,B,Cblk,Y,S,x,L=L1+L2},
+RedM=RedMMatrixNFast[{L1,L2}];
+(* Block decomposition: A is L1xL1, Cblk is (L2-1)x(L2-1) *)
+A=RedM[[1;;L1,1;;L1]];
+B=RedM[[1;;L1,L1+1;;L-1]];
+Cblk=Developer`ToPackedArray[RedM[[L1+1;;L-1,L1+1;;L-1]],Real];
+(* Schur complement: (RedM^-1)_{11} = (A - B Cblk^-1 B^T)^-1 *)
+Y=LinearSolve[Cblk,Developer`ToPackedArray[Transpose[B],Real]]; (* Cblk^-1 B^T *)
+S=Developer`ToPackedArray[A-B . Y,Real];
+(* ones^T S^-1 ones = Total[x] where S x = ones *)
+x=LinearSolve[S,Developer`ToPackedArray[ConstantArray[1.0,L1],Real]];
+Return[1/L^2 v . x,Module];
+]
+
+
+(* ::Input::Initialization:: *)
+RedvMJ[{L1_,L2_},v_]:=Module[{RedMInv,x,L=L1+L2},
+RedMInv=Inverse[Developer`ToPackedArray[RedMMatrixNFast[{L1,L2}],Real]];
+x=Total[#[[1;;L1]]]&/@RedMInv;
+Return[1/L^2 v . x,Module];
 ]
