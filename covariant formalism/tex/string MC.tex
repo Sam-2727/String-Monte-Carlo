@@ -207,7 +207,7 @@ where the correlator on the RHS can be approximately computed as
 \fe
 with $\delta_{\text{identification}}$ corresponding to the rules (\ref{pairthree}). The wavefunctional corresponding to the (normal ordered) operator $\partial X \bar \partial X$ inserted at the origin of the disk is given by Polchinski (2.8.28) and the paragraph below it as
 \ie
-\Psi_{\partial X \bar\partial X}[X(\sigma)] \propto X_1 X_{-1} \exp \left(-\frac{1}{\A'} \sum_{m\geq 1} mX_m X_{-m}\right).
+\Psi_{\partial X \bar\partial X}[X(\sigma)] \propto (X_1 X_{-1} - \frac{\A'}{2} )\exp \left(-\frac{1}{\A'} \sum_{m\geq 1} mX_m X_{-m}\right).
 \fe
 The gaussian factor is the same as in (\ref{psionefx}), while the prefactor can be approximated in the discretization scheme as 
 \ie
@@ -251,23 +251,22 @@ with the proportionality factor $\frac{L}{2} {\det}' A = \det \wt{A}$ determined
 
 We can now consider
 \ie
-(Z(\tau(t_1,t_2)))^{-1} \langle :\partial X \bar \partial X:(0) \rangle_{T^2(t_1,t_2)} = 
-|\widehat f(0)|^{-2}  \frac{\langle  :\partial X \bar \partial X:(0) \rangle_{D^2(t_1,t_2)}}{\langle  1 \rangle_{D^2(t_1,t_2)}} \sim
-\frac{1}{2} |\widehat f(0)|^{-2} \tr( \wt{C} \wt{A}^{-1}),
+(Z(\tau(t_1,t_2)))^{-1} \langle :\partial X \bar \partial X:(0) \rangle_{T^2(t_1,t_2)}& = 
+|\widehat f(0)|^{-2}  \frac{\langle  :\partial X \bar \partial X:(0) \rangle_{D^2(t_1,t_2)}}{\langle  1 \rangle_{D^2(t_1,t_2)}}\\
+& \sim \frac{1}{2} |\widehat f(0)|^{-2} \left( \tr( \wt{C} \wt{A}^{-1}) -\frac{\A'}{2} \right),
 \fe
-where the determinants, and any Weyl anomaly factors should cancel between the numerator and denominator of the RHS calculated in the discretization scheme. Finally, from Polchinski (7.2.16) but with $\partial_{w'} \to \partial_{\bar{w}'}$, we find that \fixme{am I missing terms here from e.g. $\partial_w \vartheta_1(\bar{w}|\tau)|_{w\to 0}$?} 
+where the determinants, and any Weyl anomaly factors should cancel between the numerator and denominator of the RHS calculated in the discretization scheme. Finally, from Polchinski (7.2.16) but with $\partial_{w'} \to \partial_{\bar{w}'}$, we find that
 \ie
 (Z(\tau))^{-1} \langle :\partial X \bar \partial X:(0) \rangle_{T^2(\tau)} = -4\pi^2\frac{\A'}{8\pi\tau_2},
 \fe
 and would expect that 
 \ie
 \label{trCAexpect}
-\tr(\wt{C} \wt{A}^{-1}) = \frac{|\widehat f(0)|^2}{2\tau_2},
+\tr(\wt{C} \wt{A}^{-1}) - \frac{1}{2\pi} = \frac{|\widehat f(0)|^2}{2\tau_2},
 \fe
-which is modular invariant. In the above, the extra factor of $4\pi^2$ comes from the fact that Polchinski's torus has periods $2\pi$, $2\pi \tau$ while our torus has periods $1$, $\tau$. We also make use of the fact that in our Mathematica implementation the cnvention is $\A' = \frac{1}{\pi}$.
+which is modular invariant. In the above, the extra factor of $4\pi^2$ comes from the fact that Polchinski's torus has periods $2\pi$, $2\pi \tau$ while our torus has periods $1$, $\tau$. We also make use of the fact that in our Mathematica implementation the convention is $\A' = \frac{1}{\pi}$.
 
-\fixme{Reconcile with the above:}\\
-However, we find that, to good numerical accuracy,
+We find that, to good numerical accuracy,
 \ie
 \label{trCAactual}
 |\widehat f(0)|^{-2} \left( \frac{1}{2\pi} - \tr( \wt{C} \wt{A}^{-1})\right) = \frac{1}{2\tau_2}
