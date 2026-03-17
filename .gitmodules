@@ -1,0 +1,6 @@
+[submodule "tools/lean-lsp-mcp"]
+	path = tools/lean-lsp-mcp
+	url = https://github.com/oOo0oOo/lean-lsp-mcp.git
+[submodule "tools/lean4-skills"]
+	path = tools/lean4-skills
+	url = https://github.com/cameronfreer/lean4-skills.git

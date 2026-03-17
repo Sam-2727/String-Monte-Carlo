@@ -26,3 +26,9 @@ __pycache__/
 
 # Claude Code
 .claude/
+
+# Lean build artifacts
+/.lake
+
+# Codex local metadata
+.codex/
