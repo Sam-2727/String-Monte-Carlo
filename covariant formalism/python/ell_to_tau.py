@@ -255,6 +255,304 @@ def make_cyl_eqn_improved(L: int, l1: int, l2: int, *,
     f.coeffs = coeffs
     return f
 
+def make_cyl_eqn_general_genus(ribbon_graph, ell_list, *,
+                                dtype=np.complex128,
+                                chop_tol: float = 1e-12):
+    """
+    Construct a basis of holomorphic one-forms for a general-genus ribbon graph.
+
+    Generalizes make_cyl_eqn: the sewing constraints are read from the
+    ribbon graph boundary sequence. Each edge appears twice on the disc
+    boundary; the one-form must match (with orientation reversal) across
+    each sewing. For genus g, the constraint matrix has a g-dimensional
+    null space, giving g independent holomorphic one-forms.
+
+    Parameters
+    ----------
+    ribbon_graph : tuple (edges, vertices, rotation)
+        A single ribbon graph from generate_ribbon_graphs. Must have F=1.
+    ell_list : list of int
+        Edge lengths [l_1, ..., l_E].  L = 2 * sum(ell_list).
+
+    Returns
+    -------
+    list of callable
+        g functions f_i(z) = sum_{n=0}^{m-1} coeffs[n] * z^n.
+        Each has .coeffs, .L, .m, .genus attributes.
+    """
+    from ribbon_graph_generator import (
+        _trace_boundary, _get_all_face_boundaries
+    )
+
+    edges_graph, verts, rotation = ribbon_graph
+    E = len(edges_graph)
+
+    if len(ell_list) != E:
+        raise ValueError(f"Need {E} edge lengths, got {len(ell_list)}")
+
+    m = sum(ell_list)
+    L = 2 * m
+
+    # Verify F = 1
+    all_faces = _get_all_face_boundaries(edges_graph, verts, rotation)
+    n_faces = len(all_faces)
+    if n_faces != 1:
+        raise ValueError(f"Requires F=1 ribbon graph, got F={n_faces}")
+
+    genus = (2 - len(verts) + E - n_faces) // 2
+
+    # Trace the single face boundary: list of (from_v, to_v, edge_idx)
+    boundary = _trace_boundary(edges_graph, verts, rotation)
+
+    # Cumulative start position (in discrete units) for each half-edge
+    starts = []
+    pos = 0
+    for _, _, eidx in boundary:
+        starts.append(pos)
+        pos += ell_list[eidx]
+    assert pos == L, f"Boundary length {pos} != L={L}"
+
+    # Two boundary positions for each edge
+    edge_occ = {}
+    for i, (_, _, eidx) in enumerate(boundary):
+        edge_occ.setdefault(eidx, []).append(i)
+
+    # ------------------------------------------------------------------
+    # Build constraint matrix B  (m rows x m columns)
+    #
+    # Basis functions: z^n for n = 1..m, where z = exp(2*pi*i*pos/L).
+    # For edge e (length l_e) with boundary occurrences at i1, i2:
+    #   point k in first occurrence pairs with point (l_e+1-k) in second
+    #   (orientation reversal).
+    # Constraint: sum_n a_n (z_R^n + z_L^n) = 0.
+    # ------------------------------------------------------------------
+    n_basis = np.arange(1, m + 1, dtype=np.float64)
+    twopi_over_L = 2.0 * np.pi / L
+
+    rows = []
+    for eidx in range(E):
+        le = ell_list[eidx]
+        i1, i2 = edge_occ[eidx]
+        s1, s2 = starts[i1], starts[i2]
+
+        for k in range(1, le + 1):
+            theta_R = twopi_over_L * (s1 + k)
+            theta_L = twopi_over_L * (s2 + le + 1 - k)
+            row = np.exp(1j * n_basis * theta_R) + np.exp(1j * n_basis * theta_L)
+            rows.append(row)
+
+    B = np.array(rows, dtype=dtype)
+
+    # ------------------------------------------------------------------
+    # Null space via SVD  (dimension should equal genus)
+    # ------------------------------------------------------------------
+    U, S, Vh = np.linalg.svd(B)
+    tol = max(B.shape) * S[0] * np.finfo(float).eps * 100
+    null_dim = int(np.sum(S < tol))
+
+    if null_dim != genus:
+        print(f"Warning: null space dim = {null_dim}, expected genus = {genus}")
+        print(f"Smallest singular values: {S[max(0,len(S)-5):]}")
+
+    # Last null_dim rows of Vh span the null space
+    null_vectors = Vh[-null_dim:] if null_dim > 0 else np.empty((0, m), dtype=dtype)
+
+    # ------------------------------------------------------------------
+    # Build one-form functions (same Horner convention as make_cyl_eqn)
+    # ------------------------------------------------------------------
+    forms = []
+    for i in range(null_dim):
+        coeffs = null_vectors[i].copy()
+        coeffs.real[np.abs(coeffs.real) < chop_tol] = 0.0
+        coeffs.imag[np.abs(coeffs.imag) < chop_tol] = 0.0
+
+        def _make_f(c, _L=L, _m=m, _g=genus, _tol=chop_tol):
+            def f(z):
+                z = np.complex128(z)
+                acc = np.complex128(0.0)
+                for coeff in c[::-1]:
+                    acc = acc * z + coeff
+                re = 0.0 if abs(acc.real) < _tol else acc.real
+                im = 0.0 if abs(acc.imag) < _tol else acc.imag
+                return np.complex128(re + 1j * im)
+            f.coeffs = c
+            f.L = _L
+            f.m = _m
+            f.genus = _g
+            return f
+
+        forms.append(_make_f(coeffs))
+
+    return forms
+
+
+def make_cyl_eqn_improved_higher_genus(ribbon_graph, ell_list, *,
+                                       dtype=np.complex128,
+                                       chop_tol: float = 1e-12,
+                                       n_forms: int | None = None,
+                                       zero_col_tol: float | None = None):
+    """
+    Improved higher-genus analogue of make_cyl_eqn_improved.
+
+    For an F=1 ribbon graph, trace the unique disc boundary, factor out the
+    expected cubic prevertex singularities, and solve for the most-null
+    regular parts of the sewn one-form constraints.
+
+    The returned functions have the same calling convention as
+    make_cyl_eqn_improved:
+
+      f(z) -> (singular_factor, regular_polynomial)
+
+    and the full pulled-back differential is represented by
+
+      (singular_factor * regular_polynomial) dz.
+    """
+    from ribbon_graph_generator import (
+        _trace_boundary, _get_all_face_boundaries,
+    )
+
+    edges_graph, verts, rotation = ribbon_graph
+    E = len(edges_graph)
+
+    if len(ell_list) != E:
+        raise ValueError(f"Need {E} edge lengths, got {len(ell_list)}")
+    if any(le <= 0 for le in ell_list):
+        raise ValueError("make_cyl_eqn_improved_higher_genus assumes all edge lengths are positive.")
+
+    m = int(sum(ell_list))
+    L = 2 * m
+
+    all_faces = _get_all_face_boundaries(edges_graph, verts, rotation)
+    n_faces = len(all_faces)
+    if n_faces != 1:
+        raise ValueError(f"Requires F=1 ribbon graph, got F={n_faces}")
+
+    genus = (2 - len(verts) + E - n_faces) // 2
+    if n_forms is None:
+        n_forms = genus
+    if n_forms <= 0:
+        return []
+
+    boundary = _trace_boundary(edges_graph, verts, rotation)
+
+    starts = []
+    pos = 0
+    for _, _, eidx in boundary:
+        starts.append(pos)
+        pos += ell_list[eidx]
+    if pos != L:
+        raise ValueError(f"Boundary length {pos} != L={L}")
+
+    edge_occ: dict[int, list[int]] = {}
+    for i, (_, _, eidx) in enumerate(boundary):
+        edge_occ.setdefault(eidx, []).append(i)
+
+    bad_edges = [eidx for eidx, occ in edge_occ.items() if len(occ) != 2]
+    if bad_edges:
+        raise ValueError(f"Each edge must occur exactly twice on the F=1 boundary, bad edges={bad_edges}")
+
+    twopi_over_L = 2.0 * np.pi / L
+    half_step = np.pi / L
+
+    singular_phases = twopi_over_L * np.asarray(starts, dtype=np.float64)
+    singular_points = np.exp(1j * singular_phases).astype(dtype, copy=False)
+
+    sample_angles_R = []
+    sample_angles_L = []
+    sample_edges = []
+    for eidx in range(E):
+        le = ell_list[eidx]
+        i1, i2 = edge_occ[eidx]
+        s1, s2 = starts[i1], starts[i2]
+
+        k = np.arange(1, le + 1, dtype=np.float64)
+        sample_angles_R.append(twopi_over_L * (s1 + k) - half_step)
+        sample_angles_L.append(twopi_over_L * (s2 + le + 1 - k) - half_step)
+        sample_edges.extend([eidx] * le)
+
+    angles_R = np.concatenate(sample_angles_R) if sample_angles_R else np.empty(0, dtype=np.float64)
+    angles_L = np.concatenate(sample_angles_L) if sample_angles_L else np.empty(0, dtype=np.float64)
+
+    def boundary_improvement(angles: np.ndarray) -> np.ndarray:
+        phase_diff = np.exp(1j * (angles[:, None] - singular_phases[None, :]))
+        vals = np.prod((1.0 - phase_diff) ** (-1 / 3), axis=1)
+        return np.asarray(vals, dtype=dtype)
+
+    imp_R = boundary_improvement(angles_R)
+    imp_L = boundary_improvement(angles_L)
+
+    n_basis_full = np.arange(1, m + 1, dtype=np.float64)
+    exp_R = np.exp(1j * np.outer(angles_R, n_basis_full))
+    exp_L = np.exp(1j * np.outer(angles_L, n_basis_full))
+    B_full = (imp_R[:, None] * exp_R + imp_L[:, None] * exp_L).astype(dtype, copy=False)
+
+    col_norms = np.linalg.norm(B_full, axis=0)
+    if zero_col_tol is None:
+        scale = float(np.max(col_norms)) if col_norms.size else 1.0
+        zero_col_tol = max(B_full.shape) * np.finfo(float).eps * max(scale, 1.0) * 100.0
+    active_mask = col_norms > zero_col_tol
+    if not np.any(active_mask):
+        raise ValueError("All basis columns were removed as numerically zero.")
+
+    B = B_full[:, active_mask]
+
+    U, S, Vh = np.linalg.svd(B, full_matrices=False)
+    if Vh.shape[0] < n_forms:
+        raise ValueError(f"Need at least {n_forms} singular vectors, only have {Vh.shape[0]}")
+
+    smallest = Vh[-n_forms:]
+
+    forms = []
+    for i in range(n_forms):
+        coeffs_active = np.asarray(smallest[n_forms - 1 - i], dtype=dtype).copy()
+        coeffs_full = np.zeros(m, dtype=dtype)
+        coeffs_full[active_mask] = coeffs_active
+
+        pivot = int(np.argmax(np.abs(coeffs_full)))
+        if np.abs(coeffs_full[pivot]) > chop_tol:
+            coeffs_full /= coeffs_full[pivot]
+
+        coeffs_full.real[np.abs(coeffs_full.real) < chop_tol] = 0.0
+        coeffs_full.imag[np.abs(coeffs_full.imag) < chop_tol] = 0.0
+
+        def _make_f(c, _points=singular_points, _L=L, _m=m, _g=genus,
+                    _boundary=boundary, _starts=tuple(starts),
+                    _active=active_mask.copy(), _singvals=S.copy(),
+                    _sample_edges=tuple(sample_edges), _tol=chop_tol):
+            def f(z):
+                z = np.complex128(z)
+                singular = np.prod((1.0 - z / _points) ** (-1 / 3))
+
+                acc = np.complex128(0.0)
+                for coeff in c[::-1]:
+                    acc = acc * z + coeff
+
+                re = 0.0 if abs(acc.real) < _tol else acc.real
+                im = 0.0 if abs(acc.imag) < _tol else acc.imag
+                poly = np.complex128(re + 1j * im)
+
+                s_re = 0.0 if abs(singular.real) < _tol else singular.real
+                s_im = 0.0 if abs(singular.imag) < _tol else singular.imag
+                singular_out = np.complex128(s_re + 1j * s_im)
+                return (singular_out, poly)
+
+            f.coeffs = c
+            f.L = _L
+            f.m = _m
+            f.genus = _g
+            f.boundary = _boundary
+            f.starts = _starts
+            f.active_mask = _active
+            f.singular_points = _points
+            f.singular_values = _singvals
+            f.sample_edges = _sample_edges
+            return f
+
+        forms.append(_make_f(coeffs_full))
+
+    return forms
+
+
 def periods_improved(L: int, l1: int, l2: int, f=None):
     """
     Python translation of Mathematica PeriodsImproved.

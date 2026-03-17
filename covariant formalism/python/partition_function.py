@@ -13,68 +13,23 @@ def mod1(x: int, L: int) -> int:
 
 
 def direct_mat_n_fast(L: int) -> np.ndarray:
+    """Vectorized circulant matrix construction (no Python loop)."""
     pi = math.pi
     c0 = math.cos(pi / L)
     s0 = math.sin(pi / L)
 
-    kernel = np.array(
-        [-s0 / (L * (c0 - math.cos(2 * pi * d / L))) for d in range(L)],
-        dtype=np.float64
-    )
+    d = np.arange(L, dtype=np.float64)
+    kernel = -s0 / (L * (c0 - np.cos(2 * pi * d / L)))
 
-    Mat = np.empty((L, L), dtype=np.float64)
-    for i in range(L):
-        Mat[i, :] = np.roll(kernel, i)  # <-- NOTE: +i, not -i
-    return Mat
+    # Circulant: Mat[i, j] = kernel[(j - i) % L]
+    idx = (np.arange(L)[:, None] - np.arange(L)[None, :]) % L
+    return kernel[idx]
 
-
-def direct_mat_n(L: int, dtype=np.float64) -> np.ndarray:
-    """
-    Python version of DirectMatN[L, NPrec], following your double Do loop.
-    This is O(L^2) and matches the indexing logic with Mod[...,L,1].
-    """
-    pi = math.pi
-    sin = math.sin
-    cos = math.cos
-
-    Mat = np.zeros((L, L), dtype=dtype)
-
-    s0 = sin(pi / L)
-    c0 = cos(pi / L)
-
-    # Mathematica: Do[ ..., {k,1,L}, {n,1,L}]
-    for k in range(1, L + 1):
-        denom = (c0 - cos((2 * k * pi) / L))
-        term = 0.5 * (-(s0 / denom)) / L  # matches your N[1/2 * (...) / L]
-        for n in range(1, L + 1):
-            i = mod1(n, L) - 1
-            j = mod1(n + k, L) - 1
-            Mat[i, j] += term
-            Mat[j, i] += term
-    return Mat
-
-
-def _segments_inclusive(r: Tuple[int, int]) -> List[int]:
-    """
-    Inclusive integer segment [a,b], empty if a>b.
-    """
-    a, b = r
-    if a > b:
-        return []
-    return list(range(a, b + 1))
-
-import numpy as np
-
-def mod1(x: int, L: int) -> int:
-    """Mathematica Mod[x, L, 1] for integers: returns in {1,...,L}."""
-    return ((x - 1) % L) + 1
 
 
 def direct_red_traced_mat(L: int, l1: int, l2: int, Mat: np.ndarray) -> np.ndarray:
     """
-    Python reproduction of Mathematica:
-
-      DirectRedTracedMat[L_, l1_, l2_, Mat_] := ...
+    Vectorized reproduction of Mathematica DirectRedTracedMat[L_, l1_, l2_, Mat_].
 
     Inputs:
       - L: even integer
@@ -83,98 +38,87 @@ def direct_red_traced_mat(L: int, l1: int, l2: int, Mat: np.ndarray) -> np.ndarr
 
     Output:
       - numpy array of shape (L/2 - 1, L/2 - 1)
-        equal to tempTracedMat[[1;;-2,1;;-2]] in Mathematica.
-
-    Notes:
-      - Internally uses 1-indexed k,l,i,j logic to match Mathematica exactly.
-      - Uses inclusive segment ranges like Mathematica {k, a, b}.
     """
     assert L % 2 == 0, "L must be even"
     assert Mat.shape == (L, L), "Mat must be LxL"
     half = L // 2
 
-    tempMat = Mat
-    tempTracedMat = tempMat[:half, :half].copy()  # Mat[[1;;L/2,1;;L/2]]
+    tempTracedMat = Mat[:half, :half].copy()
 
-    # segmentMaps (each returns a 1-indexed site in {1,...,L})
-    def map1(x: int) -> int:
-        return half + l1 + 1 - x
-
-    def map2(x: int) -> int:
-        return half + 2 * l1 + l2 + 1 - x
-
-    def map3(x: int) -> int:
-        return mod1(L + l1 + l2 + 1 - x, L)
-
-    segmentMaps = [map1, map2, map3]
-
-    # segments and segmentFlag logic (as in Mathematica)
+    # Build index arrays for all segment indices and their maps (0-indexed)
     if l1 + l2 == half:
-        # segments = {{1,l1},{l1+1,l1+l2-1},{l1+l2+1,L/2}}
         segments = [(1, l1), (l1 + 1, l1 + l2 - 1), (l1 + l2 + 1, half)]
-        segmentFlag = 2
+        seg_flag = 2
     else:
-        # segments = {{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2-1}}
         segments = [(1, l1), (l1 + 1, l1 + l2), (l1 + l2 + 1, half - 1)]
-        segmentFlag = 3
+        seg_flag = 3
 
-    def rng(a: int, b: int):
-        """Inclusive range [a,b] (Mathematica style). Empty if a>b."""
-        return range(a, b + 1) if a <= b else range(0, 0)
+    # Map offsets (1-indexed): map_i(x) = offset_i - x
+    # map1(x) = half + l1 + 1 - x
+    # map2(x) = half + 2*l1 + l2 + 1 - x
+    # map3(x) = mod1(L + l1 + l2 + 1 - x, L)
+    map_offsets = [half + l1 + 1, half + 2 * l1 + l2 + 1, L + l1 + l2 + 1]
 
-    def idx0(x1: int) -> int:
-        """Convert 1-indexed -> 0-indexed."""
-        return x1 - 1
+    # Build K (all segment indices, 0-indexed) and mapped_K (0-indexed)
+    K_list = []
+    mapped_K_list = []
+    for i in range(seg_flag):
+        a, b = segments[i]
+        if a > b:
+            continue
+        seg_k = np.arange(a, b + 1)  # 1-indexed
+        mapped_k = map_offsets[i] - seg_k  # 1-indexed
+        if i == 2:  # map3 uses mod1
+            mapped_k = ((mapped_k - 1) % L) + 1
+        K_list.append(seg_k - 1)        # 0-indexed
+        mapped_K_list.append(mapped_k - 1)  # 0-indexed
 
-    n = half  # the special index L/2 (1-indexed)
+    K = np.concatenate(K_list)
+    mapped_K = np.concatenate(mapped_K_list)
+    # L_idx and mapped_L are the same arrays (same segments for rows and columns)
+    L_idx = K.copy()
+    mapped_L = mapped_K.copy()
 
-    # segmentMaps[[segmentFlag]][L/2] in Mathematica
-    mapped_n = segmentMaps[segmentFlag - 1](n)  # still 1-indexed
+    n0 = half - 1  # 0-indexed n (the L/2-th index)
 
-    # ---- The L/2-th row updates: tempTracedMat[[k, L/2]] += (...) ----
-    for i in range(1, segmentFlag + 1):
-        a, b = segments[i - 1]
-        for k in rng(a, b):
-            tempTracedMat[idx0(k), idx0(n)] += (
-                tempMat[idx0(segmentMaps[i - 1](k)), idx0(n)]
-                + tempMat[idx0(segmentMaps[i - 1](k)), idx0(mapped_n)]
-                + tempMat[idx0(k), idx0(mapped_n)]
-            )
+    # mapped_n: the map applied to n (= half, 1-indexed)
+    mapped_n_1idx = map_offsets[seg_flag - 1] - half  # 1-indexed
+    if seg_flag - 1 == 2:
+        mapped_n_1idx = ((mapped_n_1idx - 1) % L) + 1
+    mn0 = mapped_n_1idx - 1  # 0-indexed
 
-    # ---- The L/2-th column updates: tempTracedMat[[L/2, l]] += (...) ----
-    for j in range(1, segmentFlag + 1):
-        a, b = segments[j - 1]
-        for l in rng(a, b):
-            tempTracedMat[idx0(n), idx0(l)] += (
-                tempMat[idx0(mapped_n), idx0(l)]
-                + tempMat[idx0(mapped_n), idx0(segmentMaps[j - 1](l))]
-                + tempMat[idx0(n), idx0(segmentMaps[j - 1](l))]
-            )
-
-    # ---- The (L/2, L/2) corner update ----
-    tempTracedMat[idx0(n), idx0(n)] += (
-        tempMat[idx0(mapped_n), idx0(n)]
-        + tempMat[idx0(mapped_n), idx0(mapped_n)]
-        + tempMat[idx0(n), idx0(mapped_n)]
+    # ── Row updates: tempTracedMat[K, n0] += ... ──
+    tempTracedMat[K, n0] += (
+        Mat[mapped_K, n0]
+        + Mat[mapped_K, mn0]
+        + Mat[K, mn0]
     )
 
-    # ---- Main block updates (k,l in segments, excluding L/2 as in Mathematica) ----
-    for i in range(1, segmentFlag + 1):
-        ai, bi = segments[i - 1]
-        for j in range(1, segmentFlag + 1):
-            aj, bj = segments[j - 1]
-            for k in rng(ai, bi):
-                for l in rng(aj, bj):
-                    tempTracedMat[idx0(k), idx0(l)] += (
-                        tempMat[idx0(segmentMaps[i - 1](k)), idx0(l)]
-                        + tempMat[idx0(segmentMaps[i - 1](k)), idx0(segmentMaps[j - 1](l))]
-                        + tempMat[idx0(k), idx0(segmentMaps[j - 1](l))]
-                        + (-tempTracedMat[idx0(k), idx0(n)]
-                           - tempTracedMat[idx0(n), idx0(l)]
-                           + tempTracedMat[idx0(n), idx0(n)])
-                    )
+    # ── Column updates: tempTracedMat[n0, L_idx] += ... ──
+    tempTracedMat[n0, L_idx] += (
+        Mat[mn0, L_idx]
+        + Mat[mn0, mapped_L]
+        + Mat[n0, mapped_L]
+    )
 
-    # Return tempTracedMat[[1;;-2,1;;-2]]
+    # ── Corner update ──
+    tempTracedMat[n0, n0] += (
+        Mat[mn0, n0] + Mat[mn0, mn0] + Mat[n0, mn0]
+    )
+
+    # ── Main block: vectorized over all (k, l) pairs ──
+    # The n-th row/col values are now frozen (n0 is outside segment ranges)
+    row_n = tempTracedMat[K, n0]       # shape (len(K),)
+    col_n = tempTracedMat[n0, L_idx]   # shape (len(L_idx),)
+    corner = tempTracedMat[n0, n0]     # scalar
+
+    tempTracedMat[np.ix_(K, L_idx)] += (
+        Mat[np.ix_(mapped_K, L_idx)]
+        + Mat[np.ix_(mapped_K, mapped_L)]
+        + Mat[np.ix_(K, mapped_L)]
+        + (-row_n[:, None] - col_n[None, :] + corner)
+    )
+
     return tempTracedMat[:half - 1, :half - 1]
 
 def logdet_cholesky(M: np.ndarray, symmetrize: bool = False) -> float:
@@ -363,16 +307,93 @@ def prime_det_log(L: int, l1: int, l2: int) -> mp.mpf:
     Returns log(primeDet) where
       primeDet = exp(logdet(A')) / (L/2)
 
-    So:
-      log primeDet = logdet(A') - log(L/2)
+    Fused implementation that exploits circulant structure of Mat to avoid
+    building the full L×L matrix. Only the kernel (length L) and the
+    half×half reduced matrix are allocated.
     """
     if L % 2 != 0:
         raise ValueError("L must be even")
     half = L // 2
+    pi = math.pi
 
-    Mat = direct_mat_n_fast(L)
-    Aprime = direct_red_traced_mat(L, l1, l2, Mat)
-    logdet = logdet_cholesky(Aprime)  # float64 log det
+    # ── Kernel of the circulant matrix: Mat[i,j] = kernel[(j-i) % L] ──
+    c0 = math.cos(pi / L)
+    s0 = math.sin(pi / L)
+    d = np.arange(L, dtype=np.float64)
+    kernel = -s0 / (L * (c0 - np.cos(2 * pi * d / L)))
+
+    # ── Initial tempTracedMat = Mat[:half, :half] via circulant ──
+    idx = np.arange(half)
+    tempTracedMat = kernel[(idx[None, :] - idx[:, None]) % L]
+
+    # ── Build segment index arrays (0-indexed) and their maps ──
+    if l1 + l2 == half:
+        segments = [(1, l1), (l1 + 1, l1 + l2 - 1), (l1 + l2 + 1, half)]
+        seg_flag = 2
+    else:
+        segments = [(1, l1), (l1 + 1, l1 + l2), (l1 + l2 + 1, half - 1)]
+        seg_flag = 3
+
+    map_offsets = [half + l1 + 1, half + 2 * l1 + l2 + 1, L + l1 + l2 + 1]
+
+    K_list = []
+    mapped_K_list = []
+    for i in range(seg_flag):
+        a, b = segments[i]
+        if a > b:
+            continue
+        seg_k = np.arange(a, b + 1)
+        mapped_k = map_offsets[i] - seg_k
+        if i == 2:
+            mapped_k = ((mapped_k - 1) % L) + 1
+        K_list.append(seg_k - 1)
+        mapped_K_list.append(mapped_k - 1)
+
+    K = np.concatenate(K_list)
+    mapped_K = np.concatenate(mapped_K_list)
+    L_idx = K
+    mapped_L = mapped_K
+
+    n0 = half - 1
+
+    mapped_n_1idx = map_offsets[seg_flag - 1] - half
+    if seg_flag - 1 == 2:
+        mapped_n_1idx = ((mapped_n_1idx - 1) % L) + 1
+    mn0 = mapped_n_1idx - 1
+
+    # ── Row updates: tempTracedMat[K, n0] += Mat[mapped_K, n0] + ... ──
+    tempTracedMat[K, n0] += (
+        kernel[(n0 - mapped_K) % L]
+        + kernel[(mn0 - mapped_K) % L]
+        + kernel[(mn0 - K) % L]
+    )
+
+    # ── Column updates: tempTracedMat[n0, L_idx] += ... ──
+    tempTracedMat[n0, L_idx] += (
+        kernel[(L_idx - mn0) % L]
+        + kernel[(mapped_L - mn0) % L]
+        + kernel[(mapped_L - n0) % L]
+    )
+
+    # ── Corner update ──
+    tempTracedMat[n0, n0] += (
+        kernel[(n0 - mn0) % L] + kernel[0] + kernel[(mn0 - n0) % L]
+    )
+
+    # ── Main block: vectorized, all from kernel ──
+    row_n = tempTracedMat[K, n0]
+    col_n = tempTracedMat[n0, L_idx]
+    corner = tempTracedMat[n0, n0]
+
+    tempTracedMat[np.ix_(K, L_idx)] += (
+        kernel[(L_idx[None, :] - mapped_K[:, None]) % L]
+        + kernel[(mapped_L[None, :] - mapped_K[:, None]) % L]
+        + kernel[(mapped_L[None, :] - K[:, None]) % L]
+        + (-row_n[:, None] - col_n[None, :] + corner)
+    )
+
+    Aprime = tempTracedMat[:half - 1, :half - 1]
+    logdet = logdet_cholesky(Aprime)
 
     return mp.mpf(logdet) - mp.log(mp.mpf(half))
 
