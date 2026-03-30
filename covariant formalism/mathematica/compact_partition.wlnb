@@ -1,0 +1,134 @@
+{
+  "cells": [
+    {
+      "kind": 1,
+      "value": "## Partition function of compact boson",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "prec = 20;",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "The matrices M and A, which I took from DirectMatrix.nb.",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "DirectMatN[L_,NPrec_]:=\nModule[{k,n,l,tempMat},\ntempMat=ConstantArray[0,{L,L}];\nDo[tempMat[[Mod[n,L,1],Mod[n+k,L,1]]]=tempMat[[Mod[n,L,1],Mod[n+k,L,1]]]+N[(1)/(2)(-Sin[(\\[Pi])/(L)])/(Cos[(\\[Pi])/(L)]-Cos[(2 k \\[Pi])/(L)])/( L),NPrec];\ntempMat[[Mod[n+k,L,1],Mod[n,L,1]]]=tempMat[[Mod[n+k,L,1],Mod[n,L,1]]]+N[(1)/(2)(-Sin[(\\[Pi])/(L)])/(Cos[(\\[Pi])/(L)]-Cos[(2 k \\[Pi])/(L)])/(L),NPrec];\n,{k,1,L},{n,1,L}];\nReturn[tempMat,Module];\n]\n\nNNew[L_,NPrec_]:=Module[{k,n,l,tempMat},\ntempMat=ConstantArray[0,{L,L}];\nDo[tempMat[[Mod[n,L,1],Mod[n+k,L,1]]]=tempMat[[Mod[n,L,1],Mod[n+k,L,1]]]+N[(1)/(8 L^2 Sin[Pi k/L]^2),NPrec];\ntempMat[[Mod[n+k,L,1],Mod[n,L,1]]]=tempMat[[Mod[n+k,L,1],Mod[n,L,1]]]+N[(1)/(8 L^2 Sin[Pi k/L]^2),NPrec];\n,{k,1,L-1},{n,1,L}];\nReturn[tempMat,Module];\n]\n\nDirectTracedMat[L_,l1_,l2_,Mat_]:=\nModule[{k,l,i,j,tempMat,tempTracedMat,segments,segmentMaps},\ntempTracedMat=Mat[[1;;L/2,1;;L/2]];\nsegments={{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2}};\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\nDo[\n(*go over the 9 blocks of the traced matrix, labeled by i j*)\nDo[\n(*go over all the entries in the i j block*)\ntempTracedMat[[k,l]]=tempTracedMat[[k,l]]+(Mat[[segmentMaps[[i]][k],l]]+Mat[[segmentMaps[[i]][k],segmentMaps[[j]][l]]]+Mat[[k,segmentMaps[[j]][l]]]);\n(*Print[{{k,l},{segmentMaps[[i]][k],l},{segmentMaps[[i]][k],segmentMaps[[j]][l]},{k,segmentMaps[[j]][l]}}];*)\n,{k,segments[[i,1]],segments[[i,2]]},{l,segments[[j,1]],segments[[j,2]]}];\n,{i,1,3},{j,1,3}];\nReturn[tempTracedMat,Module];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MatAp[L_,l1_,l2_,Mat_]:=\nModule[{k,l,i,j,tempMat,tempTracedMat,segments,segmentMaps, segmentFlag},\ntempMat=Mat;\ntempTracedMat=tempMat[[1;;L/2,1;;L/2]];\nsegmentFlag =\nIf[l1+l2==L/2,\n(*L/2 is actually in the second segment in this case*)\nsegments={{1,l1},{l1+1,l1+l2-1},{l1+l2+1,L/2}}; (*NOTE second segment ends early and third segment is now empty*)\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\n2,\nsegments={{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2-1}}; (*NOTE this segment now ends at L/2-1 because we do L/2 separately*)\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\n3\n];\n\nDo[\n(*The L/2th row*)\nDo[\ntempTracedMat[[k,L/2]]=tempTracedMat[[k,L/2]]+(tempMat[[segmentMaps[[i]][k],L/2]]+tempMat[[segmentMaps[[i]][k],segmentMaps[[segmentFlag]][L/2]]]+tempMat[[k,segmentMaps[[segmentFlag]][L/2]]]);\n,{k,segments[[i,1]],segments[[i,2]]}];\n,{i,1,segmentFlag}\n];\n\nDo[\n(*The L/2th column*)\nDo[\ntempTracedMat[[L/2,l]]=tempTracedMat[[L/2,l]]+(tempMat[[segmentMaps[[segmentFlag]][L/2],l]]+tempMat[[segmentMaps[[segmentFlag]][L/2],segmentMaps[[j]][l]]]+tempMat[[L/2,segmentMaps[[j]][l]]]);\n,{l,segments[[j,1]],segments[[j,2]]}];\n,{j,1,segmentFlag}\n];\n\n(*the L/2, L/2 corner*)\ntempTracedMat[[L/2,L/2]]=tempTracedMat[[L/2,L/2]]+(tempMat[[segmentMaps[[segmentFlag]][L/2],L/2]]+tempMat[[segmentMaps[[segmentFlag]][L/2],segmentMaps[[segmentFlag]][L/2]]]+tempMat[[L/2,segmentMaps[[segmentFlag]][L/2]]]);\n\nDo[\n(*go over the 9 (or 4) blocks of the traced matrix, labeled by i j, now going up to L/2-1*)\nDo[\n(*go over all the entries in the i j block*)\n(*add the extra terms from the (L/2)th row and column*)\ntempTracedMat[[k,l]]=tempTracedMat[[k,l]]+(tempMat[[segmentMaps[[i]][k],l]]+tempMat[[segmentMaps[[i]][k],segmentMaps[[j]][l]]]+tempMat[[k,segmentMaps[[j]][l]]])+(-tempTracedMat[[k,L/2]]-tempTracedMat[[L/2,l]]+tempTracedMat[[L/2,L/2]]);\n(*Print[{{k,l},{segmentMaps[[i]][k],l},{segmentMaps[[i]][k],segmentMaps[[j]][l]},{k,segmentMaps[[j]][l]}}];*)\n,{k,segments[[i,1]],segments[[i,2]]},{l,segments[[j,1]],segments[[j,2]]}];\n,{i,1,segmentFlag},{j,1,segmentFlag}];\nReturn[tempTracedMat[[1;;-2 , 1;;-2]],Module];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "The matrix M. For simplicity I[CloseCurlyQuote]ll only consider the case \nwhere L/2 is in the 3rd segment...n(I included the entries Wk,L2 in the output since they are required to compute T2)",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "MatW[L_,l1_,l2_,Mat_]:=\nModule[{k,l,i,j,tempMat,tempW,segments,segmentMaps},\ntempMat=Mat;\ntempW=ConstantArray[0,{L/2,L/2}];\nsegments={{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2}};\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\nDo[\nDo[\ntempW[[k,l]]=tempMat[[k,segmentMaps[[j]][l]]]+tempMat[[segmentMaps[[i]][k],segmentMaps[[j]][l]]]-tempMat[[L/2,segmentMaps[[j]][l]]]-tempMat[[segmentMaps[[3]][L/2],segmentMaps[[j]][l]]]\n,{k,segments[[i,1]],segments[[i,2]]},{l,segments[[j,1]],segments[[j,2]]}];\n,{i,1,3},{j,1,3}];\nReturn[tempW[[1;;-2 , 1;;-1]],Module];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MatTFirstPart[L_,l1_,l2_,Mat_]:=\nModule[{i,j,m,n,tempMat,segments,segmentMaps, segmentFlag,tempT},\ntempMat=Mat;\ntempT=ConstantArray[0,{3,3}];\nsegments={{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2}};\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\nDo[\nDo[\ntempT[[i,j]]=tempT[[i,j]]+tempMat[[segmentMaps[[i]][m],segmentMaps[[j]][n]]];\n,{m,segments[[i,1]],segments[[i,2]]},{n,segments[[j,1]],segments[[j,2]]}];\n,{i,1,3},{j,1,3}];\nReturn[tempT,Module];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "MatTSecondPart[L_,l1_,l2_,Mat_,W_,Aprime_]:=\nModule[{i,j,k,tempMat,segments,segmentMaps,tempu,tempw,solvedw,tempT},\ntempMat=Mat;\ntempT=ConstantArray[0,{3,3}];\ntempu=ConstantArray[0,{3,L/2-1}];\ntempw=ConstantArray[0,{3,L/2-1}];\nsegments={{1,l1},{l1+1,l1+l2},{l1+l2+1,L/2}};\nsegmentMaps={(L/2+l1+1-#1)&,(L/2+2l1+l2+1-#1)&,(Mod[L+l1+l2+1-#1,L,1])&};\n\nDo[\n(*The vector u*)\nDo[tempu[[i,k]]=Sum[W[[k,m]],{m,segments[[i,1]],segments[[i,2]]}],{k,1,L/2-1}];\n(*Solving linear system to find vector w*)\nsolvedw=LinearSolve[Aprime,tempu[[i]]];\nDo[tempw[[i,k]]=solvedw[[k]],{k,1,L/2-1}];\n,{i,1,3}];\n\nDo[\n(*The second part of Subscript[T, ij], note that I didn't include the minus sign*)\ntempT[[i]][[j]]=Sum[tempu[[i,k]]*tempw[[j,k]],{k,1,L/2-1}];\n,{i,1,3},{j,1,3}];\n\nReturn[tempT,Module];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nMoment of truth... SiegelTheta need the input to be a symmetric matrix, so we \\\nneed to first symmetrize T.\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Symm[T_]:=(1)/(2)(T+Transpose[T])\nTduality[R_,T_]:=(R Sum[Exp[-4 Pi R^2 (s1 s1 T[[1,1]]+s1 s2 T[[1,2]]+s2 s1 T[[2,1]]+s2 s2 T[[2,2]])],{s1,-20,20,1},{s2,-20,20,1}])/((1)/(R) Sum[Exp[-4 Pi (1)/(R^2)(s1 s1 T[[1,1]]+s1 s2 T[[1,2]]+s2 s1 T[[2,1]]+s2 s2 T[[2,2]])],{s1,-20,20,1},{s2,-20,20,1}]);\nRPrime[R_,T_]:=1/(4*R*Sqrt[Det[T]]);\nTdualityTest2[R_,T_]:=R Sum[Exp[-4 Pi R^2 (s1 s1 T[[1,1]]+s1 s2 T[[1,2]]+s2 s1 T[[2,1]]+s2 s2 T[[2,2]])],{s1,-20,20,1},{s2,-20,20,1}]-RPrime[R,T] Sum[Exp[-4 Pi RPrime[R,T]^2(s1 s1 T[[1,1]]+s1 s2 T[[1,2]]+s2 s1 T[[2,1]]+s2 s2 T[[2,2]])],{s1,-20,20,1},{s2,-20,20,1}];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nPartition function, omitting the factor 2\\[Pi]  in front since that\\\n\\[CloseCurlyQuote]s just some normalization\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "sgn={-1,1};\nMatTprime[T_]:=Table[Table[T[[i,j]]+sgn[[i]] T[[3,j]]+sgn[[j]] T[[i,3]]+sgn[[i]]sgn[[j]]T[[3,3]],{i,1,2}],{j,1,2}];\nPartitionFunctionZ[Ap_,R_,Tp_]:=R (Det[Ap])^(-1/2)*Sum[Exp[-4 Pi R^2 (s1 s1 Tp[[1,1]]+s1 s2 Tp[[1,2]]+s2 s1 Tp[[2,1]]+s2 s2 Tp[[2,2]])],{s1,-20,20,1},{s2,-20,20,1}];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ClearAll[CylEqnFastOptimized];\nOptions[CylEqnFastOptimized]={WorkingPrecision->200};\n\nCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=100,L,m,nList,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\nnList=Range[m];\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n\nB=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nList]]+Exp[I Outer[Times,Take[anglesR,Length[anglesL]],nList]],Complex];\n\ngram=Transpose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\n\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]\nOptions[RecCylEqnFastOptimized]={WorkingPrecision->100};\n\nRecCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=OptionValue[WorkingPrecision],L,m,nShift,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\n(*exponents are (n-2),with n=1..m*)nShift=Range[m]-2;\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n(*Each constraint is CylForm(\\[Theta]L)+CylForm(\\[Theta]R)==0*)B=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nShift]]+Exp[I Outer[Times,anglesR,nShift]],Complex];\n(*Normal equations for min||B a||^2+ |a1-1|^2*)gram=ConjugateTranspose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]\nRecCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=OptionValue[WorkingPrecision],L,m,nShift,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\n(*exponents are (n-2),with n=1..m*)nShift=Range[m]-2;\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n(*Each constraint is CylForm(\\[Theta]L)+CylForm(\\[Theta]R)==0*)B=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nShift]]+Exp[I Outer[Times,anglesR,nShift]],Complex];\n(*Normal equations for min||B a||^2+ |a1-1|^2*)gram=ConjugateTranspose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CylEqn[l1_,l2_,l3_,z_]:=Module[{L=2(l1+l2+l3),CylForm,n,eqns,solsub},CylForm[\\[Theta]_]:=Sum[A[n] E^(I n \\[Theta]),{n,1,L/2}];eqns={Join[{A[1]==1},Table[CylForm[2Pi (L/2+l1+1-k1)/L]==-CylForm[2Pi k1/L],{k1,1,l1}],Table[CylForm[2Pi (L/2+2l1+l2+1-k2)/L]==-CylForm[2Pi k2/L],{k2,l1+1,l1+l2}],Table[CylForm[2Pi (L+l1+l2+1-k3)/L]==-CylForm[2Pi k3/L],{k3,l1+l2+1,L/2}]],Table[A[n],{n,1,L/2}],WorkingPrecision\\[Rule]20};solsub=NSolve @@ eqns;\nSum[A[n] z^(n-1),{n,1,L/2}]/.solsub[[1]]//Chop]\nRecCylEqn[l1_,l2_,l3_,z_]:=Module[{L=2 (l1+l2+l3),CylForm,n,eqns,solsub},CylForm[\\[Theta]_]:=Sum[A[n] E^(I (n-2) \\[Theta]),{n,1,L/2}];\neqns={Join[{A[1]==1},Table[CylForm[2 Pi (L/2+l1+1-k1)/L]==-CylForm[2 Pi k1/L],{k1,1,l1}],Table[CylForm[2 Pi (L/2+2 l1+l2+1-k2)/L]==-CylForm[2 Pi k2/L],{k2,l1+1,l1+l2}],Table[CylForm[2 Pi (L+l1+l2+1-k3)/L]==-CylForm[2 Pi k3/L],{k3,l1+l2+1,L/2}]],Table[A[n],{n,1,L/2}],WorkingPrecision->20};solsub=NSolve@@eqns;\nSum[A[n] z^(n-1),{n,1,L/2}]/. solsub[[1]]//Chop]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Periods[l1_,l2_,l3_,m1_,m2_,m3_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[z_]=Integrate[CylEqn[l1,l2,l3,z],z]/.A[_]:>0; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PeriodsFast[l1_,l2_,l3_,m1_,m2_,m3_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[z_]=Integrate[CylEqnFastOptimized[l1,l2,l3,z],z]; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PeriodsFastGivenF[l1_,l2_,l3_,m1_,m2_,m3_,f_,z_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[w_]=Integrate[f/.{z->w},w]/.A[_]:>0; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "## Now we actually run the code",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 1,
+      "value": "Testing the partition for compact boson and free fermions. In our \nconvention [Alpha][CloseCurlyQuote] = 1, and Zfermion[[Tau]] = Zcompact[1[Sqrt]2,[Tau]].",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Zboson[\\[Tau]_]:=Module[{\\[Tau]1=Re[\\[Tau]],\\[Tau]2=Im[\\[Tau]]},(1)/(Sqrt[\\[Tau]2]Abs[DedekindEta[\\[Tau]]]^2)]\nZcompact[R_,\\[Tau]_]:=Module[{\\[Tau]1=Re[\\[Tau]],\\[Tau]2=Im[\\[Tau]]},Zboson[\\[Tau]]*R*Sum[Exp[-(Pi R^2)/(\\[Tau]2)Abs[m \\[Tau]-n]^2],{m,-20,20},{n,-20,20}]]\nZfermion[\\[Tau]_]:=1/2*Sum[Abs[EllipticTheta[a,Exp[Pi I \\[Tau]]]/DedekindEta[\\[Tau]]]^2,{a,2,4}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "Checking nothing went wrong",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Zfermion[(1)/(\\[Pi])+(I)/(E)Sin[EulerGamma]]/Zcompact[(1)/(Sqrt[2]),(1)/(\\[Pi])+(I)/(E)Sin[EulerGamma]]//N",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "Testing ratio of compact boson partition function",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Bench=Module[{L,l1,l2,l3,Mat,Aprime,W,T1,T2,R,res, T, Tp,f,per,\\[Tau],Z,Zanalytic},\nL=502;\nl1=101;\nl2=101;\nl3=L/2-l1-l2;\nR=2;\nMat=DirectMatN[L,prec]/2;\nAprime=MatAp[L,l1,l2,Mat];\nW=MatW[L,l1,l2,Mat];\nT1=MatTFirstPart[L,l1,l2,Mat];\nT2=MatTSecondPart[L,l1,l2,Mat,W,Aprime];\nT=Symm[T1-T2];\nTp=MatTprime[T];\nZ=PartitionFunctionZ[Aprime,R,Tp];\n\nf=CylEqnFastOptimized[l1,l2,l3,z];\nper=PeriodsFastGivenF[l1,l2,l3,l1/2,l2/2,l3/2,f,z]//N;\n\\[Tau]=per[[2]]/per[[1]];\nZanalytic=Zcompact[R,\\[Tau]];\n{Z,Zanalytic}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CheckTable=Table[Module[{L,l1,l2,l3,Mat,Aprime,W,T1,T2,R,res, T, Tp,f,per,\\[Tau],Z,Zanalytic},\nL=502;\nl1=k;\nl2=k;\nl3=L/2-l1-l2;\nR=2;\nMat=DirectMatN[L,prec]/2;\nAprime=MatAp[L,l1,l2,Mat];\nW=MatW[L,l1,l2,Mat];\nT1=MatTFirstPart[L,l1,l2,Mat];\nT2=MatTSecondPart[L,l1,l2,Mat,W,Aprime];\nT=Symm[T1-T2];\nTp=MatTprime[T];\nZ=PartitionFunctionZ[Aprime,R,Tp];\n\nf=CylEqnFastOptimized[l1,l2,l3,z];\nper=PeriodsFastGivenF[l1,l2,l3,l1/2,l2/2,l3/2,f,z]//N;\n\\[Tau]=per[[2]]/per[[1]];\nZanalytic=Zcompact[R,\\[Tau]];\n{\\[Tau],Z/Bench[[1]],Zanalytic/Bench[[2]],Tduality[R,Tp]}\n],{k,51,151,10}]",
+      "languageId": "wolfram"
+    }
+  ]
+}

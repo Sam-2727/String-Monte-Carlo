@@ -338,7 +338,17 @@ Now we explicitly perform the Gaussian integral. The matrix $A$ has a zero mode 
 \sum_{k=1}^{L/2}{v_k}&=2\pi R\sum_i s_i \sum_{k=1}^{L/2}\sum_{m\in \text{seg }i}(M_{km'}+M_{k'm'})\\
 &=2\pi R\sum_i s_i \sum_{m\in \text{seg }i}\sum_{k=1}^L M_{km'}=0
 \fe
-the shift $v_k$ is then orthogonal to the zero mode, and hence the zero mode can be factored out, giving a factor of $2\pi R$. We can factor out the zero mode by simply setting $X(L/2)$ to 0, and we will denote the restricted matrices (or vectors) on the subspace spanned by $X(1),...,X(\frac{L}{2}-1)$ by a prime. After performing the Gaussian integral in this subspace, the partition function is given by:
+the shift $v_k$ is then orthogonal to the zero mode, and hence the zero mode can be factored out, giving a factor of $2\pi R$. We factor out the zero mode by imposing the condition $X(L/2)=-\sum_{k=1}^{L/2-1}X(k)$, and the reduced matrix $A'$ and the vector $v'$ in the subspace of $X(1),...,X(L/2)$ after this condition will be:
+\ie
+A'_{kl}&=A_{kl}-A_{k,L/2}-A_{L/2,m}+A_{L/2,L/2}\\
+v'_k&=v_k-v_{L/2}
+\fe
+and the Gaussian integral will become:
+\ie
+Z(l_i;R)=2\pi R\int \prod_{i=1}^{L/2-1} dX(i) \exp\left[-\frac{1}{\pi}\left(\sum_{k,l=1}^{L/2-1}A_{kl}'X(k)X(l)+2\sum_{k=1}^{L/2-1}v_k' X(k)+C\right)\right]
+\fe
+
+After performing the Gaussian integral in this subspace, the partition function is given by:
 \ie
 Z(l_i;R)&=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2, s_3}\exp(-\pi^{-1}C+\pi^{-1}\sum_{k,l=1}^{L/2-1}v'_k (A')^{-1}_{kl} v_l')\\
 &=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2, s_3}\exp(-4\pi R^2\sum_{i,j}s_is_j T_{ij})
@@ -346,7 +356,7 @@ Z(l_i;R)&=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2, s_3}\exp(-\pi^{-1}C+\pi^{-1}\sum
 where the matrix $T$ and $W$ are defined as
 \ie
 T_{ij}&= \sum_{m\in \text{seg }i}\sum_{n\in \text{seg }j}\left(M_{m'n'}-\sum_{k,l=1}^{\frac{L}{2}-1}(A')^{-1}_{st}W_{km}W_{ln}\right)\\
-W_{km}&=M_{km'}+M_{k'm'}
+W_{km}&=M_{km'}+M_{k'm'}-M_{\frac{L}{2},m'}-M_{(\frac{L}{2})',m'}
 \fe
 
 The three shifts $s_1, s_2, s_3$ store the same information with the 2 winding numbers around the 2 non-contractible cycles and the winding number around the puncture. Since the wavefunctional $\Psi_1[p,X_m]$ is nonzero only for configurations with winding number $p=0$, we need to restrict onto the configurations with no winding around the puncture. For these configurations, the 3 shifts $s_1, s_2, s_3$ are not independent. We denote the cycle formed by going along segment 1 and then segment 2 as $\alpha$, the one formed by going along segment 3 and then segment 1 backwards as $\beta$. The shifts $s_i$ are then related to the winding numbers $s_\alpha, s_\beta$ around the $\alpha, \beta$-cycles by
