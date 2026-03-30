@@ -40,7 +40,7 @@ def direct_mat_n_fast(L: int) -> np.ndarray:
 
     # Circulant: Mat[i, j] = kernel[(j - i) % L]
     idx = (np.arange(L)[:, None] - np.arange(L)[None, :]) % L
-    return kernel[idx]
+    return 0.5 * kernel[idx]
 
 
 # ── Analytic partition functions ───────────────────────────────────────────────
@@ -335,6 +335,30 @@ def mat_t_prime(T: np.ndarray) -> np.ndarray:
     return Tp
 
 
+def t_duality(R: float, Tp: np.ndarray, N: int = 20) -> float:
+    """
+    Python translation of Tduality[R_, T_] from compact_partition.nb.
+
+    Tduality[R, T] =
+        R   * sum_{s1,s2} exp(-4π R²   * [s1,s2] T [s1,s2]^T)
+      - 1/R * sum_{s1,s2} exp(-4π/R²   * [s1,s2] T [s1,s2]^T)
+
+    For a T-dual theory this should vanish: Z(R) = Z(1/R).
+    """
+    sv = np.arange(-N, N + 1, dtype=float)
+    s1, s2 = np.meshgrid(sv, sv)
+    s1, s2 = s1.ravel(), s2.ravel()
+
+    quad = (s1 ** 2 * Tp[0, 0]
+            + s1 * s2 * Tp[0, 1]
+            + s2 * s1 * Tp[1, 0]
+            + s2 ** 2 * Tp[1, 1])
+
+    term1 = R       * float(np.sum(np.exp(-4.0 * np.pi * R ** 2       * quad)))
+    term2 = (1.0/R) * float(np.sum(np.exp(-4.0 * np.pi * (1.0/R**2)  * quad)))
+    return term1 - term2
+
+
 def partition_function_z(Aprime: np.ndarray, R: float, Tp: np.ndarray,
                           N: int = 20) -> float:
     """
@@ -355,7 +379,7 @@ def partition_function_z(Aprime: np.ndarray, R: float, Tp: np.ndarray,
     s1, s2 = np.meshgrid(sv, sv)
     s1, s2 = s1.ravel(), s2.ravel()
 
-    exponent = -2.0 * np.pi * R ** 2 * (
+    exponent = -4.0 * np.pi * R ** 2 * (
         s1 ** 2 * Tp[0, 0]
         + s1 * s2 * Tp[0, 1]
         + s2 * s1 * Tp[1, 0]
@@ -428,3 +452,23 @@ if __name__ == "__main__":
         Z_k, Z_k_ana, tau_k = compute_z(L, l1, l2, r)
         print(f"{r:>5.2f}  {tau_k.real:>12.8f}  {tau_k.imag:>12.8f}"
               f"  {Z_k / Z_bench:>14.8f}  {Z_k_ana / Z_bench_ana:>16.8f}")
+
+    # --- T-duality test: L=500, l1=25, l2=150 ---
+    print("\n" + "=" * 60)
+    L_td, l1_td, l2_td = 1000, 25, 150
+    l3_td = L_td // 2 - l1_td - l2_td
+    print(f"T-duality check: L={L_td}, l1={l1_td}, l2={l2_td}, l3={l3_td}")
+    print(f"  (should vanish: Tduality[R, Tp] = Z(R) - Z(1/R) ≈ 0)")
+    print(f"{'R':>5}  {'Tduality(R, Tp)':>20}")
+
+    # Tp depends only on geometry, not R — compute once.
+    Mat_td   = direct_mat_n_fast(L_td)
+    Ap_td    = direct_red_traced_mat(L_td, l1_td, l2_td, Mat_td)
+    W_td     = mat_w(L_td, l1_td, l2_td, Mat_td)
+    T1_td    = mat_t_first_part(L_td, l1_td, l2_td, Mat_td)
+    T2_td    = mat_t_second_part(L_td, l1_td, l2_td, W_td, Ap_td)
+    Tp_td    = mat_t_prime(symm(T1_td - T2_td))
+
+    for r in np.arange(1.1, 2.01, 0.1):
+        val = t_duality(r, Tp_td)
+        print(f"{r:>5.1f}  {val:>20.6e}")
