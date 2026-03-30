@@ -22,10 +22,17 @@ __pycache__/
 *.aux
 *.log
 *.out
+*.toc
 *.synctex.gz
 lightcone formalism/tex/lightcone_discrete_sigma_note.pdf
 lightcone formalism/tex/lightcone_discrete_sigma_note.fdb_latexmk
 lightcone formalism/tex/lightcone_discrete_sigma_note.fls
+lightcone formalism/tex/companion_note.pdf
+lightcone formalism/tex/companion_note.fdb_latexmk
+lightcone formalism/tex/companion_note.fls
+lightcone_discrete_sigma_note.pdf
+lightcone_discrete_sigma_note.fdb_latexmk
+lightcone_discrete_sigma_note.fls
 
 # Claude Code
 .claude/
