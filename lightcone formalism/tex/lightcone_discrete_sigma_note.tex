@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usetikzlibrary{calc,decorations.pathreplacing}
+\numberwithin{equation}{section}
 
 \newcommand{\al}{\alpha'}
 \newcommand{\perpD}{D_\perp}
@@ -40,6 +41,7 @@ Most structural ingredients are classical:
 \end{itemize}
 The key step here is different in emphasis: discretize only the worldsheet spatial coordinate $\sigma$ so that, at any loop order, each propagator becomes a finite-dimensional Gaussian kernel that is exactly computable. This turns the higher-loop problem into a controlled numerical task:
 \begin{equation}
+\label{eq:s2-001}
 \begin{aligned}
 {\cal A}_{h\text{-loop}}
 =\int \dd\mu_{\text{moduli}}\;
@@ -67,6 +69,7 @@ The scope of what is and is not explicit in this note should be stated plainly. 
 \section{Mandelstam map and lightcone time}
 For a fixed lightcone diagram (tree or loop), use Mandelstam's map
 \begin{equation}
+\label{eq:s4-001}
 \rho(z)=\sum_{r=1}^{n}\alpha_r^{\mathrm{M}} \log(z-Z_r),\qquad \sum_{r=1}^n \alpha_r^{\mathrm{M}}=0,\qquad \alpha_r^{\mathrm{M}}=\varepsilon_r^{\mathrm{M}}\,2\al p_r^+,\ \ \varepsilon_r^{\mathrm{M}}=\pm 1.
 \end{equation}
 Here $z$ is the complex uniformization coordinate on the worldsheet Riemann surface, $Z_r$ are the puncture positions of the $n$ external strings, and $\alpha_r^{\mathrm M}$ are the signed Mandelstam residues. I take $\varepsilon_r^{\mathrm M}=+1$ for incoming strings and $\varepsilon_r^{\mathrm M}=-1$ for outgoing strings, so $\alpha_r^{\mathrm M}>0$ on incoming legs, $\alpha_r^{\mathrm M}<0$ on outgoing legs, and $\alpha_r\equiv |\alpha_r^{\mathrm M}|$ is the positive circumference used in the discrete formulas below.
@@ -77,29 +80,35 @@ Internal propagators are finite cylinders labeled by internal edges $e$, with Sc
 
 In the discrete lattice formulas below I use the positive cylinder circumferences
 \begin{equation}
+\label{eq:s4-002}
 \alpha_r \equiv |\alpha_r^{\mathrm{M}}|,
 \end{equation}
 and keep the orientation signs separately through factors such as $\epsilon_r=(+1,+1,-1)$ in the canonical one-form. Thus for a cubic join with two incoming legs $1,2$ and one outgoing leg $3$, the signed Mandelstam residues obey $\alpha_1^{\mathrm{M}}+\alpha_2^{\mathrm{M}}+\alpha_3^{\mathrm{M}}=0$, while the positive circumferences satisfy $\alpha_3=\alpha_1+\alpha_2$ and hence $N_3=N_1+N_2$.
 
 For a discrete $\sigma$ lattice, string $r$ has $N_r$ sites with
 \begin{equation}
+\label{eq:s4-003}
 a_r=\frac{\alpha_r}{N_r},\qquad \sigma_n=n\,a_r,\quad n=0,\dots,N_r-1.
 \end{equation}
 For an internal propagator edge $e$ one uses the same relation, namely $a=\alpha_e/N_e$ if that edge is discretized with the common spacing $a$ and has positive circumference $\alpha_e$.
 At a cubic join, $p_3^+=p_1^++p_2^+$ implies
 \begin{equation}
+\label{eq:s4-004}
 N_3=N_1+N_2,
 \end{equation}
 after choosing a common lattice spacing (or an integer-compatible refinement).
 For generic real lightcone momenta there is usually no single finite lattice with exact $\alpha_r=aN_r$ on every leg. The finite-$N$ definition should therefore be understood as a refinement sequence: choose $a_\nu\to 0$ and integers $N_r^{(\nu)}$ such that
 \begin{equation}
+\label{eq:s4-005}
 \alpha_r^{(\nu)}\equiv a_\nu N_r^{(\nu)}\longrightarrow \alpha_r
 \end{equation}
 while every cubic join obeys the exact integer overlap rule
 \begin{equation}
+\label{eq:s4-006}
 N_3^{(\nu)}=N_1^{(\nu)}+N_2^{(\nu)}.
 \end{equation}
 In practice one approximates the independent external $\alpha_r$ by rationals with a common denominator and then determines all internal $N_e^{(\nu)}$ from the exact vertex conservation laws. Each finite-$\nu$ computation uses exact site-space concatenation, and the physical amplitude is obtained by extrapolating $\nu\to\infty$.
+The note does not attempt a universal convergence-rate theorem for this refinement sequence. In practice one should choose the rational approximants so that each $\alpha_r^{(\nu)}-\alpha_r=O(a_\nu)$; for irrational momentum ratios the rate at which finite-$N$ artifacts disappear can depend on how well the chosen sequence approximates the target circumferences.
 
 The basic propagator building block is shown in Figure~\ref{fig:discrete-cylinder}.
 
@@ -126,20 +135,24 @@ The basic propagator building block is shown in Figure~\ref{fig:discrete-cylinde
 \section{Discrete free boson on a cylinder}
 For one transverse coordinate on a cylinder of length $T$ and $N$ sites:
 \begin{equation}
+\label{eq:s5-001}
 S_B=\frac{1}{4\pi\al}\int_0^T\dd\tau\sum_{n=0}^{N-1}
 \left[a\,(\partial_\tau X_n)^2+\frac{1}{a}(X_{n+1}-X_n)^2\right],\qquad X_N\equiv X_0.
 \end{equation}
 Fourier modes
 \begin{equation}
+\label{eq:s5-002}
 X_n(\tau)=\frac{1}{\sqrt{N}}\sum_{k=0}^{N-1}q_k(\tau)e^{2\pi \ii kn/N},
 \end{equation}
 diagonalize the action with frequencies
 \begin{equation}
+\label{eq:s5-003}
 \omega_k=\frac{2}{a}\sin\left(\frac{\pi k}{N}\right),\qquad k=0,\dots,N-1.
 \end{equation}
 The spectrum is symmetric under the reality involution: $\omega_{N-k}=\omega_k$.
 For $k\neq 0$ (Euclidean harmonic oscillator),
 \begin{equation}
+\label{eq:s5-004}
 K_{B,k}(q_f,q_i;T)=
 \left(\frac{\mu\omega_k}{2\pi\sinh(\omega_k T)}\right)^{1/2}
 \exp\!\left[
@@ -149,11 +162,13 @@ K_{B,k}(q_f,q_i;T)=
 \end{equation}
 with
 \begin{equation}
+\label{eq:s5-005}
 \mu=\frac{a}{2\pi\al}.
 \end{equation}
 Here $q_i\equiv q_k(0)$ and $q_f\equiv q_k(T)$ are the initial and final values of the $k$th Fourier mode on a single cylinder. Later, in the three-string overlap problem, the symbols $q_m^{(r)}$ denote the corresponding boundary values of the nonzero modes on leg $r$.
 This displayed formula is the kernel for one independent \emph{real} oscillator degree of freedom. Equivalently, it applies to the independent half-spectrum or to the real and imaginary parts of a nonzero Fourier mode. If instead one keeps the full complex mode $q_k$ together with the reality condition $q_{N-k}=\bar q_k$, then the pair $(k,N-k)$ contributes
 \begin{equation}
+\label{eq:s5-006}
 K_{B,k}^{\mathrm{cx}}(q_f,q_i;T)=
 \frac{\mu\omega_k}{2\pi\sinh(\omega_k T)}
 \exp\!\left[
@@ -167,6 +182,7 @@ K_{B,k}^{\mathrm{cx}}(q_f,q_i;T)=
 with unit power in the prefactor because the complex mode carries two real degrees of freedom. The site-basis Gaussian matrices below avoid this bookkeeping issue by working directly in the full real position space.
 For $k=0$ (free particle),
 \begin{equation}
+\label{eq:s5-007}
 K_{B,0}(q_f,q_i;T)=
 \left(\frac{\mu}{2\pi T}\right)^{1/2}
 \exp\!\left[-\frac{\mu(q_f-q_i)^2}{2T}\right].
@@ -175,14 +191,17 @@ The full bosonic cylinder kernel is the product over modes and transverse direct
 
 For loop propagation one must also include a twist in $\sigma$. If $\varphi\in[0,1)$ denotes the fraction of the circumference by which one end of the cylinder is shifted relative to the other, then
 \begin{equation}
+\label{eq:s5-008}
 X_f(\sigma)=X_i(\sigma+\varphi |\alpha|).
 \end{equation}
 On the lattice this is implemented by a shift operator $R_N(\varphi)$ acting in $\sigma$ position space. For an exact lattice shift $\varphi N\in \ZZ$,
 \begin{equation}
+\label{eq:s5-009}
 \bigl(R_N(\varphi)X\bigr)_n = X_{n+\varphi N \,\, \mathrm{mod}\,N},
 \end{equation}
 while for general $\varphi$ one may use a spectral interpolation operator. Introduce centered lattice frequencies
 \begin{equation}
+\label{eq:s5-010}
 \kappa_k=
 \begin{cases}
 k,& 0\le k\le \lfloor (N-1)/2\rfloor,\\
@@ -191,16 +210,19 @@ k-N,& \lfloor (N+1)/2\rfloor\le k\le N-1,
 \end{equation}
 so that $\kappa_{N-k}=-\kappa_k$ except for the self-conjugate Nyquist mode when $N$ is even. Let $F$ denote the $N\times N$ unitary discrete Fourier transform matrix with entries
 \begin{equation}
+\label{eq:s5-011}
 F_{kn}=\frac{1}{\sqrt N}e^{2\pi \ii kn/N},
 \qquad
 k,n=0,\dots,N-1.
 \end{equation}
 Then
 \begin{equation}
+\label{eq:s5-012}
 R_N(\varphi)=F^\dagger \, \mathrm{diag}\!\left(e^{2\pi \ii \kappa_k\varphi}\right) F.
 \end{equation}
 The twisted bosonic propagator is then
 \begin{equation}
+\label{eq:s5-013}
 K_B(X_f,X_i;T,\varphi)=K_B\bigl(X_f,R_N(\varphi)X_i;T,0\bigr),
 \end{equation}
 so each discrete Fourier mode picks up the phase $e^{2\pi \ii \kappa_k\varphi}$ in the cross-term. For odd $N$ this centered prescription preserves the real site subspace. For even $N$ and generic $\varphi$, however, the self-conjugate Nyquist mode makes $R_N(\varphi)$ a complex interpolation kernel rather than a literal real-site permutation. Thus the geometric-shift interpretation is exact when $\varphi N\in\ZZ$; for generic $\varphi$ one should regard $R_N(\varphi)$ as the finite-$N$ spectral interpolation of the continuum $\sigma$ translation.
@@ -208,18 +230,21 @@ so each discrete Fourier mode picks up the phase $e^{2\pi \ii \kappa_k\varphi}$ 
 \section{Discrete free GS fermions on a cylinder}
 In lightcone GS gauge, the transverse fermions are free. After Fourier transform in $\sigma$, each mode gives a quadratic Grassmann system. A convenient bookkeeping device is to complexify the eight real GS spinor components and use coherent-state labels $\eta_{k,a}$, $\bar\eta_{k,a}$ with $a=1,\dots,8$. This is only a representation choice, not a physical doubling; the equivalent real Majorana formulation and its Pfaffian appear below. In these variables one can write
 \begin{equation}
+\label{eq:s6-001}
 S_F=\int_0^T\dd\tau\sum_{k,a}\bar\eta_{k,a}(\partial_\tau+\omega_k)\eta_{k,a},
 \end{equation}
 where $a$ labels GS spinor components (and similarly for right movers). The same lattice frequencies $\omega_k$ appear as in the bosonic sector because the lightcone GS worldsheet theory is free with matched transverse mode spectrum, even though worldsheet supersymmetry is not manifest.
 For a closed string there is also an independent right-moving GS sector, which I denote by $\widetilde\eta_{k,\dot a}$ with $\dot a=1,\dots,8$. Its free action and cylinder kernel have exactly the same lattice form as the left-moving sector written here, with the SO$(8)$ spinor representation chosen according to the IIA/IIB convention. If one wishes to write it separately, one simply repeats the displayed formulas of this section with $\eta\to\widetilde\eta$ and $a\to\dot a$. To avoid doubling notation, the formulas below are usually written for one chiral sector; the total closed-string fermionic contribution is obtained by including both sectors, equivalently by taking the product of the two Pfaffians/determinants after sewing.
 Hence each nonzero mode has exact kernel
 \begin{equation}
+\label{eq:s6-002}
 K_{F,k}(\bar\eta_f,\eta_i;T)=
 \exp\!\left[\bar\eta_f\,e^{-\omega_k T}\eta_i\right],
 \end{equation}
 up to convention-dependent normalization factors that can be fixed once and for all from vacuum-to-vacuum propagation. This note does not make that overall coherent-state normalization completely explicit, because different but equivalent Berezin-measure/vacuum conventions differ by a mode-independent multiplicative constant. The later sewing formulas use only the Gaussian exponent and the associated overlap matrices, so the omitted overall factor matters only if one wants an absolute normalization before the global vacuum convention has been fixed.
 For the zero mode one has $\omega_0=0$ and therefore
 \begin{equation}
+\label{eq:s6-003}
 K_{F,0}(\bar\eta_f,\eta_i;T)=
 \exp\!\left[\bar\eta_f\,\eta_i\right],
 \end{equation}
@@ -227,6 +252,7 @@ independent of $T$. This is the cylinder transport of the GS fermionic zero mode
 
 With an exact lattice shift, or more generally with the spectral interpolation prescription above, the fermionic cross-term acquires the same phase,
 \begin{equation}
+\label{eq:s6-004}
 K_{F,k}(\bar\eta_f,\eta_i;T,\varphi)=
 \exp\!\left[\bar\eta_f\,e^{-\omega_k T}e^{2\pi \ii \kappa_k\varphi}\eta_i\right],
 \end{equation}
@@ -238,6 +264,7 @@ So both bosonic and fermionic propagators are exactly computable Gaussians on th
 \section{Explicit site-basis Gaussian matrices}
 For numerical assembly, it is best to keep each cylinder kernel in the form
 \begin{equation}
+\label{eq:s7-001}
 K_B(X_f,X_i;T,\varphi)=
 {\cal N}_B(T)\,
 \exp\!\left[
@@ -249,19 +276,24 @@ K_B(X_f,X_i;T,\varphi)=
 Here ${\cal N}_B(T)$ is the product of the one-mode bosonic normalization factors from Section~5, taken over an independent real basis of lattice normal modes (equivalently, over the half-spectrum together with any self-conjugate modes). Let $\mu \equiv a/(2\pi\al)$ be the same single-mode mass parameter introduced above. Using the same unitary DFT matrix $F$, one has
 \begin{align}
 A(T)&=\mu\,F^\dagger\,
-\mathrm{diag}\!\big(\omega_k\coth(\omega_k T)\big)\,F,\\
+\mathrm{diag}\!\big(\omega_k\coth(\omega_k T)\big)\,F,
+\label{eq:s7-A-matrix}\\
 B(T,\varphi)&=\mu\,F^\dagger\,
 \mathrm{diag}\!\big(e^{2\pi \ii \kappa_k\varphi}\omega_k\mathrm{csch}(\omega_k T)\big)\,F.
+\label{eq:s7-B-matrix}
 \end{align}
 For the zero mode, use the smooth limits
 \begin{equation}
+\label{eq:s7-002}
 \omega_0\coth(\omega_0 T)\to \frac{1}{T},\qquad
 \omega_0\mathrm{csch}(\omega_0 T)\to \frac{1}{T}.
 \end{equation}
 Hence $A(T)$ is circulant in site space, while $B(T,\varphi)$ is a twisted circulant/interpolation matrix. For exact lattice shifts it is real and circulant up to permutation; for generic $\varphi$ it is the finite-$N$ spectral interpolation kernel described above. In all cases it is diagonalized exactly by the same DFT.
+For generic $\varphi$ it is often numerically safest to keep this Fourier-basis representation, where the Euclidean damping factors are manifest mode by mode, and regard the site-space kernel simply as the exact inverse DFT of that diagonal data.
 
 For fermions (coherent states),
 \begin{equation}
+\label{eq:s7-003}
 K_F(\bar\eta_f,\eta_i;T,\varphi)=
 {\cal N}_F(T)\,
 \exp\!\left[\bar\eta_f^{\!T}U(T,\varphi)\eta_i\right],\qquad
@@ -307,6 +339,7 @@ This section states the global sewing formula in the note's semi-discrete formal
 
 For a diagram ${\cal D}$ with internal edges $e$ and cubic vertices $I$:
 \begin{equation}
+\label{eq:s8-001}
 {\cal A}_{\cal D}=
 \int\prod_e \dd T_e
 \int\prod_A \dd\varphi_A\;
@@ -353,6 +386,7 @@ The sources are only bookkeeping devices for derivative insertions.};
 
 Choose a basis of graph cycles $A=1,\dots,h$. Then only $h$ twists are independent, and the twist carried by an individual internal edge is
 \begin{equation}
+\label{eq:s8-002}
 \varphi_e=\sum_{A=1}^{h}\epsilon_{eA}\varphi_A
 \qquad
 (\mathrm{mod}\,1),
@@ -398,6 +432,7 @@ For a fixed cubic lightcone graph, the Schwinger lengths $T_e$ and independent t
 \]
 To allow for any continuum lightcone-measure density that one may wish to keep separate from the discrete Gaussian sewing, I write the full cell measure as
 \begin{equation}
+\label{eq:s8-003}
 \dd\mu_{\mathrm{lc}}
 =
 J_{\mathrm{M}}(T,\varphi;\alpha_{\mathrm{ext}})
@@ -412,6 +447,7 @@ The note does not write explicit formulas for the external wavefunctionals $\Psi
 
 For a genus-$h$ $n$-point cubic lightcone skeleton, one has
 \begin{equation}
+\label{eq:s8-004}
 E=3h+n-3,\qquad V=2h+n-2,
 \end{equation}
 where $E$ is the number of internal propagator edges and $V$ is the number of cubic vertices,
@@ -421,6 +457,7 @@ To evaluate these Gaussian integrals uniformly, choose a fixed global ordering o
 
 After collecting all edge kernels, one gets a global Gaussian in all internal boundary variables:
 \begin{equation}
+\label{eq:s8-005}
 \exp\!\left[
 -\frac12 {\bf X}^T {\cal M}_B(T,\varphi)\,{\bf X}
 +{\bf J}_B^T{\bf X}
@@ -436,15 +473,18 @@ The matrices ${\cal M}_B(T,\varphi)$ and ${\cal M}_F(T,\varphi)$ are assembled b
 Gaussian integration is exact:
 \begin{align}
 \int \dd^nX\,e^{-\frac12 X^TMX+J^TX}
-&=(2\pi)^{n/2}(\det M)^{-1/2}e^{\frac12 J^TM^{-1}J},\\
+&=(2\pi)^{n/2}(\det M)^{-1/2}e^{\frac12 J^TM^{-1}J},
+\label{eq:s8-bosonic-gaussian-integral}\\
 \int \dd\bar\Theta\,\dd\Theta\,
 e^{-\bar\Theta M\Theta+\bar J\Theta+\bar\Theta J}
 &=\det(M)\,e^{\bar J M^{-1}J}.
+\label{eq:s8-fermionic-gaussian-integral}
 \end{align}
 Here ${\cal M}_F$ is defined precisely as the fermionic matrix appearing with this conventional minus sign in the exponent.
 Concretely, differentiating with respect to a bosonic source component brings down the matching boundary field $X_b^M$, while differentiating with respect to a fermionic source component brings down the corresponding Grassmann boundary variable. After all desired local insertions have been generated, the sources are set back to zero.
 For real GS fermions one may equivalently pass to the doubled antisymmetric Majorana matrix
 \begin{equation}
+\label{eq:s8-006}
 \mathbb A_F=
 \begin{pmatrix}
 0 & -M^T\\
@@ -458,6 +498,7 @@ For a complete sewn diagram one must also choose a fixed global ordering of inte
 
 The same Gaussian also gives an explicit source representation for interaction-point derivative insertions. Write
 \begin{equation}
+\label{eq:s8-007}
 Z_B[{\bf J}_B]
 =
 \int \dd{\bf X}\,
@@ -472,18 +513,21 @@ The dependence on the moduli $(T,\varphi)$ is implicit here through ${\cal M}_B(
 This source representation is therefore not a second definition of the cubic interaction. It is only a computational rewrite of local field insertions acting on the already-sewn Gaussian. The actual local interaction still sits in ${\cal V}_I$; the sources merely provide a convenient way to evaluate it once the Gaussian kernels have been assembled.
 For each cubic vertex $I$, specialize first to the canonical join $1+2\to 3$ and define the two unfolded-strip representatives of the local closed-string interaction region by
 \begin{equation}
+\label{eq:s8-008}
 X_{I_+}\equiv X_0^{(1)}=X_0^{(3)},
 \qquad
 X_{I_-}\equiv X_0^{(2)}=X_{N_1}^{(3)}.
 \end{equation}
 Define the one-sided nearest-neighbor differences on the two arcs by
 \begin{equation}
+\label{eq:s8-009}
 \nabla_+X_{I_+}^{(1)}\equiv X_1^{(1)}-X_{I_+},
 \qquad
 \nabla_-X_{I_-}^{(2)}\equiv X_{I_-}-X_{N_2-1}^{(2)},
 \end{equation}
 and likewise on leg $3$. In this convention the unsuperscripted $\nabla_-$ is already the backward nearest-neighbor difference on the $I_-$ arc. Then let $d_I$ and $\widetilde d_I$ be the corresponding row vectors in the global boundary-variable space,
 \begin{equation}
+\label{eq:s8-010}
 d_I^T{\bf X}=\bigl(\nabla_+X_{I_+}^{(1)}\bigr)=\bigl(\nabla_+X_{I_+}^{(3)}\bigr),
 \qquad
 \widetilde d_I^T{\bf X}=\bigl(\nabla_-X_{I_-}^{(2)}\bigr)=\bigl(\nabla_-X_{I_-}^{(3)}\bigr).
@@ -525,6 +569,7 @@ Figure~\ref{fig:source-stencil} summarizes both the local strip geometry and the
 At this point there are two distinct claims one should not conflate. First, one chooses a lattice candidate for the bosonic local interaction-point operator. In the present note the minimal candidate is the one-sided nearest-neighbor difference on each arc, with the continuum-motivated $a^{-1/2}$ scaling discussed later in Section~14. Second, once such a \emph{linear} local lattice operator has been chosen, it may be represented exactly inside the Gaussian generating functional by source derivatives. The following formulas describe only this second, generating-functional step; they do not by themselves prove that the nearest-neighbor stencil is already the unique or final physical Green--Schwarz interaction-point operator.
 Then the bosonic interaction-point operators act on the generating functional as
 \begin{equation}
+\label{eq:s8-011}
 K_{I,\mathrm{lat}}^I
 =
 a^{-1/2}c_K\,d_I^T\frac{\partial}{\partial {\bf J}_B^I},
@@ -536,6 +581,7 @@ a^{-1/2}\widetilde c_K\,\widetilde d_I^T\frac{\partial}{\partial {\bf J}_B^J},
 Here $I,J=1,\dots,\perpD$ are transverse vector indices, unrelated to the vertex label in the subscript and unrelated to the lattice site count $N$. The source ${\bf J}_B^I$ denotes the component coupled to the $I$th transverse coordinate, and $c_K,\widetilde c_K$ are local normalization constants fixed later by the interaction-point analysis. In particular, the formula above should be read as the exact source-representation of the \emph{chosen} linear lattice candidate operator, not as an independent derivation of its physical correctness.
 Therefore
 \begin{equation}
+\label{eq:s8-012}
 \begin{aligned}
 K_{I,\mathrm{lat}}^I \widetilde K_{I,\mathrm{lat}}^J Z_B
 =
@@ -553,10 +599,12 @@ This is the mechanism by which the local prefactor becomes a polynomial in exter
 \section{Discrete cubic overlap vertex}
 The correct discrete analogue of Mandelstam joining/splitting is a full-boundary overlap, not continuity at a single site. At an interaction time $\tau=\tau_I$, strings $1$ and $2$ join into string $3$ with
 \begin{equation}
+\label{eq:s9-001}
 N_3=N_1+N_2.
 \end{equation}
 Write the boundary data as
 \begin{equation}
+\label{eq:s9-002}
 X^{(r)}=
 \begin{pmatrix}
 X^{(r)}_0\\
@@ -569,27 +617,33 @@ r=1,2,3.
 \end{equation}
 Then the bosonic overlap is
 \begin{align}
-X^{(3)}_n&=X^{(1)}_n,\qquad n=0,\dots,N_1-1,\\
+X^{(3)}_n&=X^{(1)}_n,\qquad n=0,\dots,N_1-1,
+\label{eq:s9-overlap-first-arc}\\
 X^{(3)}_{N_1+m}&=X^{(2)}_m,\qquad m=0,\dots,N_2-1.
+\label{eq:s9-overlap-second-arc}
 \end{align}
 Equivalently, define the embedding matrices
 \begin{equation}
+\label{eq:s9-003}
 P_1\in \RR^{N_3\times N_1},
 \qquad
 P_2\in \RR^{N_3\times N_2},
 \end{equation}
 with
 \begin{equation}
+\label{eq:s9-004}
 (P_1)_{nm}=\delta_{n,m},
 \qquad
 (P_2)_{nm}=\delta_{n,N_1+m},
 \end{equation}
 so that
 \begin{equation}
+\label{eq:s9-005}
 X^{(3)}=P_1X^{(1)}+P_2X^{(2)}.
 \end{equation}
 The bosonic cubic vertex is then
 \begin{equation}
+\label{eq:s9-006}
 {\cal V}_I^{(B)}=\delta(C_I{\bf X}_I),
 \qquad
 {\bf X}_I=
@@ -609,16 +663,19 @@ Crucially, this overlap is imposed in $\sigma$ position space. One does \emph{no
 
 The overlap acts on pointwise field values around the cut circles. In the unfolded closed-string strip there are two local representatives of the interaction region,
 \begin{equation}
+\label{eq:s9-007}
 X_{I_+}\equiv X_0^{(1)}=X_0^{(3)},
 \qquad
 X_{I_-}\equiv X_0^{(2)}=X_{N_1}^{(3)},
 \end{equation}
 namely the two ends of the cut on the outgoing strip. These local data are not the center-of-mass zero modes
 \begin{equation}
+\label{eq:s9-008}
 x_{\mathrm{cm}}^{(r)}\equiv \frac{1}{N_r}\sum_{n=0}^{N_r-1}X_n^{(r)}.
 \end{equation}
 Instead, the position-space overlap implies the weighted relation
 \begin{equation}
+\label{eq:s9-009}
 N_3 x_{\mathrm{cm}}^{(3)} = N_1 x_{\mathrm{cm}}^{(1)} + N_2 x_{\mathrm{cm}}^{(2)},
 \end{equation}
 or equivalently $\alpha_3 x_{\mathrm{cm}}^{(3)}=\alpha_1 x_{\mathrm{cm}}^{(1)}+\alpha_2 x_{\mathrm{cm}}^{(2)}$ for a common lattice spacing. Thus the local strip data $(X_{I_+},X_{I_-})$ and the Fourier zero mode $x_{\mathrm{cm}}$ must be kept conceptually distinct.
@@ -673,10 +730,12 @@ For the off-shell cubic vertex and its higher-loop sewing, however, I do \emph{n
 
 If one works directly with GS boundary fermions, the kinematic fermionic overlap is organized by the same concatenation map:
 \begin{equation}
+\label{eq:s9-010}
 \theta^{(3)} = P_1 \theta^{(1)} + P_2 \theta^{(2)}
 \end{equation}
 in $\sigma$ position space, with the same orientation conventions as for the bosons. In particular, at the interaction point itself one identifies
 \begin{equation}
+\label{eq:s9-011}
 \theta_{I_+}^a\equiv \theta_0^{(1)a}=\theta_0^{(3)a},
 \qquad
 \theta_{I_-}^a\equiv \theta_0^{(2)a}=\theta_{N_1}^{(3)a},
@@ -688,6 +747,7 @@ The cubic overlap is imposed on site values $X_n^{(r)}$ and $\theta_n^{(r)}$ in 
 
 For bosons on leg $r$ with $N_r$ lattice sites, separate center-of-mass and oscillator parts:
 \begin{equation}
+\label{eq:s10-001}
 X_n^{(r)} = x_{\mathrm{cm}}^{(r)} + X_n^{\prime(r)},
 \qquad
 P_n^{(r)} = \frac{p_\perp^{(r)}}{N_r} + P_n^{\prime(r)},
@@ -696,6 +756,7 @@ P_n^{(r)} = \frac{p_\perp^{(r)}}{N_r} + P_n^{\prime(r)},
 \end{equation}
 Here the site-basis canonical algebra is
 \begin{equation}
+\label{eq:s10-002}
 [X_n^{(r)},P_m^{(s)}]=\ii\,\delta^{rs}\delta_{nm},
 \qquad
 p_\perp^{(r)}\equiv \sum_{n=0}^{N_r-1}P_n^{(r)},
@@ -703,24 +764,28 @@ p_\perp^{(r)}\equiv \sum_{n=0}^{N_r-1}P_n^{(r)},
 with all other site-basis commutators vanishing.
 Then expand the zero-sum parts as
 \begin{equation}
+\label{eq:s10-003}
 X_n^{\prime(r)} = \frac{1}{\sqrt{N_r}}\sum_{m=1}^{N_r-1} q_m^{(r)} e^{2\pi \ii mn/N_r},
 \qquad
 P_n^{\prime(r)} = \frac{1}{\sqrt{N_r}}\sum_{m=1}^{N_r-1} \pi_m^{(r)} e^{2\pi \ii mn/N_r}.
 \end{equation}
 The inverse transform is
 \begin{equation}
+\label{eq:s10-004}
 x_{\mathrm{cm}}^{(r)} = \frac{1}{N_r}\sum_{n=0}^{N_r-1} X_n^{(r)},
 \qquad
 q_m^{(r)} = \frac{1}{\sqrt{N_r}}\sum_{n=0}^{N_r-1} X_n^{(r)} e^{-2\pi \ii mn/N_r},
 \end{equation}
 and similarly
 \begin{equation}
+\label{eq:s10-005}
 p_\perp^{(r)} = \sum_{n=0}^{N_r-1} P_n^{(r)},
 \qquad
 \pi_m^{(r)} = \frac{1}{\sqrt{N_r}}\sum_{n=0}^{N_r-1} P_n^{(r)} e^{-2\pi \ii mn/N_r}.
 \end{equation}
 For real fields one has
 \begin{equation}
+\label{eq:s10-006}
 q_{N_r-m}^{(r)} = \bigl(q_m^{(r)}\bigr)^*,
 \qquad
 \pi_{N_r-m}^{(r)} = \bigl(\pi_m^{(r)}\bigr)^*.
@@ -728,12 +793,14 @@ q_{N_r-m}^{(r)} = \bigl(q_m^{(r)}\bigr)^*,
 
 It is convenient to package the nonzero Fourier modes into the rectangular DFT matrix
 \begin{equation}
+\label{eq:s10-007}
 (\widehat F_r)_{mn} = \frac{1}{\sqrt{N_r}} e^{-2\pi \ii mn/N_r},
 \qquad
 m=1,\dots,N_r-1,\quad n=0,\dots,N_r-1,
 \end{equation}
 where the hat indicates that the $m=0$ zero-mode row of the full $N_r\times N_r$ DFT has been removed. Also ${\bf 1}_{N_r}$ denotes the $N_r$-component column vector of ones, not an identity matrix; with these conventions
 \begin{equation}
+\label{eq:s10-008}
 X^{(r)} = x_{\mathrm{cm}}^{(r)}{\bf 1}_{N_r} + \widehat F_r^\dagger q^{(r)},
 \qquad
 P^{(r)} = \frac{p_\perp^{(r)}}{N_r}{\bf 1}_{N_r} + \widehat F_r^\dagger \pi^{(r)}.
@@ -741,16 +808,19 @@ P^{(r)} = \frac{p_\perp^{(r)}}{N_r}{\bf 1}_{N_r} + \widehat F_r^\dagger \pi^{(r)
 
 The full-boundary overlap implies the weighted center-of-mass relation
 \begin{equation}
+\label{eq:s10-009}
 N_3 x_{\mathrm{cm}}^{(3)} = N_1 x_{\mathrm{cm}}^{(1)} + N_2 x_{\mathrm{cm}}^{(2)},
 \end{equation}
 and the oscillator sector obeys an \emph{affine} rather than homogeneous relation,
 \begin{equation}
+\label{eq:s10-010}
 q^{(3)} = U_1 q^{(1)} + U_2 q^{(2)} + \xi\,y,
 \qquad
 y\equiv x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)},
 \end{equation}
 with
 \begin{equation}
+\label{eq:s10-011}
 U_r \equiv \widehat F_3 P_r \widehat F_r^\dagger,
 \qquad
 \xi \equiv \widehat F_3 P_1 {\bf 1}_{N_1}
@@ -765,6 +835,7 @@ P_r^T P_r = \mathbb I_{N_r},
 \]
 and the truncated DFTs satisfy $\widehat F_r\widehat F_r^\dagger=\mathbb I_{N_r-1}$ and $\widehat F_r^\dagger\widehat F_r=\mathbb I_{N_r}-N_r^{-1}{\bf 1}_{N_r}{\bf 1}_{N_r}^T$. Therefore
 \begin{equation}
+\label{eq:s10-012}
 U_r^\dagger U_r = \mathbb I_{N_r-1},
 \qquad
 U_1U_1^\dagger + U_2U_2^\dagger
@@ -773,10 +844,12 @@ U_1U_1^\dagger + U_2U_2^\dagger
 \end{equation}
 Equivalently, if one defines the normalized affine direction
 \begin{equation}
+\label{eq:s10-013}
 \widehat\xi\equiv \sqrt{\frac{N_3}{N_1N_2}}\,\xi,
 \end{equation}
 then
 \begin{equation}
+\label{eq:s10-014}
 U_1U_1^\dagger + U_2U_2^\dagger + \widehat\xi\,\widehat\xi^\dagger = \mathbb I_{N_3-1}.
 \end{equation}
 This is the precise nonzero-mode completeness relation. The rank-one term is not a nuisance correction; it is exactly the relative center-of-mass direction that remains after the weighted average zero mode has been removed.
@@ -824,6 +897,7 @@ The relative center-of-mass displacement produces the affine correction $\xi y$ 
 
 The matrix elements are completely explicit:
 \begin{equation}
+\label{eq:s10-015}
 (U_1)_{m\ell}
 =
 \frac{1}{\sqrt{N_3 N_1}}
@@ -833,6 +907,7 @@ e^{-2\pi \ii mn/N_3} e^{2\pi \ii \ell n/N_1},
 m=1,\dots,N_3-1,\quad \ell=1,\dots,N_1-1,
 \end{equation}
 \begin{equation}
+\label{eq:s10-016}
 (U_2)_{m\ell}
 =
 \frac{1}{\sqrt{N_3 N_2}}
@@ -843,6 +918,7 @@ m=1,\dots,N_3-1,\quad \ell=1,\dots,N_2-1.
 \end{equation}
 The second matrix carries the expected phase offset coming from the fact that the second string occupies the interval $\sigma\in[\alpha_1,\alpha_3]$ on the outgoing leg. The center-of-mass mixing vector is equally explicit:
 \begin{equation}
+\label{eq:s10-017}
 \xi_m
 =
 \frac{1}{\sqrt{N_3}}
@@ -857,6 +933,7 @@ Note that $\xi_m=0$ whenever $mN_1/N_3\in\ZZ$, i.e.\ when $m$ is a multiple of $
 
 To compare directly with oscillator formulas, define for each nonzero mode
 \begin{equation}
+\label{eq:s10-018}
 a_m^{(r)}
 =
 \sqrt{\frac{\mu_r\omega_m^{(r)}}{2}}\,q_m^{(r)}
@@ -869,6 +946,7 @@ a_m^{(r)}
 \end{equation}
 Equivalently, the exact site-to-oscillator map is
 \begin{equation}
+\label{eq:s10-019}
 \begin{aligned}
 a_m^{(r)}
 =
@@ -883,6 +961,7 @@ e^{-2\pi \ii mn/N_r}.
 \end{equation}
 The inverse formulas are
 \begin{equation}
+\label{eq:s10-020}
 \begin{aligned}
 X_n^{\prime(r)}
 &=
@@ -901,12 +980,14 @@ e^{2\pi \ii mn/N_r}.
 \end{equation}
 The DFT convention implies the canonical commutator
 \begin{equation}
+\label{eq:s10-021}
 \bigl[q_m^{(r)},\pi_n^{(s)}\bigr]
 =
 \mathrm{i}\,\delta^{rs}\delta_{m,N_r-n},
 \end{equation}
 with all other commutators vanishing on the nonzero-mode sector. Consequently,
 \begin{equation}
+\label{eq:s10-022}
 \bigl[a_m^{(r)},a_n^{(s)\dagger}\bigr]
 =
 \delta^{rs}\delta_{mn},
@@ -914,6 +995,7 @@ with all other commutators vanishing on the nonzero-mode sector. Consequently,
 with all other commutators vanishing. In the redundant full-spectrum bookkeeping basis the partner mode $a_{N_r-m}^{(r)}$ is related to $a_m^{(r)\dagger}$ only by the anti-linear reality involution on physical states; it should not be treated as a second independent canonical commutator before one passes to the reduced physical basis.
 In these formulas I keep the full complexified nonzero Fourier basis $m=1,\dots,N_r-1$. Reality of the original site field is imposed by the anti-linear involution
 \begin{equation}
+\label{eq:s10-023}
 q_{N_r-m}^{(r)}=\bigl(q_m^{(r)}\bigr)^*,
 \qquad
 \pi_{N_r-m}^{(r)}=\bigl(\pi_m^{(r)}\bigr)^*,
@@ -921,6 +1003,7 @@ q_{N_r-m}^{(r)}=\bigl(q_m^{(r)}\bigr)^*,
 on physical states. Equivalently, one may restrict to an independent half-spectrum. The linear overlap equations are conveniently written in the full complexified basis, but the actual squeezed-state inversion must be carried out only after passing to an independent half-spectrum or to an equivalent real sine/cosine basis.
 For oscillator bookkeeping it is therefore better to introduce the $(N_r-1)\times(N_r-1)$ permutation matrix $\mathcal R_r$ with components
 \begin{equation}
+\label{eq:s10-024}
 (\mathcal R_r)_{mn}=\delta_{m,N_r-n},
 \end{equation}
 so that the creation-partner vector in the redundant full-spectrum basis is $(\mathcal R_r{\bf a}^{(r)\dagger})_m=a_{N_r-m}^{(r)\dagger}$. The operator $a_{N_r-m}^{(r)}$ itself is not equal to $a_m^{(r)\dagger}$; rather, $a_m^{(r)}$ pairs canonically with $a_{N_r-m}^{(r)\dagger}$, exactly as in the inverse formulas above.
@@ -957,30 +1040,35 @@ or pass to real cosine/sine variables\\
 Nyquist mode treated separately when $N_r$ is even};
 
 \node[draw,rounded corners,align=center,text width=10.2cm,inner sep=5pt] at (0,-2.35)
-{The overlap equations may be written in the left-hand bookkeeping basis, but the bosonic and fermionic squeeze-matrix inversions are performed only on the reduced physical basis on the right.};
+{The overlap equations may be written in the left-hand bookkeeping basis, but the fermionic squeeze-matrix inversion and the reduced Gaussian constructions are performed only on the reduced physical basis on the right.};
 \end{tikzpicture}
-\caption{Why the squeeze-matrix inversions are done on a half-spectrum or an equivalent real basis. The full complexified nonzero Fourier basis is redundant because modes $m$ and $N_r-m$ are related by the reality involution. Keeping the full basis is convenient for writing the overlap equations, but the actual Gaussian inversion that defines $S^{(B)}$ or $S^{(F)}$ is performed only after reducing to an independent physical set of oscillators.}
+\caption{Why the overlap algebra is reduced to a half-spectrum or an equivalent real basis. The full complexified nonzero Fourier basis is redundant because modes $m$ and $N_r-m$ are related by the reality involution. Keeping the full basis is convenient for writing the overlap equations, but the actual reduced Gaussian constructions---and, in the fermionic sector, the squeeze-matrix inversion---are performed only after reducing to an independent physical set of oscillators.}
 \label{fig:half-spectrum-choice}
 \end{figure}
 
 For fermions one uses the same DFT matrices. Writing
 \begin{equation}
+\label{eq:s10-025}
 \theta_n^{(r)a}=\theta_{\mathrm{av}}^{(r)a}+\frac{1}{\sqrt{N_r}}\sum_{m=1}^{N_r-1}\vartheta_m^{(r)a}e^{2\pi \ii mn/N_r},
 \end{equation}
 with the SO$(8)$ spinor index $a$ shown explicitly only here and suppressed again below when no confusion results. At this stage $\vartheta_m^{(r)a}$ is the classical Fourier coefficient of the Grassmann field on leg $r$. The average Grassmann mode obeys
 \begin{equation}
+\label{eq:s10-026}
 N_3\theta_{\mathrm{av}}^{(3)}=N_1\theta_{\mathrm{av}}^{(1)}+N_2\theta_{\mathrm{av}}^{(2)},
 \end{equation}
 and if one keeps the relative average Grassmann mode
 \begin{equation}
+\label{eq:s10-027}
 \upsilon\equiv \theta_{\mathrm{av}}^{(1)}-\theta_{\mathrm{av}}^{(2)},
 \end{equation}
 explicit, then the nonzero Fourier modes obey the same affine overlap pattern as the bosons,
 \begin{equation}
+\label{eq:s10-028}
 \vartheta^{(3)} = U_1 \vartheta^{(1)} + U_2 \vartheta^{(2)} + \xi\,\upsilon.
 \end{equation}
 In a coherent-state oscillator basis one introduces fermionic annihilation and creation operators $b_m^{(r)}, b_m^{(r)\dagger}$ whose coherent-state eigenvalues are the nonzero-mode Grassmann variables on leg $r$. In the complexified bookkeeping basis they satisfy
 \begin{equation}
+\label{eq:s10-029}
 \{b_m^{(r)},b_n^{(s)\dagger}\}=\delta^{rs}\delta_{mn},
 \qquad
 b_{N_r-m}^{(r)}=\bigl(b_m^{(r)}\bigr)^\dagger
@@ -1025,6 +1113,7 @@ Figure~\ref{fig:basis-map} summarizes the bookkeeping: the discretized calculati
 \section{Bosonic cubic vertex in oscillator basis}
 The exact position-space overlap state is
 \begin{equation}
+\label{eq:s11-001}
 \langle X^{(1)},X^{(2)},X^{(3)}|V_3^{(B)}\rangle
 =
 \delta\!\bigl(X^{(3)}-P_1X^{(1)}-P_2X^{(2)}\bigr).
@@ -1032,6 +1121,7 @@ The exact position-space overlap state is
 This state is the kinematic core of the cubic vertex: it enforces the exact sewing of the three bosonic boundaries and nothing more. In particular, it is not yet the full interacting Hamiltonian vertex with its final normalization and interaction-point completion.
 After separating center-of-mass and oscillator variables, this becomes
 \begin{equation}
+\label{eq:s11-002}
 \delta\!\left(
 x_{\mathrm{cm}}^{(3)}-\frac{N_1x_{\mathrm{cm}}^{(1)}+N_2x_{\mathrm{cm}}^{(2)}}{N_3}
 \right)
@@ -1040,12 +1130,14 @@ x_{\mathrm{cm}}^{(3)}-\frac{N_1x_{\mathrm{cm}}^{(1)}+N_2x_{\mathrm{cm}}^{(2)}}{N
 \end{equation}
 with $y=x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)}$. If one Fourier transforms the center-of-mass variables to momentum space, the first delta becomes the usual transverse momentum conservation factor
 \begin{equation}
+\label{eq:s11-003}
 \delta^{(\perpD)}\!\left(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)}\right),
 \end{equation}
 while the second delta produces the familiar zero-mode-dependent linear terms in the oscillator vertex. This is the discrete version of the standard continuum three-string structure.
 
 Canonical invariance of the one-form
 \begin{equation}
+\label{eq:s11-004}
 \sum_{r=1}^3 \epsilon_r\, P^{(r)} \cdot \delta X^{(r)},
 \qquad
 (\epsilon_1,\epsilon_2,\epsilon_3)=(+1,+1,-1),
@@ -1053,6 +1145,7 @@ Canonical invariance of the one-form
 where $\delta$ denotes the variation of the canonical one-form, not a Kronecker or Dirac delta,
 restricted to the oscillator sector then gives the conjugate momentum overlap
 \begin{equation}
+\label{eq:s11-005}
 \pi^{(1)} = U_1^\dagger \pi^{(3)},
 \qquad
 \pi^{(2)} = U_2^\dagger \pi^{(3)}.
@@ -1061,6 +1154,7 @@ Here the variation is taken at fixed zero-mode data, so $\delta y=0$ in the osci
 
 Define oscillator annihilation operators on each leg by
 \begin{equation}
+\label{eq:s11-006}
 a^{(r)} =
 \frac{1}{\sqrt2}\left(
 (\mu_r\Omega_r)^{1/2} q^{(r)}
@@ -1072,6 +1166,7 @@ a^{(r)} =
 \end{equation}
 and collect them into one column vector
 \begin{equation}
+\label{eq:s11-007}
 {\bf a} =
 \begin{pmatrix}
 a^{(1)}\\
@@ -1086,6 +1181,7 @@ a^{(3)}
 Here each identity block $I$ is the identity matrix on the nonzero-mode space of the corresponding leg, of size $(N_r-1)\times(N_r-1)$. I write the stacked oscillator vector as ${\bf a}$ rather than $A$ in order to reserve the capital letter $A$ for graph-cycle labels, and I write the block-diagonal matrix $\boldsymbol{\mu}$ to distinguish it from the scalar single-cylinder parameter $\mu$.
 Introduce the coordinate and momentum overlap matrices
 \begin{equation}
+\label{eq:s11-008}
 C_Q=
 \begin{pmatrix}
 U_1 & U_2 & -I
@@ -1100,11 +1196,13 @@ I & 0 & -U_1^\dagger \\
 Again, each $I$ denotes the identity on the relevant leg's nonzero-mode space, so the block sizes are fixed by the dimensions of $U_1$ and $U_2$.
 The homogeneous part of the overlap conditions is equivalent to
 \begin{equation}
+\label{eq:s11-009}
 (\mathbb M {\bf a} + \mathbb N \mathcal R\,{\bf a}^\dagger)\,|V_3^{(B)}\rangle = 0,
 \end{equation}
 where $\mathcal R=\mathrm{diag}(\mathcal R_1,\mathcal R_2,\mathcal R_3)$ is the block-diagonal reality permutation introduced above, so that $(\mathcal R{\bf a}^\dagger)_m=a_{N-m}^\dagger$ leg by leg in the full redundant basis.
 with
 \begin{equation}
+\label{eq:s11-010}
 \mathbb M =
 \begin{pmatrix}
  C_Q (\boldsymbol{\mu}\Omega)^{-1/2}\\
@@ -1119,25 +1217,60 @@ with
 \end{equation}
 Because the position-space sewing is affine on the oscillator variables, the full constraint at fixed relative center-of-mass coordinate $y$ is actually
 \begin{equation}
+\label{eq:s11-011}
 (\mathbb M {\bf a} + \mathbb N \mathcal R\,{\bf a}^\dagger + J_0(y))\,|V_3^{(B)}\rangle = 0,
 \end{equation}
 where in the convention used here, with the center-of-mass coordinate Fourier transformed to transverse momentum and only the relative displacement $y=x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)}$ left explicit,
 \begin{equation}
+\label{eq:s11-012}
 J_0(y)=
 \begin{pmatrix}
 \sqrt2\,\xi\,y\\
 0
 \end{pmatrix}.
 \end{equation}
-The symbol $J_0(y)$ should be read in the same spirit as the auxiliary sources of Section~8, but its role is slightly different. It is not a freely introduced bookkeeping variable; rather, it is the fixed inhomogeneous term forced by the affine overlap itself. Physically it remembers the relative displacement $y=x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)}$ of the two incoming centers of mass after the weighted average mode has been separated off. If $y=0$, the overlap constraints become homogeneous and the vertex reduces to an ordinary squeezed state. For general $y$, one gets a \emph{displaced} squeezed state. No Bessel functions appear anywhere in this note, so the notation $J_0(y)$ here refers only to this affine source vector.
+The symbol $J_0(y)$ should be read in the same spirit as the auxiliary sources of Section~8, but its role is slightly different. It is not a freely introduced bookkeeping variable; rather, it is the fixed inhomogeneous term forced by the affine overlap itself. Physically it remembers the relative displacement $y=x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)}$ of the two incoming centers of mass after the weighted average mode has been separated off. If $y=0$, the overlap constraints become homogeneous. At a purely formal level one is then tempted to package the vertex as an ordinary squeezed state and, for general $y$, as a displaced one. No Bessel functions appear anywhere in this note, so the notation $J_0(y)$ here refers only to this affine source vector.
 The upper block comes from the affine coordinate overlap $C_Qq=-\xi y$, while the lower block vanishes because the oscillator momentum overlap is homogeneous. In a different zero-mode basis the source vector is obtained from this one by a linear change of variables. The constraint count is
 \begin{equation}
+\label{eq:s11-013}
 N_{\mathrm{rows}}(C_Q)+N_{\mathrm{rows}}(C_P)
 =(N_3-1)+(N_1-1+N_2-1)=2N_3-3,
 \end{equation}
-which matches the number of nonzero complex mode labels on the three legs. The actual number of independent real oscillators is obtained only after imposing the reality conditions on $(q,\pi)$ and eliminating the redundant pairs $(m,N_r-m)$, or equivalently after passing to an independent half-spectrum or real sine/cosine basis. In the full redundant notation the same redundancy is what forces the creation-partner vector to appear as $\mathcal R{\bf a}^\dagger$ rather than ${\bf a}^\dagger$ itself. Let ${\bf a}_{\mathrm{phys}}$ denote such a reduced basis, and let $\mathbb M_{\mathrm{phys}}$, $\mathbb N_{\mathrm{phys}}$, $J_{0,\mathrm{phys}}$ be the corresponding matrices. Concretely, one may take ${\bf a}_{\mathrm{phys}}$ to contain one oscillator from each pair $(m,N_r-m)$ on every leg, together with the separate real Nyquist oscillator when $N_r$ is even. Since each $(\mu_r\Omega_r)^{\pm1/2}$ is invertible on the nonzero-mode sector, nondegeneracy of $\mathbb M_{\mathrm{phys}}$ reduces to linear independence of the exact overlap constraints on the physical oscillator space. This is a finite-dimensional statement that can and should be checked numerically at each lattice resolution $N$. Assuming $\mathbb M_{\mathrm{phys}}$ is nondegenerate, the exact solution is a displaced squeezed state
+which matches the number of nonzero complex mode labels on the three legs. The actual number of independent real oscillators is obtained only after imposing the reality conditions on $(q,\pi)$ and eliminating the redundant pairs $(m,N_r-m)$, or equivalently after passing to an independent half-spectrum or real sine/cosine basis. In the full redundant notation the same redundancy is what forces the creation-partner vector to appear as $\mathcal R{\bf a}^\dagger$ rather than ${\bf a}^\dagger$ itself. Let ${\bf a}_{\mathrm{phys}}$ denote such a reduced basis, and let $\mathbb M_{\mathrm{phys}}$, $\mathbb N_{\mathrm{phys}}$, $J_{0,\mathrm{phys}}$ be the corresponding matrices. Concretely, one may take ${\bf a}_{\mathrm{phys}}$ to contain one oscillator from each pair $(m,N_r-m)$ on every leg, together with the separate real Nyquist oscillator when $N_r$ is even. Since each $(\mu_r\Omega_r)^{\pm1/2}$ is invertible on the nonzero-mode sector, nondegeneracy of $\mathbb M_{\mathrm{phys}}$ reduces to linear independence of the exact overlap constraints on the physical oscillator space. This is a finite-dimensional statement that can and should be checked numerically at each lattice resolution $N$. One must nevertheless be careful: for a regular bosonic squeezed state the mixed overlap block would vanish, whereas here
 \begin{equation}
-|V_3^{(B)}\rangle =
+C_Q C_P^T
+=
+2\begin{pmatrix}U_1 & U_2\end{pmatrix}\neq 0.
+\label{eq:bosonic-symplectic-obstruction}
+\end{equation}
+For a genuine bosonic squeezed state one would need
+\begin{equation}
+\label{eq:s11-014}
+S^{(B)T}=S^{(B)},
+\qquad
+S^{(B)}=-\mathbb M_{\mathrm{phys}}^{-1}\mathbb N_{\mathrm{phys}},
+\end{equation}
+which is equivalent to
+\begin{equation}
+\label{eq:s11-015}
+\mathbb M_{\mathrm{phys}}\mathbb N_{\mathrm{phys}}^T
+=
+\mathbb N_{\mathrm{phys}}\mathbb M_{\mathrm{phys}}^T.
+\end{equation}
+But with the explicit block form of $\mathbb M$ and $\mathbb N$ one finds
+\begin{equation}
+\label{eq:s11-016}
+\mathbb M\mathbb N^T-\mathbb N\mathbb M^T
+=
+2\ii
+\begin{pmatrix}
+0 & C_QC_P^T\\
+-C_PC_Q^T & 0
+\end{pmatrix},
+\end{equation}
+so the nonvanishing of $C_QC_P^T$ is exactly the obstruction to a symmetric finite-$N$ direct inversion. Thus the exact cubic overlap state is closer to a boundary-state distribution than to a normalizable Fock-space squeezed state. The local diagnostic \texttt{squeeze\_matrix\_check.py} verifies this obstruction explicitly. In particular, the naive direct inversion $-\mathbb M_{\mathrm{phys}}^{-1}\mathbb N_{\mathrm{phys}}$ does \emph{not} produce a symmetric matrix at finite $N$: the condition $C_QC_P^T\neq 0$ implies $\mathbb M_{\mathrm{phys}}\mathbb N_{\mathrm{phys}}^T\neq \mathbb N_{\mathrm{phys}}\mathbb M_{\mathrm{phys}}^T$ already in exact arithmetic. What one should trust numerically are the exact reduced Gaussian matrix elements obtained after solving the position-space overlap. With that caveat, it is still convenient to package the overlap state in the following \emph{formal} shorthand:
+\begin{equation}
+|V_3^{(B)}\rangle_{\mathrm{formal}} =
 {\cal C}_3^{(B)}
 \delta^{(\perpD)}(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)})
 \exp\!\left[
@@ -1152,8 +1285,8 @@ with
 S^{(B)} = -\mathbb M_{\mathrm{phys}}^{-1}\mathbb N_{\mathrm{phys}},
 \qquad
 \Lambda^{(B)} = -\mathbb M_{\mathrm{phys}}^{-1}J_{0,\mathrm{phys}},
+\label{eq:V3B-formal-data}
 \end{equation}
-and consistency of the bosonic Gaussian ansatz implies that $S^{(B)}$ is symmetric in the chosen physical basis, $S^{(B)T}=S^{(B)}$, as required by the commutativity of the creation operators in the quadratic exponent.
 while $\Phi^{(B)}(y)$ is the scalar normal-ordering completion. Its value is determined uniquely by the displaced Gaussian completion once a physical basis and vacuum normalization are fixed. In the explicit three-tachyon vacuum matrix element of Section~12.1 it reduces to $\Phi^{(B)}(y)=\gamma_T(N,\alpha)\,y^2$, with $\gamma_T$ given by the Schur complement formula~\eqref{eq:gammaT}. The overall constant ${\cal C}_3^{(B)}$ is likewise not fixed by the annihilation equations alone: at finite $N$ it is a lattice-resolution-dependent analogue of the Mandelstam local normalization and must be fixed by the same Poincare-algebra check that fixes the continuum cubic vertex normalization. At present the note does not supply that separate algebra check, so ${\cal C}_3^{(B)}$ remains an explicitly identified but not yet explicitly computed input. Equivalently, one may define $\Phi^{(B)}(y)$ by
 \begin{equation}
 e^{-\Phi^{(B)}(y)/2}
@@ -1161,18 +1294,29 @@ e^{-\Phi^{(B)}(y)/2}
 \frac{\langle 0|V_3^{(B)}(y)\rangle}
 {{\cal C}_3^{(B)}\,
 \delta^{(\perpD)}(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)})},
+\label{eq:PhiB-from-vacuum}
 \end{equation}
-so $\Phi^{(B)}(y)$ is a quadratic form in the relative center-of-mass displacement $y$ determined uniquely once the exact overlap state is normalized. The matrix $S^{(B)}$ is the oscillator squeeze matrix in the chosen physical basis. Here $|0\rangle$ is the finite-$N$ Fock vacuum annihilated by every oscillator in the chosen physical half-spectrum on each leg. If one lifts the squeezed-state data back to the redundant full-spectrum notation, then using the same $\mathcal R=\mathrm{diag}(\mathcal R_1,\mathcal R_2,\mathcal R_3)$ as above, with $(\mathcal R_r)_{mn}=\delta_{m,N_r-n}$, one recovers the reality conditions
+so $\Phi^{(B)}(y)$ is a quadratic form in the relative center-of-mass displacement $y$ determined uniquely once the exact overlap state is normalized. Here $|0\rangle$ is the finite-$N$ Fock vacuum annihilated by every oscillator in the chosen physical half-spectrum on each leg. If one still packages the formal boundary-state data back in the redundant full-spectrum notation, then using the same $\mathcal R=\mathrm{diag}(\mathcal R_1,\mathcal R_2,\mathcal R_3)$ as above, with $(\mathcal R_r)_{mn}=\delta_{m,N_r-n}$, one writes the involution relations
 \begin{equation}
 S^{(B)}_{\mathrm{full}}=\mathcal R\,S^{(B)*}_{\mathrm{full}}\,\mathcal R,
 \qquad
 \Lambda^{(B)}_{\mathrm{full}}=\mathcal R\,\Lambda^{(B)*}_{\mathrm{full}}.
+\label{eq:V3B-full-reality}
 \end{equation}
-The reduced discrete Neumann coefficients used for continuum comparison are extracted from $S^{(B)}$ only after the affine zero-mode pieces have been separated.
+For actual finite-$N$ comparisons, however, the safer object is the Gaussian-moment definition of the full three-leg Neumann data,
+\begin{equation}
+\bar N^{rs}_{mn}(N)
+\equiv
+-\frac{\langle 0|a_m^{(r)}a_n^{(s)}|V_3^{(B)}\rangle}
+{\langle 0|V_3^{(B)}\rangle},
+\label{eq:gaussian-moment-neumann}
+\end{equation}
+evaluated from the exact reduced Gaussian after eliminating one leg. In that representation the symmetry $\bar N^{rs}_{mn}=\bar N^{sr}_{nm}$ follows directly from the symmetry of the reduced Gaussian matrix $G_T^{-1}$. The local diagnostic \texttt{squeeze\_matrix\_check.py} implements this extraction numerically. So the continuum-comparison Neumann data used below should be understood in this Gaussian-moment sense, not as the output of a naive direct inversion of the formal boundary-state matrix.
 
 \section{Bosonic Lorentz check}
 In lightcone gauge, the cubic Hamiltonian and Lorentz generators are expanded as
 \begin{equation}
+\label{eq:s12-001}
 P^- = P^-_2 + g P^-_3 + O(g^2),
 \qquad
 J^{-I} = J^{-I}_2 + g J^{-I}_3 + O(g^2).
@@ -1180,6 +1324,7 @@ J^{-I} = J^{-I}_2 + g J^{-I}_3 + O(g^2).
 Here $g$ is the string coupling constant, $P^-_2$ is the free bosonic lightcone Hamiltonian, and $P^-_3$ is its cubic interaction correction. The equations in this section are continuum target relations that the discrete construction should reproduce in the continuum limit.
 At order $g$, Lorentz invariance requires
 \begin{equation}
+\label{eq:s12-002}
 [J^{-I}_2,P^-_3] + [J^{-I}_3,P^-_2] = 0,
 \qquad
 [J^{-I}_2,J^{-J}_3] + [J^{-I}_3,J^{-J}_2] = 0.
@@ -1200,12 +1345,14 @@ X^{(3)}=P_1X^{(1)}+P_2X^{(2)}
 \]
 and canonical one-form invariance imply the site-space momentum overlap
 \begin{equation}
+\label{eq:s12-003}
 P^{(1)}=P_1^T P^{(3)},
 \qquad
 P^{(2)}=P_2^T P^{(3)}.
 \end{equation}
 Now define the discrete free quadratic form on leg $r$ by
 \begin{equation}
+\label{eq:s12-004}
 \mathcal H_r^{\mathrm{lat}}
 \equiv
 \sum_{n=0}^{N_r-1}
@@ -1219,6 +1366,7 @@ X_{N_r}^{(r)}\equiv X_0^{(r)}.
 \end{equation}
 The corresponding discrete free lightcone Hamiltonian on leg $r$ is
 \begin{equation}
+\label{eq:s12-005}
 P^-_{2,r}
 =
 \frac{1}{2p_r^+}\left(\mathcal H_r^{\mathrm{lat}}-E_{0,r}^{\mathrm{lat}}\right),
@@ -1229,6 +1377,7 @@ E_{0,r}^{\mathrm{lat}}
 \end{equation}
 where $E_{0,r}^{\mathrm{lat}}$ is the finite-$N$ zero-point energy obtained by summing the nonzero lattice frequencies of the $D_\perp$ transverse oscillators. For the locality argument below only the explicit site dependence in $\mathcal H_r^{\mathrm{lat}}$ matters, because the normal-ordering term is a join-local constant once the overlap state is fixed. The momentum part cancels exactly on the overlap state:
 \begin{equation}
+\label{eq:s12-006}
 \sum_{n=0}^{N_1-1}\bigl(P_n^{(1)}\bigr)^2
 \,+\,
 \sum_{m=0}^{N_2-1}\bigl(P_m^{(2)}\bigr)^2
@@ -1237,6 +1386,7 @@ where $E_{0,r}^{\mathrm{lat}}$ is the finite-$N$ zero-point energy obtained by s
 \end{equation}
 For the bond terms, every bond away from the cut cancels pairwise under the ordered concatenation. The only uncancelled pieces are the two bonds adjacent to the unfolded interaction region:
 \begin{equation}
+\label{eq:s12-007}
 \begin{aligned}
 \Delta_I^{\mathrm{bond}}
 &\equiv
@@ -1261,6 +1411,7 @@ For the bond terms, every bond away from the cut cancels pairwise under the orde
 Thus the exact $\sigma$-space sewing removes every bulk mismatch in the free quadratic form and leaves only a join-local remainder supported on the two cut-adjacent bonds. This is the discrete reason that the dynamical Lorentz test is a local interaction-point problem rather than a bulk one. Any discrete cubic correction that restores the $J^{-I}$ algebra must cancel this local remainder together with the usual normal-ordering contribution, and there is no further obstruction away from the join.
 To make the local data more transparent, introduce the cut separation and the two incoming backward bond differences
 \begin{equation}
+\label{eq:s12-008}
 \delta_I^X \equiv X_{I_+}-X_{I_-},
 \qquad
 \nabla_+^{\mathrm{bwd}}X_{I_+}^{(1)}\equiv X_{I_+}-X_{N_1-1}^{(1)},
@@ -1269,6 +1420,7 @@ To make the local data more transparent, introduce the cut separation and the tw
 \end{equation}
 Then
 \begin{equation}
+\label{eq:s12-009}
 \Delta_I^{\mathrm{bond}}
 =
 2\,\delta_I^X\Bigl(
@@ -1281,6 +1433,7 @@ So the bosonic obstruction is controlled by a finite set of local variables atta
 
 The nontrivial test is the dynamical generator. For the closed bosonic string,
 \begin{equation}
+\label{eq:s12-010}
 J^{-I}_2
 =
 x^- p^I
@@ -1293,6 +1446,7 @@ x^- p^I
 \end{equation}
 where $x^-$ is the lightcone coordinate conjugate to $p^+$, $\alpha_n^I$ and $\tilde\alpha_n^I$ are the standard continuum left- and right-moving bosonic oscillators, and $L_n$, $\tilde L_n$ are the corresponding Virasoro generators. These are not new lattice definitions; they are the familiar continuum operators used as the target of the discrete Lorentz check. The usual chiral normal-ordering constants are $a_L=a_R=1$, equivalently the left- and right-moving intercepts are both equal to one. Acting on the overlap state, the bulk pieces cancel because the $\sigma$-space sewing is exact. The only possible obstruction is a join-local normal-ordering anomaly. In the continuum this anomaly cancels precisely for
 \begin{equation}
+\label{eq:s12-011}
 D=26,
 \qquad
 a_L=a_R=1
@@ -1312,6 +1466,7 @@ In the actual development of this note, however, the easier amplitude-level calc
 \subsection{On-shell three-tachyon check}
 The first external amplitude check in the bosonic theory is the closed-string three-tachyon matrix element. Each tachyon state is the oscillator vacuum on its leg, so there are no nonzero-mode polarization tensors and no oscillator insertions beyond the vacuum component of the cubic state. The lightcone matrix element therefore has the form
 \begin{equation}
+\label{eq:s12-1-001}
 {\cal A}_{TTT}^{\mathrm{lc}}(N)
 =
 \delta^{(\perpD)}\!\bigl(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)}\bigr)\,
@@ -1321,6 +1476,7 @@ where ${\cal N}_{TTT}$ is the scalar factor produced by the zero-mode overlap, t
 
 At the level of the explicit cubic vertex already written in this note, one can reduce the matrix element further. Write the weighted center-of-mass coordinate and relative coordinate as
 \begin{equation}
+\label{eq:s12-1-002}
 X_{\mathrm{cm}}
 \equiv
 \frac{\alpha_1 x_{\mathrm{cm}}^{(1)}+\alpha_2 x_{\mathrm{cm}}^{(2)}}{\alpha_3}
@@ -1331,12 +1487,14 @@ y\equiv x_{\mathrm{cm}}^{(1)}-x_{\mathrm{cm}}^{(2)}.
 \end{equation}
 Then
 \begin{equation}
+\label{eq:s12-1-003}
 x_{\mathrm{cm}}^{(1)} = X_{\mathrm{cm}}+\frac{\alpha_2}{\alpha_3}y,
 \qquad
 x_{\mathrm{cm}}^{(2)} = X_{\mathrm{cm}}-\frac{\alpha_1}{\alpha_3}y.
 \end{equation}
 For momentum eigenstates on the three external legs, the integral over $X_{\mathrm{cm}}$ produces the displayed transverse momentum-conservation factor, while the remaining relative-coordinate integral gives
 \begin{equation}
+\label{eq:s12-1-004}
 {\cal N}_{TTT}(p_1^+,p_2^+,p_3^+;N)
 =
 {\cal C}_3^{(B)}
@@ -1348,6 +1506,7 @@ For momentum eigenstates on the three external legs, the integral over $X_{\math
 \end{equation}
 with
 \begin{equation}
+\label{eq:s12-1-005}
 q_{\mathrm{rel}}
 \equiv
 \frac{\alpha_2}{\alpha_3}p_\perp^{(1)}
@@ -1357,12 +1516,14 @@ q_{\mathrm{rel}}
 \end{equation}
 This is already the correct lightcone matrix element in the mixed momentum/relative-position convention used in the note. To turn it into an actual computation from the discrete vertex, one may evaluate the oscillator overlap directly in any independent real nonzero-mode basis. Let $q_{\mathrm{phys}}^{(r)}$ denote such a basis on leg $r$, let
 \begin{equation}
+\label{eq:s12-1-006}
 M_r \equiv (\mu_r\Omega_r)_{\mathrm{phys}},
 \qquad
 U_{r,\mathrm{phys}},\ \xi_{\mathrm{phys}}
 \end{equation}
 be the corresponding reduced overlap data, and write the tachyon oscillator wavefunction on each leg as
 \begin{equation}
+\label{eq:s12-1-007}
 \psi_{0}^{(r)}(q_{\mathrm{phys}}^{(r)})
 =
 {\cal N}_{0,r}\,
@@ -1371,6 +1532,7 @@ be the corresponding reduced overlap data, and write the tachyon oscillator wave
 Here ``phys'' denotes any independent real basis for the nonzero-mode oscillators, such as the real sine/cosine basis; the final Schur complement $\gamma_T$ is basis-independent even though the explicit matrices $M_r$ and $U_{r,\mathrm{phys}}$ depend on that basis choice.
 Using
 \begin{equation}
+\label{eq:s12-1-008}
 q_{\mathrm{phys}}^{(3)}
 =
 U_{1,\mathrm{phys}}q_{\mathrm{phys}}^{(1)}
@@ -1379,6 +1541,7 @@ U_{1,\mathrm{phys}}q_{\mathrm{phys}}^{(1)}
 \end{equation}
 the three-tachyon matrix element becomes a finite-dimensional Gaussian integral. If one stacks the incoming oscillator variables into
 \begin{equation}
+\label{eq:s12-1-009}
 Q\equiv
 \begin{pmatrix}
 q_{\mathrm{phys}}^{(1)}\\
@@ -1392,12 +1555,14 @@ U_{1,\mathrm{phys}} & U_{2,\mathrm{phys}}
 \end{equation}
 then, for one fixed transverse component $I$ (the full exponent is the sum over $\perpD$ identical copies, and $y$ below denotes that one component of the relative coordinate), the oscillator exponent takes the form
 \begin{equation}
+\label{eq:s12-1-010}
 -\frac12 Q^T G_T\,Q
 -y\, {\bf B}_T^T Q
 -\frac12 C_T\, y^2,
 \end{equation}
 with
 \begin{equation}
+\label{eq:s12-1-011}
 G_T
 \equiv
 \begin{pmatrix}
@@ -1408,6 +1573,7 @@ M_2 + U_{2,\mathrm{phys}}^T M_3 U_{2,\mathrm{phys}}
 \end{pmatrix},
 \end{equation}
 \begin{equation}
+\label{eq:s12-1-012}
 {\bf B}_T
 \equiv
 \begin{pmatrix}
@@ -1419,6 +1585,7 @@ C_T \equiv \xi_{\mathrm{phys}}^T M_3 \xi_{\mathrm{phys}}.
 \end{equation}
 Because the same oscillator matrix appears in every transverse direction, the Gaussian integration over $Q$ gives
 \begin{equation}
+\label{eq:s12-1-013}
 {\cal A}_{TTT}^{\mathrm{lc}}(N)
 =
 \delta^{(\perpD)}\!\bigl(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)}\bigr)\,
@@ -1438,6 +1605,7 @@ C_T - {\bf B}_T^T G_T^{-1} {\bf B}_T
 \end{equation}
 and ${\cal K}_{TTT}(N,\alpha)$ collects the determinant factor from $G_T$, the leg-by-leg ground-state normalizations, and the overall cubic normalization ${\cal C}_3^{(B)}$. The remaining $y$-integral is elementary:
 \begin{equation}
+\label{eq:s12-1-015}
 {\cal A}_{TTT}^{\mathrm{lc}}(N)
 =
 \delta^{(\perpD)}\!\bigl(p_\perp^{(1)}+p_\perp^{(2)}-p_\perp^{(3)}\bigr)\,
@@ -1448,17 +1616,20 @@ and ${\cal K}_{TTT}(N,\alpha)$ collects the determinant factor from $G_T$, the l
 \end{equation}
 Comparing this result with the displaced squeezed-state form~\eqref{eq:V3B-squeezed}, one reads off
 \begin{equation}
+\label{eq:s12-1-016}
 \Phi^{(B)}(y)=\gamma_T(N,\alpha)\,y^2,
 \end{equation}
 where in the full $\perpD$-dimensional amplitude $y^2\equiv y\cdot y$. Thus the scalar normal-ordering completion is precisely the Schur complement of the oscillator block $G_T$ with respect to the affine center-of-mass coupling.
 If one factors out the still-undetermined cubic normalization as
 \begin{equation}
+\label{eq:s12-1-017}
 \widetilde{\cal K}_{TTT}(N,\alpha)
 =
 {\cal C}_3^{(B)}\,\kappa_{1\mathrm d}(N,\alpha)^{\perpD},
 \end{equation}
 then the explicit one-direction prefactor coming from the three vacuum wavefunctions, the $Q$-Gaussian, and the $y$-Gaussian is
 \begin{equation}
+\label{eq:s12-1-018}
 \kappa_{1\mathrm d}(N,\alpha)
 =
 \left(\prod_{r=1}^3 {\cal N}_{0,r}\right)
@@ -1476,18 +1647,21 @@ p_1^-+p_2^-=p_3^-,
 \]
 the relative transverse momentum is fixed by the longitudinal data. Writing
 \begin{equation}
+\label{eq:s12-1-019}
 p_r^-=\frac{p_\perp^{(r)2}-4/\alpha'}{2p_r^+},
 \qquad
 2p_r^+=\frac{\alpha_r}{\alpha'},
 \end{equation}
 and imposing
 \begin{equation}
+\label{eq:s12-1-020}
 p_\perp^{(3)}=p_\perp^{(1)}+p_\perp^{(2)},
 \qquad
 p_1^-+p_2^-=p_3^-,
 \end{equation}
 one gets
 \begin{equation}
+\label{eq:s12-1-021}
 \frac{p_\perp^{(1)2}-4/\alpha'}{\alpha_1}
 \,+\,
 \frac{p_\perp^{(2)2}-4/\alpha'}{\alpha_2}
@@ -1497,6 +1671,7 @@ one gets
 \end{equation}
 hence
 \begin{equation}
+\label{eq:s12-1-022}
 2\,p_\perp^{(1)}\!\cdot p_\perp^{(2)}
 =
 \frac{4}{\alpha'}\left(
@@ -1505,12 +1680,14 @@ hence
 \end{equation}
 so the invariant relative momentum
 \begin{equation}
+\label{eq:s12-1-023}
 q_{\mathrm{rel}}^2
 \equiv
 \left(p_\perp^{(1)}-\frac{\alpha_1}{\alpha_3}p_\perp^{(3)}\right)^2
 \end{equation}
 is
 \begin{equation}
+\label{eq:s12-1-024}
 q_{\mathrm{rel}}^2
 =
 \frac{4}{\alpha'}\left(
@@ -1524,6 +1701,7 @@ So once $\gamma_T(N,\alpha)$ has been computed from the discrete overlap matrice
 
 Evaluating the reduced real-basis formulas above gives a direct finite-$N$ diagnostic. For the sample joins below I take a common lattice spacing, set $\alpha'=1$, identify $\alpha_r\propto N_r$, and use $\perpD=24$ when reporting the bare normalization diagnostic
 \begin{equation}
+\label{eq:s12-1-025}
 \log {\cal C}^{(B)}_{3,\mathrm{req,bare}}(N,\alpha)
 \equiv
 \frac{q_{\mathrm{rel}}^2}{2\,\gamma_T(N,\alpha)}
@@ -1546,12 +1724,14 @@ These numbers come from the exact finite-dimensional Gaussian integrals; no cont
 
 A stronger structural statement is available if one asks whether the remaining scalar factor contains any \emph{irreducible} dependence on the ordered triple $(N_1,N_2,N_3)$. On a dense finite-$N$ grid extending all the way to
 \begin{equation}
+\label{eq:s12-1-026}
 4\le N_1,N_2\le 60,
 \qquad
 N_3=N_1+N_2\le 120,
 \end{equation}
 comprising $3249$ sampled joins, the exact Gaussian data fit
 \begin{equation}
+\label{eq:s12-1-027}
 \log {\cal C}^{(B)}_{3,\mathrm{req,bare}}(N_1,N_2)
 =
 f_{\mathrm{in}}(N_1)+f_{\mathrm{in}}(N_2)+f_{\mathrm{out}}(N_3)
@@ -1559,15 +1739,18 @@ f_{\mathrm{in}}(N_1)+f_{\mathrm{in}}(N_2)+f_{\mathrm{out}}(N_3)
 \end{equation}
 with root-mean-square residual
 \begin{equation}
+\label{eq:s12-1-028}
 \sqrt{\bigl\langle \delta_{\mathrm{fact}}^2\bigr\rangle}
 =1.5\times 10^{-9},
 \end{equation}
 and maximum absolute residual below
 \begin{equation}
+\label{eq:s12-1-029}
 \max |\delta_{\mathrm{fact}}| < 2.3\times 10^{-8}.
 \end{equation}
 Equivalently, to numerical precision on that grid,
 \begin{equation}
+\label{eq:s12-1-030}
 {\cal C}^{(B)}_{3,\mathrm{req,bare}}(N_1,N_2)
 =
 Z_{\mathrm{in}}(N_1)\,Z_{\mathrm{in}}(N_2)\,Z_{\mathrm{out}}(N_3),
@@ -1575,6 +1758,7 @@ Z_{\mathrm{in}}(N_1)\,Z_{\mathrm{in}}(N_2)\,Z_{\mathrm{out}}(N_3),
 for suitable one-string factors $Z_{\mathrm{in}}$ and $Z_{\mathrm{out}}$.
 The existence of such a factorization is the invariant statement. The individual functions are not unique: in logarithmic form one may shift
 \begin{equation}
+\label{eq:s12-1-031}
 f_{\mathrm{in}}(N)\mapsto f_{\mathrm{in}}(N)+aN+b,
 \qquad
 f_{\mathrm{out}}(N)\mapsto f_{\mathrm{out}}(N)-aN-2b,
@@ -1583,12 +1767,14 @@ without changing the full three-leg combination. A canonical gauge choice is use
 
 Even with that caveat, the large-$N$ tail of the one-string factors contains meaningful information because the allowed redefinition changes only the linear and constant pieces. On two independent grids,
 \begin{equation}
+\label{eq:s12-1-032}
 4\le N_1,N_2\le 60,\ N_3\le 120,
 \qquad
 4\le N_1,N_2\le 80,\ N_3\le 160,
 \end{equation}
 the same canonical gauge-fixed representative is fit extremely accurately by
 \begin{equation}
+\label{eq:s12-1-033}
 \begin{aligned}
 f_{\mathrm{in}}(N)
 &=
@@ -1610,6 +1796,7 @@ f_{\mathrm{out}}(N)
 \end{equation}
 with tail-fit residuals at the level of $10^{-11}$ or smaller on the outgoing side and $10^{-13}$ or smaller on the incoming side. Here $\lambda_{\mathrm{gauge}}$ and the constants $c_{\mathrm{in}},c_{\mathrm{out}}$ are convention-dependent, but the logarithmic and inverse-power coefficients are not. In particular, the data are numerically consistent with the simple gauge-invariant values
 \begin{equation}
+\label{eq:s12-1-034}
 7\ \text{(incoming $\log N$)},\qquad
 -5\ \text{(outgoing $\log N$)},\qquad
 \pm\pi\ \text{($1/N$)},\qquad
@@ -1619,6 +1806,7 @@ for the $\log N$, $1/N$, and $1/N^2$ terms. In fact, if one fixes those non-line
 
 Because the allowed linear redefinition cancels identically in the full three-leg combination once $N_3=N_1+N_2$ is imposed, the same data imply a direct gauge-invariant asymptotic formula for the full amplitude-level normalization diagnostic:
 \begin{equation}
+\label{eq:s12-1-035}
 \begin{aligned}
 \log {\cal C}^{(B)}_{3,\mathrm{req,bare}}(N_1,N_2)
 &=
@@ -1633,6 +1821,7 @@ Because the allowed linear redefinition cancels identically in the full three-le
 with one overall constant ${\cal C}_{\mathrm{tail}}$. Fitting only that single constant gives root-mean-square residuals of about $2.0\times 10^{-7}$ on the `60/120` grid, $1.7\times 10^{-7}$ on the `80/160` grid, and $1.5\times 10^{-7}$ on the `100/200` grid, with worst-case residuals around $10^{-6}$. So the observed large-$N$ structure is not merely legwise; it is already visible directly in the full gauge-invariant three-point scalar factor.
 Equivalently, at fixed physical circumferences $\alpha_r=aN_r$, the same fit reads
 \begin{equation}
+\label{eq:s12-1-036}
 \begin{aligned}
 \log {\cal C}^{(B)}_{3,\mathrm{req,bare}}
 &=
@@ -1649,6 +1838,7 @@ Equivalently, at fixed physical circumferences $\alpha_r=aN_r$, the same fit rea
 \end{equation}
 So the leading bare lattice normalization suggested by the explicit three-tachyon data is
 \begin{equation}
+\label{eq:s12-1-037}
 {\cal C}^{(B)}_{3,\mathrm{req,bare}}
 \sim
 e^{{\cal C}_{\mathrm{tail}}}\,
@@ -1661,16 +1851,19 @@ before the still-separate conventional external-state normalization is restored.
 
 There is also a sharper critical-dimension statement hiding in the same data. If one keeps the transverse multiplicity $\perpD$ as a formal parameter in
 \begin{equation}
+\label{eq:s12-1-038}
 \log {\cal C}^{(B)}_{3,\mathrm{req,bare}}=\frac{q_{\mathrm{rel}}^2}{2\gamma_T}-\perpD\log \kappa_{1\mathrm d},
 \end{equation}
 and repeats the exact factorization test on the same $3249$-join grid, the irreducible three-body obstruction vanishes only at
 \begin{equation}
+\label{eq:s12-1-039}
 \perpD=24
 \qquad
 (\text{equivalently }D=26).
 \end{equation}
 Numerically, the root-mean-square factorization residual is
 \begin{equation}
+\label{eq:s12-1-040}
 \begin{array}{c|ccccc}
 \perpD & 22 & 23 & 24 & 25 & 26 \\
 \hline
@@ -1685,39 +1878,309 @@ Numerically, the root-mean-square factorization residual is
 with the maximum residual showing the same symmetric minimum at $\perpD=24$. So the amplitude-level cancellation is not generic: the non-factorizable part of the Gaussian exponent is cancelled precisely by $24$ copies of the one-direction prefactor contribution. This is an explicit finite-$N$ three-tachyon signal of the critical bosonic dimension.
 That cancellation is highly nontrivial. On the same $3249$-join grid at $\perpD=24$, the two pieces
 \begin{equation}
+\label{eq:s12-1-041}
 \frac{q_{\mathrm{rel}}^2}{2\gamma_T},
 \qquad
 \log \kappa_{1\mathrm d}
 \end{equation}
 are \emph{separately} not leg-factorizable: their own factorization residuals are
 \begin{equation}
+\label{eq:s12-1-042}
 \mathrm{RMS}\!\left(\delta_{\mathrm{fact}}^{\mathrm{exp}}\right)=1.30\times 10^{-2},
 \qquad
 \mathrm{RMS}\!\left(\delta_{\mathrm{fact}}^{\kappa}\right)=5.42\times 10^{-4}.
 \end{equation}
 Only in the combination
 \begin{equation}
+\label{eq:s12-1-043}
 \delta_{\mathrm{fact}}^{\mathrm{exp}}-\perpD\,\delta_{\mathrm{fact}}^{\kappa}
 \end{equation}
 do they collapse to the quoted
 \begin{equation}
+\label{eq:s12-1-044}
 1.48\times 10^{-9}
 \end{equation}
 level. So the observed factorization at $\perpD=24$ is not a trivial property of one ingredient of the Gaussian formula; it comes from a delicate cancellation between the oscillator-exponent and determinant/vacuum-normalization pieces.
 
 It is worth stressing what this does and does not mean conceptually. The appearance of the critical bosonic dimension already in the scalar three-tachyon matrix element is not as surprising as it may first seem, because the relevant $\perpD$-dependence is carried by the \emph{number of transverse oscillator directions} entering the determinant/zero-point part of the cubic vertex, not by spacetime spin. That counting is present even for tachyon external states. In more standard lightcone language, the same underlying anomaly data that control the normal-ordering constant and the closure of the Lorentz generators can already leak into the scalar cubic coupling through the vacuum/measure factors. What the present test shows is therefore a genuine amplitude-level signal of $D=26$, but not yet a complete proof of Lorentz invariance: spinning states and the operator-level commutator remain necessary to verify the full tensorial structure and the exact Poincare-algebra closure.
 
-This is a much sharper statement than the earlier coarse power-law fits. At the level of the explicit discrete cubic vertex, the bosonic three-tachyon amplitude shows \emph{no irreducible three-body momentum dependence at all}: the entire nonconstant factor is already a product of one-string renormalizations for the two incoming legs and the outgoing leg. In that amplitude-level sense, the discrete vertex has passed the three-tachyon Lorentz test.
+This is a much sharper statement than the earlier coarse power-law fits. At the level of the explicit discrete cubic vertex, the bosonic three-tachyon amplitude shows \emph{no irreducible three-body momentum dependence at all}: the entire nonconstant factor is already a product of one-string renormalizations for the two incoming legs and the outgoing leg. In that restricted scalar-amplitude sense, the discrete vertex has passed the three-tachyon factorization diagnostic, but it has \emph{not} yet passed the full operator-level Lorentz test.
 
 What remains unresolved is not the existence of a three-body obstruction, but the principled derivation of the functions $Z_{\mathrm{in}}$, $Z_{\mathrm{out}}$, and the overall constant normalization from the operator-level computation of $[J^{-I}_2,P^-_3]+[J^{-I}_3,P^-_2]$ together with the standard external-state normalization convention. That derivation is still needed to connect the explicit amplitude-level factorization found here to the full lightcone Poincare-algebra closure argument.
+
+\subsection{Two-tachyon / one-massless diagnostic}
+A second bosonic amplitude-level diagnostic, already visible before the operator commutator is completed, is the matrix element with two incoming tachyons and one outgoing first-level massless bosonic state on leg $3$. This is \emph{not} the GS graviton discussion of Section~15.1 below; here the external state is the first oscillator excitation of the \emph{bosonic} closed string. The value of this check is that it sharpens the external-state normalization in a way the earlier branch note did not: the discrete first-harmonic insertion can be fixed exactly in the same finite-$N$ conventions already used for the three-tachyon amplitude.
+
+For one free bosonic leg with $N$ sites, define the boundary Fourier coefficients
+\begin{equation}
+\label{eq:s12-2-001}
+X_m \equiv \frac{q_m}{\sqrt N}
+=
+\frac{1}{N}\sum_{n=0}^{N-1} X_n\,e^{-2\pi \ii mn/N},
+\qquad
+m=1,\dots,N-1.
+\end{equation}
+These are just the nonzero Fourier modes already introduced earlier, rewritten with the normalization used in the older branch note. The one-string ground-state wavefunction in an independent real nonzero-mode basis is
+\begin{equation}
+\label{eq:s12-2-002}
+\psi_0(q_{\mathrm{phys}})
+=
+{\cal N}_0\,
+\exp\!\left[-\frac12 q_{\mathrm{phys}}^T M\,q_{\mathrm{phys}}\right],
+\qquad
+M=(\mu\Omega)_{\mathrm{phys}}.
+\end{equation}
+Because external-state normalization uses the product of bra and ket wavefunctions, the vacuum two-point function is \emph{half} the inverse of the one-wavefunction quadratic form. For the first boundary harmonic one therefore gets
+\begin{equation}
+\label{eq:s12-2-003}
+\begin{aligned}
+C_{1,N}
+&\equiv
+\frac{\int \dd q_{\mathrm{phys}}\;
+\psi_0(q_{\mathrm{phys}})
+\,X_1 X_{-1}\,
+\psi_0(q_{\mathrm{phys}})}
+{\int \dd q_{\mathrm{phys}}\;
+\psi_0(q_{\mathrm{phys}})^2}\\
+&=
+\frac{1}{2N\,\mu\omega_1}
+=
+\frac{\pi\alpha'}{2N\sin(\pi/N)}.
+\end{aligned}
+\end{equation}
+Here $\mu=a/(2\pi\alpha')$ and $\omega_1=(2/a)\sin(\pi/N)$, so the common lattice spacing cancels exactly. The local diagnostic \texttt{bosonic\_massless\_check.py} verifies this formula directly in the same real basis used by \texttt{tachyon\_check.py}, with agreement at the $10^{-16}$ level for the sample sizes $N=4,8,16,32,64,128$.
+
+This fixes the outgoing first-level tensor insertion uniquely:
+\begin{equation}
+{\cal O}_{1,N}^{IJ}
+\equiv
+C_{1,N}^{-1}\Bigl(X_1^I X_{-1}^J - C_{1,N}\delta^{IJ}\Bigr).
+\label{eq:massless-normalized-operator}
+\end{equation}
+Equivalently, the coordinate-space wavefunction of the state
+$a_1^{I\dagger}a_{N-1}^{J\dagger}|0;p\rangle$
+is ${\cal O}_{1,N}^{IJ}\psi_0$. Symmetric traceless, antisymmetric, and trace projections of the $IJ$ indices give the graviton, $B$-field, and dilaton channels of the bosonic closed string respectively. For the present diagnostic only the raw tensor form~\eqref{eq:massless-normalized-operator} is needed.
+
+Now place this insertion on the outgoing leg $3$ while keeping tachyon vacua on the incoming legs. In the same reduced real-basis notation used in the three-tachyon calculation, let
+\begin{equation}
+\label{eq:s12-2-005}
+Q\equiv
+\begin{pmatrix}
+q_{\mathrm{phys}}^{(1)}\\
+q_{\mathrm{phys}}^{(2)}
+\end{pmatrix},
+\qquad
+q_{\mathrm{phys}}^{(3)}
+=
+U_{1,\mathrm{phys}}q_{\mathrm{phys}}^{(1)}
++U_{2,\mathrm{phys}}q_{\mathrm{phys}}^{(2)}
++\xi_{\mathrm{phys}}\,y,
+\end{equation}
+and let $r_\pm$ be the rows extracting $X_{\pm1}^{(3)}$ from $q_{\mathrm{phys}}^{(3)}$, so that
+\begin{equation}
+\label{eq:s12-2-006}
+X_{\pm1}^{(3)} = r_\pm q_{\mathrm{phys}}^{(3)}
+=
+L_\pm Q + \zeta_\pm y,
+\qquad
+L_\pm \equiv \bigl(r_\pm U_{1,\mathrm{phys}},\,r_\pm U_{2,\mathrm{phys}}\bigr),
+\qquad
+\zeta_\pm \equiv r_\pm \xi_{\mathrm{phys}}.
+\end{equation}
+The Gaussian in $Q$ is the same one that already appeared in the three-tachyon matrix element,
+\begin{equation}
+\label{eq:s12-2-007}
+-\frac12 Q^T G_T\,Q
+- y\,{\bf B}_T^T Q
+-\frac12 C_T\,y^2,
+\qquad
+\gamma_T=C_T-{\bf B}_T^T G_T^{-1}{\bf B}_T,
+\end{equation}
+so at fixed $y$ the outgoing first-harmonic bilinear reduces to
+\begin{equation}
+\label{eq:s12-2-008}
+\frac{\bigl\langle X_1^{(3)I}X_{-1}^{(3)J}\bigr\rangle_y}
+{\langle 1\rangle_y}
+=
+\delta^{IJ}\Sigma_1
++\mu_+\mu_-\,y^I y^J,
+\end{equation}
+with
+\begin{equation}
+\label{eq:s12-2-009}
+\Sigma_1 \equiv L_+G_T^{-1}L_-^T,
+\qquad
+\mu_\pm \equiv \zeta_\pm - L_\pm G_T^{-1}{\bf B}_T.
+\end{equation}
+No antisymmetric tensor appears at this stage: the covariance term is proportional to $\delta^{IJ}$, and the only one-point source is along the relative displacement vector $y$.
+
+Inserting the normalized operator~\eqref{eq:massless-normalized-operator} therefore gives
+\begin{equation}
+\label{eq:s12-2-010}
+\frac{\bigl\langle {\cal O}_{1,N_3}^{IJ}\bigr\rangle_y}
+{\langle 1\rangle_y}
+=
+\frac{\Sigma_1-C_{1,N_3}}{C_{1,N_3}}\,\delta^{IJ}
++
+\frac{\mu_+\mu_-}{C_{1,N_3}}\,y^I y^J.
+\end{equation}
+Fourier transforming the relative displacement to the relative transverse momentum $q_{\mathrm{rel}}$ then yields the exact finite-$N$ tensor decomposition
+\begin{equation}
+\label{eq:s12-2-011}
+{\cal A}_{TTM}^{IJ,\mathrm{lc}}(N)
+=
+{\cal A}^{(B)}_{\mathrm{vac}}(N;q_{\mathrm{rel}})
+\left[
+A_{\mathrm{tr}}^{(M)}(N,\alpha)\,\delta^{IJ}
+-B_{\mathrm{rel}}^{(M)}(N,\alpha)\,
+q_{\mathrm{rel}}^I q_{\mathrm{rel}}^J
+\right],
+\end{equation}
+with
+\begin{equation}
+A_{\mathrm{tr}}^{(M)}
+=
+\frac{\Sigma_1-C_{1,N_3}}{C_{1,N_3}}
++
+\frac{\mu_+\mu_-}{C_{1,N_3}\gamma_T},
+\qquad
+B_{\mathrm{rel}}^{(M)}
+=
+\frac{\mu_+\mu_-}{C_{1,N_3}\gamma_T^2}.
+\label{eq:ttm-bosonic-coefficients}
+\end{equation}
+So the whole bosonic $2T+1M$ matrix element is again reduced to explicit finite-dimensional Gaussian data, with the external-state normalization fixed exactly rather than guessed.
+
+The on-shell kinematics is also cleaner than in the three-tachyon case. Writing
+\begin{equation}
+\label{eq:s12-2-013}
+p_\perp^{(1)}=\frac{\alpha_1}{\alpha_3}p_\perp^{(3)}+q_{\mathrm{rel}},
+\qquad
+p_\perp^{(2)}=\frac{\alpha_2}{\alpha_3}p_\perp^{(3)}-q_{\mathrm{rel}},
+\end{equation}
+and imposing
+\begin{equation}
+\label{eq:s12-2-014}
+2p_1^+p_1^- - p_\perp^{(1)2}
+=
+2p_2^+p_2^- - p_\perp^{(2)2}
+=
+-\frac{4}{\alpha'},
+\qquad
+2p_3^+p_3^- - p_\perp^{(3)2}=0,
+\end{equation}
+one finds
+\begin{equation}
+\label{eq:s12-2-014a}
+\frac{p_\perp^{(1)2}-4/\alpha'}{\alpha_1}
+\,+\,
+\frac{p_\perp^{(2)2}-4/\alpha'}{\alpha_2}
+\,-\,
+\frac{p_\perp^{(3)2}}{\alpha_3}
+=0,
+\end{equation}
+and substituting~\eqref{eq:s12-2-013} gives
+\begin{equation}
+\label{eq:s12-2-014b}
+\frac{p_\perp^{(1)2}}{\alpha_1}
+\,+\,
+\frac{p_\perp^{(2)2}}{\alpha_2}
+\,-\,
+\frac{p_\perp^{(3)2}}{\alpha_3}
+=
+\left(\frac{1}{\alpha_1}+\frac{1}{\alpha_2}\right)q_{\mathrm{rel}}^2,
+\end{equation}
+because the cross terms proportional to $p_\perp^{(3)}\!\cdot q_{\mathrm{rel}}$ cancel exactly and
+\begin{equation}
+\label{eq:s12-2-014c}
+\frac{\alpha_1}{\alpha_3^2}+\frac{\alpha_2}{\alpha_3^2}
+=
+\frac{1}{\alpha_3}
+\end{equation}
+when $\alpha_3=\alpha_1+\alpha_2$. Combining~\eqref{eq:s12-2-014a} and~\eqref{eq:s12-2-014b} therefore gives
+\begin{equation}
+\label{eq:s12-2-014d}
+\left(\frac{1}{\alpha_1}+\frac{1}{\alpha_2}\right)
+\left(q_{\mathrm{rel}}^2-\frac{4}{\alpha'}\right)=0,
+\end{equation}
+and hence
+\begin{equation}
+\label{eq:s12-2-015}
+q_{\mathrm{rel}}^2=\frac{4}{\alpha'}.
+\end{equation}
+So unlike the three-tachyon case, the magnitude of the relative transverse momentum is independent of the ratio $\alpha_1/\alpha_3$. For a symmetric polarization tensor $e_{IJ}$ transverse to the outgoing massless momentum, $e_{IJ}p_\perp^{(3)J}=0$, one also has
+\begin{equation}
+\label{eq:s12-2-016}
+e_{IJ}q_{\mathrm{rel}}^I q_{\mathrm{rel}}^J
+=
+\frac14\,
+e_{IJ}
+\bigl(p_\perp^{(1)}-p_\perp^{(2)}\bigr)^I
+\bigl(p_\perp^{(1)}-p_\perp^{(2)}\bigr)^J,
+\end{equation}
+which is exactly the expected bosonic $2T+1M$ tensor structure. Thus the discrete calculation already isolates the right continuum covariant tensor, up to the same overall cubic normalization issue that remains from the bosonic Lorentz commutator.
+
+Numerically, the same diagnostic script shows that the trace piece in~\eqref{eq:ttm-bosonic-coefficients} is strongly suppressed while the momentum-bilinear coefficient approaches a nonzero continuum limit. On the fixed-ratio family $N_1:N_2=2:3$ with $\alpha'=1$ one finds
+\begin{equation}
+\label{eq:s12-2-017}
+\begin{array}{c|cccc}
+(N_1,N_2) & (16,24) & (32,48) & (64,96) & (128,192) \\
+\hline
+A_{\mathrm{tr}}^{(M)}
+& 3.62\times 10^{-2}
+& 1.81\times 10^{-2}
+& 9.05\times 10^{-3}
+& 4.53\times 10^{-3}\\
+B_{\mathrm{rel}}^{(M)}
+& 2.08
+& 2.00
+& 1.96
+& 1.94
+\end{array}
+\end{equation}
+and a simple least-squares fit gives
+\begin{equation}
+\label{eq:s12-2-018}
+A_{\mathrm{tr}}^{(M)}\approx \frac{0.5797}{N_1},
+\qquad
+B_{\mathrm{rel}}^{(M)}\approx 1.9203 + \frac{2.5044}{N_1}.
+\end{equation}
+At $(N_1,N_2)=(128,192)$ the smallness of the trace part already comes from a delicate cancellation:
+\begin{equation}
+\label{eq:s12-2-019}
+\frac{\Sigma_1-C_{1,N_3}}{C_{1,N_3}}\approx -0.68227,
+\qquad
+\frac{\mu_+\mu_-}{C_{1,N_3}\gamma_T}\approx 0.68680,
+\qquad
+A_{\mathrm{tr}}^{(M)}\approx 4.53\times 10^{-3}.
+\end{equation}
+So the branch note's observation that the trace part ``works'' survives in the cleaner main-note conventions, but only after the external-state normalization is fixed exactly by $C_{1,N}$.
+
+The ratio dependence is also smooth. At lattice sizes $(N_1,N_2)=(128a,128b)$ with
+\begin{equation}
+\label{eq:s12-2-020}
+\lambda\equiv \frac{\alpha_1}{\alpha_3}\approx \frac{a}{a+b}
+=
+\frac14,\ \frac13,\ \frac38,\ \frac25,\ \frac12,
+\end{equation}
+the same diagnostic gives
+\begin{equation}
+\label{eq:s12-2-021}
+B_{\mathrm{rel}}^{(M)}
+\approx
+1.55,\ 1.80,\ 1.88,\ 1.93,\ 2.02,
+\end{equation}
+again with a smooth $\lambda$-dependence. This does \emph{not} replace the missing operator-level bosonic Lorentz computation: the overall cubic normalization and its principled derivation from $[J^{-I}_2,P^-_3]+[J^{-I}_3,P^-_2]$ are still absent. But it does add a second explicit bosonic amplitude-level diagnostic to the note, and more importantly it fixes the first-harmonic massless normalization unambiguously in the finite-$N$ conventions actually used by the discrete vertex.
 
 \section{Fermionic kinematic overlap}
 The fermionic part should be treated in complete parallel with the bosons. Let $\theta^{(r)}$ denote the GS worldsheet fermions on leg $r$ in $\sigma$ position space. The full-boundary overlap gives
 \begin{equation}
+\label{eq:s13-001}
 \theta^{(3)} = P_1 \theta^{(1)} + P_2 \theta^{(2)},
 \end{equation}
 including the two unfolded-strip representatives $\theta_{I_+}$ and $\theta_{I_-}$ discussed above. In a coherent-state basis, the kinematic fermionic vertex is therefore the Grassmann delta functional
 \begin{equation}
+\label{eq:s13-002}
 \langle \bar\theta^{(1)},\bar\theta^{(2)},\bar\theta^{(3)} | V^{(F)}_{\mathrm{kin}} \rangle
 \propto
 \delta\!\left(\bar\theta^{(3)}-\bar\theta^{(1)}P_1^T-\bar\theta^{(2)}P_2^T\right).
@@ -1726,12 +2189,14 @@ Here $\bar\theta^{(r)}$ denotes the bra-side coherent-state Grassmann eigenvalue
 
 Removing the average mode and transforming to nonzero Fourier modes gives
 \begin{equation}
+\label{eq:s13-003}
 \vartheta^{(3)} = U_1 \vartheta^{(1)} + U_2 \vartheta^{(2)} + \xi\,\upsilon,
 \qquad
 \upsilon\equiv \theta_{\mathrm{av}}^{(1)}-\theta_{\mathrm{av}}^{(2)},
 \end{equation}
 with the same overlap matrices $U_r=\widehat F_3P_r\widehat F_r^\dagger$ and affine vector $\xi$ as in the bosonic sector. In a coherent-state oscillator basis this becomes a displaced fermionic squeezed state. Let $b_m^{(r)}$ denote the nonzero-mode fermionic oscillator/coherent-state variables, normalized by
 \begin{equation}
+\label{eq:s13-004}
 \{b_m^{(r)},b_n^{(s)\dagger}\}=\delta^{rs}\delta_{mn},
 \qquad
 \{b_m^{(r)},b_n^{(s)}\}=0,
@@ -1739,10 +2204,12 @@ with the same overlap matrices $U_r=\widehat F_3P_r\widehat F_r^\dagger$ and aff
 with $m=1,\dots,N_r-1$ on leg $r$. These are the fermionic counterparts of the bosonic oscillators $a_m^{(r)}$: they are the coherent-state variables attached to the nonzero Fourier modes, and the Majorana bookkeeping variables $(\vartheta,\pi_\vartheta)$ introduced next are linear combinations of them.
 After shifting away the affine zero-mode source, one may write the homogeneous part in terms of these oscillator variables as
 \begin{equation}
+\label{eq:s13-005}
 b^{(3)} = U_1 b^{(1)} + U_2 b^{(2)},
 \end{equation}
 or, in a Majorana-type bookkeeping basis for the real nonzero fermionic modes,
 \begin{equation}
+\label{eq:s13-006}
 \vartheta_m^{(r)}=\frac{b_m^{(r)}+b_{N_r-m}^{(r)\dagger}}{\sqrt2},
 \qquad
 \pi_{\vartheta,m}^{(r)}=\frac{b_m^{(r)}-b_{N_r-m}^{(r)\dagger}}{\mathrm{i}\sqrt2},
@@ -1750,6 +2217,7 @@ or, in a Majorana-type bookkeeping basis for the real nonzero fermionic modes,
 where the same letter $\vartheta_m^{(r)}$ is now being used for the corresponding Fock-space operator rather than the classical Fourier coefficient. This is the standard coherent-state abuse of notation, but it is worth keeping in mind: before quantization $\vartheta_m$ is a Grassmann mode label, whereas here it is the operator built from $b_m$ and $b_{N_r-m}^\dagger$.
 These operators satisfy the anticommutators
 \begin{equation}
+\label{eq:s13-007}
 \bigl\{\vartheta_m^{(r)},\vartheta_n^{(s)}\bigr\}
 =
 \delta^{rs}\delta_{m,N_r-n},
@@ -1763,6 +2231,7 @@ These operators satisfy the anticommutators
 Thus $(\vartheta,\pi_\vartheta)$ are a convenient full-spectrum Majorana bookkeeping basis, but not a canonical pair in that redundant basis. As in the bosonic sector, the actual squeezed-state construction should therefore be performed only after restricting to an independent half-spectrum or an equivalent real basis of physical fermionic oscillators.
 Then the fermionic overlap matrices are explicitly
 \begin{equation}
+\label{eq:s13-008}
 C_{\Theta}=
 \begin{pmatrix}
 U_1 & U_2 & -I
@@ -1776,6 +2245,7 @@ I & 0 & -U_1^\dagger\\
 \end{equation}
 where, as in the bosonic sector, each identity block $I$ is the identity on the nonzero-mode space of the corresponding leg. Therefore
 \begin{equation}
+\label{eq:s13-009}
 \mathbb M_F=
 \begin{pmatrix}
 C_{\Theta}\\
@@ -1790,10 +2260,12 @@ C_{\Theta}\\
 \end{equation}
 This is the fermionic analogue of the bosonic overlap system, without the frequency factors $(\mu\Omega)^{\pm1/2}$ because the GS fermions are first order rather than second order in worldsheet time. Let $B_{\mathrm{phys}}$ denote an independent fermionic oscillator basis obtained from the full complexified nonzero modes by imposing the involution or, equivalently, by passing to a real half-spectrum basis. Concretely, $B_{\mathrm{phys}}$ may be chosen exactly as in the bosonic half-spectrum reduction: one representative from each pair $(m,N_r-m)$ on every leg, together with a separate real Nyquist fermion when $N_r$ is even. Let $\mathbb M_{F,\mathrm{phys}}$, $\mathbb N_{F,\mathrm{phys}}$ be the corresponding reduced overlap matrices. Then the kinematic overlap state solves linear constraints of the form
 \begin{equation}
+\label{eq:s13-010}
 (\mathbb M_{F,\mathrm{phys}} B_{\mathrm{phys}} + \mathbb N_{F,\mathrm{phys}} B_{\mathrm{phys}}^\dagger)\,|V^{(F)}_{\mathrm{kin}}\rangle = 0,
 \end{equation}
-and hence
+and one may package the solution only as a \emph{formal} Grassmann squeezed-state shorthand,
 \begin{equation}
+\label{eq:s13-011}
 |V^{(F)}_{\mathrm{kin}}\rangle
 =
 {\cal C}_3^{(F)}
@@ -1803,17 +2275,38 @@ and hence
 \qquad
 S^{(F)} = -\mathbb M_{F,\mathrm{phys}}^{-1}\mathbb N_{F,\mathrm{phys}}.
 \end{equation}
-In the fermionic case the consistency condition is the opposite one: $S^{(F)}$ must be antisymmetric, $S^{(F)T}=-S^{(F)}$, because the creation operators anticommute and the quadratic Grassmann exponent is proportional to $B_m^\dagger B_n^\dagger$.
+For an ordinary finite-dimensional Grassmann squeezed state one would require $S^{(F)}$ to be antisymmetric, $S^{(F)T}=-S^{(F)}$, because the creation operators anticommute and the quadratic Grassmann exponent is proportional to $B_m^\dagger B_n^\dagger$.
+Equivalently,
+\begin{equation}
+\label{eq:s13-011a}
+\mathbb M_{F,\mathrm{phys}}\mathbb N_{F,\mathrm{phys}}^T
++\mathbb N_{F,\mathrm{phys}}\mathbb M_{F,\mathrm{phys}}^T
+=0.
+\end{equation}
+Already before reducing to a half-spectrum basis, however, the explicit overlap blocks give
+\begin{equation}
+\label{eq:s13-011b}
+\mathbb M_F\mathbb N_F^T+\mathbb N_F\mathbb M_F^T
+=
+2
+\begin{pmatrix}
+C_\Theta C_\Theta^T & 0\\
+0 & C_{\Pi_\Theta}C_{\Pi_\Theta}^T
+\end{pmatrix},
+\end{equation}
+because the off-diagonal terms cancel while the diagonal ones add. So the naive direct inversion fails the antisymmetry condition already at the unreduced overlap level.
 The plus sign in the fermionic exponent, in contrast with the bosonic minus sign, is the standard Grassmann squeezed-state convention: exchanging two creation operators contributes the extra minus sign needed to solve the linear annihilation constraints.
-The matrix $S^{(F)}$ is therefore explicit once the reduced fermionic basis has been chosen, but the overall factor ${\cal C}_3^{(F)}$ still depends on the global fermionic coherent-state normalization convention. Here the same finite-$N$ Fock vacuum symbol $|0\rangle$ is used as in the bosonic sector, now understood as annihilated by all oscillators in the chosen physical fermionic basis as well. The note does not fix the normalization convention independently at this stage; it is absorbed later into the overall normalization of the full superstring vertex.
+In the present overlap bookkeeping basis, however, the simple direct inversion above should not be overinterpreted as an already-verified finite-$N$ antisymmetric matrix. The local diagnostic \texttt{fermionic\_overlap\_diagnostic.py} shows explicitly on representative joins that the naive inversion fails this antisymmetry test, so below $S^{(F)}$ is used only as formal notation for the overlap solution, not as a separate quantitative input. What the note actually uses later are the exact fermionic overlap constraints themselves together with the surviving zero-mode variable $\Lambda_{\mathrm{lat}}$. A systematic Grassmann-moment extraction, analogous to the bosonic Gaussian-moment Neumann construction, is left for later work. The overall factor ${\cal C}_3^{(F)}$ still depends on the global fermionic coherent-state normalization convention. Here the same finite-$N$ Fock vacuum symbol $|0\rangle$ is used as in the bosonic sector, now understood as annihilated by all oscillators in the chosen physical fermionic basis as well. The note does not fix the normalization convention independently at this stage; it is absorbed later into the overall normalization of the full superstring vertex.
 Thus the superstring cubic vertex factorizes into a kinematic overlap state
 \begin{equation}
+\label{eq:s13-012}
 |V_{\mathrm{kin}}\rangle = |V_3^{(B)}\rangle \otimes |V^{(F)}_{\mathrm{kin}}\rangle
 \end{equation}
 times the local interaction-point prefactor. Here ``kinematic'' again means exact boundary sewing only. The omitted affine fermionic source is not an additional interaction term; it is simply the fermionic analogue of the bosonic inhomogeneous source $J_0(y)$, now determined by the relative average Grassmann mode $\upsilon$. One could keep it explicitly as a linear source vector in the fermionic constraint equations, but for the purposes of the later local prefactor it is cleaner to absorb that information into the surviving zero-mode variable $\Lambda_{\mathrm{lat}}$.
 
 For numerical work one must also fix the Grassmann ordering convention once and for all. A convenient choice is to order variables by leg, then by site, then by SO$(8)$ index:
 \begin{equation}
+\label{eq:s13-013}
 \Theta=
 \bigl(
 \theta^{(1)}_{0,1},\dots,\theta^{(1)}_{N_1-1,8};
@@ -1826,6 +2319,7 @@ The Berezin measure is taken in the matching order. Once this convention is fixe
 \section{Superstring cubic vertex and GS prefactor}
 In the superstring, the full cubic vertex is not an arbitrary polynomial ansatz. One should first construct the kinematic overlap state $|V_{\mathrm{kin}}\rangle$ implementing the exact bosonic and fermionic boundary concatenation, and only then multiply by the local Green--Schwarz prefactor:
 \begin{equation}
+\label{eq:s14-001}
 |V_{\mathrm{GS}}\rangle
 =
 {\cal P}_{I,\mathrm{loc}}\,|V_{\mathrm{kin}}\rangle,
@@ -1841,6 +2335,7 @@ At finite lattice spacing this separation is slightly subtler than in the contin
 Here ${\cal P}_I$ and $\widetilde{\cal P}_I$ denote the holomorphic and antiholomorphic local interaction-point operators at the vertex labeled by $I$. In the present note only their product ${\cal P}_{I,\mathrm{loc}}$ is used invariantly; later one writes this combined local prefactor as the lattice operator $K_{\mathrm{lat}}^I\,\widetilde K_{\mathrm{lat}}^J\,v^{\mathrm{lat}}_{IJ}$, where the superscripts $I,J$ on $K$ and $v_{IJ}$ are transverse SO$(8)$ vector indices and are unrelated to the vertex label.
 The prefactor is fixed, up to overall normalization and possible finite-$a$ counterterms, by the requirement that the dynamical supercharges act correctly on the vertex:
 \begin{equation}
+\label{eq:s14-002}
 \left(\sum_{r=1}^3 Q_r^-\right)|V_{\mathrm{GS}}\rangle=0,
 \qquad
 \left(\sum_{r=1}^3 \widetilde Q_r^-\right)|V_{\mathrm{GS}}\rangle=0.
@@ -1850,34 +2345,40 @@ Thus low-point amplitudes are checks of the construction, not the primary defini
 
 In the unfolded closed-string strip, define the two local representatives
 \begin{equation}
+\label{eq:s14-003}
 X_{I_+}\equiv X_0^{(1)}=X_0^{(3)},
 \qquad
 X_{I_-}\equiv X_0^{(2)}=X_{N_1}^{(3)},
 \end{equation}
 and likewise
 \begin{equation}
+\label{eq:s14-004}
 \theta_{I_+}\equiv \theta_0^{(1)}=\theta_0^{(3)},
 \qquad
 \theta_{I_-}\equiv \theta_0^{(2)}=\theta_{N_1}^{(3)}.
 \end{equation}
 The raw local lattice data are then the one-sided differences on the two arcs,
 \begin{equation}
+\label{eq:s14-005}
 \nabla_+ X^{(1)}_{I_+} \equiv X^{(1)}_1-X_{I_+},
 \qquad
 \nabla_+ X^{(3)}_{I_+} \equiv X^{(3)}_1-X_{I_+},
 \end{equation}
 \begin{equation}
+\label{eq:s14-006}
 \nabla_- X^{(2)}_{I_-} \equiv X_{I_-}-X^{(2)}_{N_2-1},
 \qquad
 \nabla_- X^{(3)}_{I_-} \equiv X_{I_-}-X^{(3)}_{N_3-1},
 \end{equation}
 and similarly
 \begin{equation}
+\label{eq:s14-007}
 \nabla_+ \theta^{(1)}_{I_+} \equiv \theta^{(1)}_1-\theta_{I_+},
 \qquad
 \nabla_+ \theta^{(3)}_{I_+} \equiv \theta^{(3)}_1-\theta_{I_+},
 \end{equation}
 \begin{equation}
+\label{eq:s14-008}
 \nabla_- \theta^{(2)}_{I_-} \equiv \theta_{I_-}-\theta^{(2)}_{N_2-1},
 \qquad
 \nabla_- \theta^{(3)}_{I_-} \equiv \theta_{I_-}-\theta^{(3)}_{N_3-1}.
@@ -1923,17 +2424,20 @@ Figure~\ref{fig:interaction-arcs} isolates the local geometry relevant for the i
 
 At an interaction point $z_I$ the Mandelstam map has $\rho'(z_I)=0$, since $z_I$ is a branch point of the worldsheet-to-strip map. Therefore the local expansion starts at quadratic order:
 \begin{equation}
+\label{eq:s14-009}
 \rho(z)=\rho_I+\frac12 \rho''(z_I)(z-z_I)^2+O\!\bigl((z-z_I)^3\bigr).
 \end{equation}
 \noindent
 Choose a local uniformizing coordinate $w$ near the branch point with $w(z_I)=0$ and $w=z-z_I$ to leading order. Then
 \begin{equation}
+\label{eq:s14-010}
 \rho-\rho_I=\frac12 \rho''(z_I)\,w^2+O(w^3),
 \qquad
 \sqrt{2(\rho-\rho_I)}=\sqrt{\rho''(z_I)}\,w+O(w^2),
 \end{equation}
 while
 \begin{equation}
+\label{eq:s14-011}
 \frac{\partial}{\partial \rho}
 =
 \frac{1}{\rho''(z_I)\,w}\frac{\partial}{\partial w}
@@ -1941,6 +2445,7 @@ while
 \end{equation}
 Hence the continuum interaction-point operator is
 \begin{equation}
+\label{eq:s14-012}
 K^I
 \equiv
 \lim_{\rho\to\rho_I}\sqrt{2(\rho-\rho_I)}\,\frac{\partial X^I}{\partial \rho}
@@ -1950,6 +2455,7 @@ K^I
 \end{equation}
 up to the branch/phase convention used to define the square root and the local coordinate. The antiholomorphic operator $\widetilde K^I$ is the analogous square-root coefficient of $\bar\partial X^I$ on the conjugate arc. The point is that $K^I$ and $\widetilde K^I$ are not ordinary strip derivatives: they are the finite coefficients left after multiplying the singular fields by the local square-root factor. On the lattice, one step in the strip direction has $\Delta \rho\sim a$, so the branch-point relation implies $|w|\sim a^{1/2}$ and therefore $\Delta X\sim (\partial_w X)\Delta w=O(a^{1/2})$. This fixes the leading scaling
 \begin{equation}
+\label{eq:s14-013}
 K^I \sim a^{-1/2}\,\Delta X^I,
 \qquad
 \widetilde K^I \sim a^{-1/2}\,\Delta X^I,
@@ -1957,12 +2463,14 @@ K^I \sim a^{-1/2}\,\Delta X^I,
 independently of the detailed stencil choice.
 More explicitly, suppose one fixes a local lattice coordinate on the two arcs so that one lattice step corresponds to
 \begin{equation}
+\label{eq:s14-014}
 \Delta w_+ = \lambda_I\,a^{1/2}+O(a),
 \qquad
 \Delta \bar w_- = \widetilde\lambda_I\,a^{1/2}+O(a),
 \end{equation}
 with $\lambda_I$ and $\widetilde\lambda_I$ determined by the chosen local-coordinate convention on the holomorphic and antiholomorphic arcs. Then matching the lattice difference $\Delta X^I \sim (\partial_w X^I)\Delta w_+$ to the continuum formula above gives the conditional leading coefficients
 \begin{equation}
+\label{eq:s14-015}
 c_K = \frac{\lambda_I}{\sqrt{\rho''(z_I)}},
 \qquad
 \widetilde c_K = \frac{\widetilde\lambda_I}{\sqrt{\overline{\rho''(z_I)}}},
@@ -1971,6 +2479,7 @@ again up to the branch choice for the square root and the phase convention for t
 
 The minimal lattice ansatz is therefore a renormalized one-sided difference on each arc:
 \begin{equation}
+\label{eq:s14-016}
 \begin{aligned}
 K^I_{\mathrm{lat}}
 &=
@@ -1986,12 +2495,14 @@ a^{-1/2}\widetilde c_K\,\bigl(\nabla_- X_{I_-}^{(3)}\bigr)^I.
 \end{equation}
 The equalities between the leg-$1$/leg-$3$ and leg-$2$/leg-$3$ expressions are exact consequences of the position-space overlap itself: $\nabla_+X_{I_+}^{(3)}=\nabla_+X_{I_+}^{(1)}$ because the first site on string $3$ is the first site on string $1$, while $\nabla_-X_{I_-}^{(3)}=\nabla_-X_{I_-}^{(2)}$ because the last site on string $3$ is the last site on string $2$. The approximation enters only in the continuum matching statement
 \begin{equation}
+\label{eq:s14-017}
 K^I_{\mathrm{lat}}=K^I+O(a^{1/2}),
 \qquad
 \widetilde K^I_{\mathrm{lat}}=\widetilde K^I+O(a^{1/2}),
 \end{equation}
 after the normalization constants and local coordinate conventions have been fixed. Thus $K$ probes the $I_+$ arc of the join and $\widetilde K$ probes the $I_-$ arc. More general improved lattice definitions are possible,
 \begin{equation}
+\label{eq:s14-018}
 K^I_{\mathrm{lat,imp}}
 =
 a^{-1/2}c_K^{(2)}\,\bigl(D^{(2)}_{I_+}X^{(1)}\bigr)^I,
@@ -2002,6 +2513,7 @@ a^{-1/2}\widetilde c_K^{(2)}\,\bigl(\widetilde D^{(2)}_{I_-}X^{(2)}\bigr)^I,
 \end{equation}
 where a genuine improvement must involve extra sites on the same arc, for example the one-sided second-order stencils
 \begin{equation}
+\label{eq:s14-019}
 D^{(2)}_{I_+}X^{(1)} \equiv \frac{-3X_{I_+}+4X_1^{(1)}-X_2^{(1)}}{2},
 \qquad
 \widetilde D^{(2)}_{I_-}X^{(2)} \equiv \frac{3X_{I_-}-4X_{N_2-1}^{(2)}+X_{N_2-2}^{(2)}}{2}.
@@ -2012,6 +2524,7 @@ The branch-point argument above fixes the \emph{scaling} $a^{-1/2}$ but not, by 
 
 The continuum lightcone GS vertex is already known. Suppressing only the explicit SO$(8)$ gamma-matrix contractions inside $v_{IJ}(\Lambda)$, one may write the cubic Hamiltonian in the standard compact form
 \begin{equation}
+\label{eq:s14-020}
 |H_3\rangle
 =
 {\cal C}_3^{(S)}
@@ -2029,6 +2542,7 @@ In this formula:
 In the formulas below, $\Lambda^a$ is taken to transform as a chiral SO$(8)$ spinor, say $\mathbf{8}_s$. For type IIA/IIB the usual relative chirality assignments between left and right sectors must be restored, but that distinction is not needed for the lattice kinematics being developed here. The compact continuum formula above is therefore not yet a fully convention-fixed component expression: to write it out completely one would also have to choose a definite SO$(8)$ gamma-matrix basis, chirality conventions, and normalization/phasing conventions for the continuum supercharges.
 The polynomial decomposes into even Grassmann degree as
 \begin{equation}
+\label{eq:s14-021}
 v_{IJ}(\Lambda)
 =
 A^{(0)}_{IJ}
@@ -2038,11 +2552,13 @@ A^{(0)}_{IJ}
 +A^{(8)}_{IJ}\epsilon_{a_1\cdots a_8}\Lambda^{a_1}\cdots\Lambda^{a_8},
 \end{equation}
 with the coefficients built from SO$(8)$ gamma matrices and the Levi-Civita tensor. This note does not reproduce the full component formulas for those coefficients because they are lengthy and convention-dependent; the precise expressions depend on the chosen SO$(8)$ gamma-matrix basis and the left/right chirality conventions of the flat-space GS formalism. Explicit formulas are available in the continuum lightcone literature \cite{SpradlinVolovich2002,PankiewiczStefanski2002}; for implementation one should import those tensors from a single fixed convention rather than mixing formulas across sources. The matrix-string interpretation of the same structure is discussed in \cite{DijkgraafMotl2003,Kishimoto2006}.
+That matrix-string interpretation is more explicit than a bare citation. In Section~2 of \cite{DijkgraafMotl2003}, the local interaction is written as $(\tau^i\Sigma^i)(\bar\tau^j\bar\Sigma^j)$ with $\tau^i\Sigma^i=G_{-1/2}^{\dot a}(\sigma\Sigma^{\dot a})$ on the left-moving side. The regularized singular bosonic operators $p^i_{\mathrm{reg}}$, $\tilde p^j_{\mathrm{reg}}$ convert the bare twist fields $\sigma$, $\tilde\sigma$ into the excited twists $\tau^i$, $\tilde\tau^j$. On the fermionic side, Dijkgraaf--Motl identify the Grassmann-module unit function with $\Sigma^i\tilde\Sigma^i-\ii\Sigma^{\dot a}\tilde\Sigma^{\dot a}$, show that repeated multiplication by $\Lambda^a$ generates the full spin-field basis, and derive the final continuum identity $v^{ij}(\Lambda)\leftrightarrow 16\,\Sigma^j\tilde\Sigma^i$. The numerical factor $16$ here is the Dijkgraaf--Motl normalization convention; when comparing with other continuum sources one should allow for the corresponding overall conversion factor before matching component formulas. So the continuum GS prefactor $p^i_{\mathrm{reg}}\tilde p^j_{\mathrm{reg}}v_{ij}(\Lambda)$ is precisely the lightcone Green--Schwarz representative of the same local supercurrent insertion at the join. This is the conceptual bridge from the NSR/matrix-string $G^\perp\widetilde G^\perp$ language to the compact GS formula $K^I\widetilde K^Jv_{IJ}(\Lambda)$ used in this note. What it does \emph{not} yet determine is the preferred finite-$a$ lattice quantization of the corresponding local operator.
 For an actual implementation these coefficients must therefore be imported from a fixed continuum convention; the present note identifies the required tensor structures but does not itself rederive them from first principles. In the local diagnostics accompanying this note, the files \texttt{so8\_gamma.py} and \texttt{gs\_zero\_mode\_prefactor.py} now fix one concrete SO$(8)$ convention and assemble the imported continuum coefficients $v_{IJ}(\Lambda)$ explicitly in that basis, while \texttt{gs\_zero\_mode\_module.py} makes the corresponding $8_v\oplus 8_c$ ground-state Clifford module explicit. What is still not supplied by those helpers is the separate dictionary between the resulting Grassmann-polynomial basis and the external lightcone graviton states.
 Throughout this discussion $\gamma^I_{a\dot a}$ denotes an SO$(8)$ Clebsch--Gordan matrix coupling $\mathbf 8_s\otimes \mathbf 8_c\to \mathbf 8_v$, and $\gamma^{IJ}_{ab}$ denotes the induced antisymmetrized two-index matrix acting on the chosen chiral spinor representation. The note itself still keeps these symbols abstract, but whenever a concrete component calculation is needed one must choose one fixed convention and stick to it throughout.
 
 After imposing the kinematic overlap, the local fermionic data in the unfolded strip consist of the pair of strip representatives $\theta_{I_+}^a$, $\theta_{I_-}^a$ together with the surviving independent Grassmann zero-mode combination $\Lambda_{\mathrm{lat}}^a$ (or the canonically equivalent conjugate variable, depending on conventions). The lattice prefactor is therefore local to the interaction region, but not a polynomial in three independent endpoint spinors:
 \begin{equation}
+\label{eq:s14-022}
 \begin{aligned}
 v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{lat}})
 &=
@@ -2059,6 +2575,7 @@ A^{(0)}_{IJ}
 \end{equation}
 Equivalently, $(\theta_{I_+},\theta_{I_-})$ are the local strip data at the join, while the averaged leg modes obey weighted overlap relations exactly as in the bosonic sector. A convenient explicit finite-$N$ choice of the surviving fermionic zero mode is
 \begin{equation}
+\label{eq:s14-023}
 \Theta_{\mathrm{cm}}^a\equiv \theta_{\mathrm{av}}^{(3)a}
 =
 \frac{N_1\theta_{\mathrm{av}}^{(1)a}+N_2\theta_{\mathrm{av}}^{(2)a}}{N_3},
@@ -2072,6 +2589,7 @@ Equivalently, $(\theta_{I_+},\theta_{I_-})$ are the local strip data at the join
 \end{equation}
 This is the canonically normalized relative average fermion that survives the kinematic overlap. The local strip data $(\theta_{I_+},\theta_{I_-})$ enter the prefactor through the short-distance completion of the interaction-point operator and through possible finite-$a$ counterterms, but the leading zero-mode variable carried by $v_{IJ}$ is $\Lambda_{\mathrm{lat}}$. For the closed string there is, of course, an analogous right-moving relative average fermion $\widetilde\Lambda_{\mathrm{lat}}^{\dot a}$ built from the tilded worldsheet fermions. In the standard lightcone GS convention used here, the polynomial $v_{IJ}$ is written only in terms of the chiral variable $\Lambda_{\mathrm{lat}}^a$. The antichiral zero modes enter through the right-moving dynamical supercharge sector, through the tilded external-state Clifford module, and ultimately through the right-moving part of the three-string matrix element, rather than as separate arguments of $v_{IJ}$ itself. Accordingly, one may therefore regard
 \begin{equation}
+\label{eq:s14-024}
 \Lambda_{\mathrm{lat}}^a = \sqrt{\frac{N_1N_2}{N_3}}\,\upsilon^a
 +\,
 O(a^{1/2})
@@ -2081,10 +2599,12 @@ O(a^{1/2})
 \end{equation}
 where $\pi_{\theta,I_\pm}$ denotes the local site-space Grassmann momentum canonically conjugate to $\theta_{I_\pm}$, if one chooses to keep those endpoint canonical variables explicitly in a first-order lattice formalism. The note does not otherwise construct those endpoint momenta in detail, so at present this is only a description of the possible local data entering a finite-$a$ completion, not a completed formula. No unique explicit finite-$a$ completion is chosen here. Different local completions differ by terms that are irrelevant in the continuum limit, and a preferred lattice definition emerges only after one imposes an additional renormalization condition, for example matching the discrete dynamical supercharge algebra. Thus $\Lambda_{\mathrm{lat}}$ should be read as the independent local Grassmann variable extracted from the interaction-region fermions and their conjugate data. The prefactor is therefore a local polynomial of total degree $0,2,4,6,8$ at the join:
 \begin{equation}
+\label{eq:s14-025}
 v_{IJ}^{\mathrm{lat}} = v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{lat}};\theta_{I_+},\theta_{I_-},\pi_{\theta,I_+},\pi_{\theta,I_-}).
 \end{equation}
 The first few SO$(8)$ tensor structures may be represented as
 \begin{equation}
+\label{eq:s14-026}
 A^{(0)}_{IJ}\sim \delta_{IJ},
 \qquad
 A^{(2)}_{IJ,ab}\sim (\gamma^{IJ})_{ab},
@@ -2093,6 +2613,7 @@ A^{(4)}_{IJ,abcd}\sim (\gamma^{IK})_{[ab}(\gamma^{JK})_{cd]},
 \end{equation}
 while the top component is proportional to $\delta_{IJ}\epsilon_{a_1\cdots a_8}$. So the full discrete interaction-point operator is
 \begin{equation}
+\label{eq:s14-027}
 {\cal P}_{I,\mathrm{lat}}
 =
 K^I_{\mathrm{lat}}\,\widetilde K^J_{\mathrm{lat}}\,
@@ -2103,6 +2624,7 @@ Thus ${\cal P}_{I,\mathrm{lat}}$ is a local bosonic derivative factor multiplied
 
 The lattice problem is therefore not to guess a random fermionic polynomial, but to discretize the known continuum building blocks. After the fermionic overlap is imposed, the interaction-point data are the pair $(\theta_{I_+},\theta_{I_-})$ together with the independent conjugate Grassmann zero-mode combination $\Lambda_{\mathrm{lat}}$. One must combine these with lattice approximations to the interaction-point derivatives,
 \begin{equation}
+\label{eq:s14-028}
 \begin{aligned}
 K^I_{\mathrm{lat}}
 &=
@@ -2121,6 +2643,7 @@ a^{-1/2}\widetilde c_K\,\bigl(\nabla_- X_{I_-}^{(3)}\bigr)^I,\\
 \end{equation}
 with the understanding that one may replace this by an improved linear combination of legs without changing the continuum limit. The coefficients entering $K^I_{\mathrm{lat}}$ and $\widetilde K^I_{\mathrm{lat}}$ are fixed by the local Mandelstam geometry and the requirement that
 \begin{equation}
+\label{eq:s14-029}
 K^I_{\mathrm{lat}}\to K^I,
 \qquad
 \widetilde K^I_{\mathrm{lat}}\to \widetilde K^I,
@@ -2141,17 +2664,20 @@ should therefore be read as continuum-motivated rather than as a lattice theorem
 \section{Superstring Lorentz and SUSY check}
 For the superstring, the cleanest cubic-order check is through the dynamical supercharges,
 \begin{equation}
+\label{eq:s15-001}
 Q^- = Q^-_2 + g Q^-_3 + O(g^2),
 \qquad
 \widetilde Q^- = \widetilde Q^-_2 + g \widetilde Q^-_3 + O(g^2),
 \end{equation}
 and the Hamiltonian
 \begin{equation}
+\label{eq:s15-002}
 H = H_2 + g H_3 + O(g^2).
 \end{equation}
 Here $Q^-_2$, $\widetilde Q^-_2$, and $H_2$ are the free lightcone generators, while $Q^-_3$, $\widetilde Q^-_3$, and $H_3$ are their cubic interaction corrections. This section is a continuum target check: the generators are the standard lightcone GS ones whose lattice counterparts must approach the same algebra in the continuum limit.
 At order $g$, the superalgebra requires
 \begin{equation}
+\label{eq:s15-003}
 \{Q^-_{2\dot a},Q^-_{3\dot b}\}
 +\{Q^-_{3\dot a},Q^-_{2\dot b}\}
 =
@@ -2168,6 +2694,7 @@ In the discrete formulation, the test should therefore be organized in the same 
 \end{enumerate}
 To make step 3 concrete, one should parameterize the cubic lattice generators themselves as
 \begin{equation}
+\label{eq:s15-004}
 Q^-_{3\dot a,\mathrm{lat}}
 =
 {\cal C}_3^{(S)}\,
@@ -2176,6 +2703,7 @@ s^{\mathrm{lat}}_{I\dot a}(\Lambda_{\mathrm{lat}};\theta_{I_\pm},\pi_{\theta,I_\
 |V_{\mathrm{kin}}\rangle,
 \end{equation}
 \begin{equation}
+\label{eq:s15-005}
 \widetilde Q^-_{3\widetilde a,\mathrm{lat}}
 =
 {\cal C}_3^{(S)}\,
@@ -2185,6 +2713,7 @@ s^{\mathrm{lat}}_{I\dot a}(\Lambda_{\mathrm{lat}};\theta_{I_\pm},\pi_{\theta,I_\
 \end{equation}
 and
 \begin{equation}
+\label{eq:s15-006}
 H_{3,\mathrm{lat}}
 =
 {\cal C}_3^{(S)}\,
@@ -2194,12 +2723,14 @@ v^{\mathrm{lat}}_{IJ}(\Lambda_{\mathrm{lat}};\theta_{I_\pm},\pi_{\theta,I_\pm})\
 \end{equation}
 Here $s^{\mathrm{lat}}_{I\dot a}$ and $\widetilde s^{\mathrm{lat}}_{I\widetilde a}$ are the left- and right-moving local fermionic polynomials that appear in the cubic dynamical supercharges, while $v^{\mathrm{lat}}_{IJ}$ is the local Hamiltonian polynomial introduced above. I write the right-moving spinor index as $\widetilde a$ rather than reusing $\dot a$ because the precise chirality bookkeeping depends on whether one ultimately specializes to IIA or IIB conventions; the present note has not fixed those component conventions completely. The lattice closure problem is then
 \begin{equation}
+\label{eq:s15-007}
 \{Q^-_{2\dot a},Q^-_{3\dot b,\mathrm{lat}}\}
 +\{Q^-_{3\dot a,\mathrm{lat}},Q^-_{2\dot b}\}
 =
 2\delta_{\dot a\dot b}H_{3,\mathrm{lat}},
 \end{equation}
 \begin{equation}
+\label{eq:s15-008}
 \{\widetilde Q^-_{2\widetilde a},\widetilde Q^-_{3\widetilde b,\mathrm{lat}}\}
 +\{\widetilde Q^-_{3\widetilde a,\mathrm{lat}},\widetilde Q^-_{2\widetilde b}\}
 =
@@ -2208,6 +2739,7 @@ Here $s^{\mathrm{lat}}_{I\dot a}$ and $\widetilde s^{\mathrm{lat}}_{I\widetilde 
 together with the vanishing of the mixed left/right anticommutator at order $g$. Once one chooses a finite local basis for the bosonic stencils and for the SO$(8)$-covariant Grassmann polynomials $s^{\mathrm{lat}},\widetilde s^{\mathrm{lat}},v^{\mathrm{lat}}$, these relations reduce to a finite system of algebraic equations for the coefficient functions and the overall normalization ${\cal C}_3^{(S)}$. That is the precise sense in which the discrete supercharge-closure problem fixes the cubic superstring vertex.
 The odd Grassmann degree of the dynamical supercharges means that one may parameterize the left-moving local polynomial as
 \begin{equation}
+\label{eq:s15-009}
 \begin{aligned}
 s^{\mathrm{lat}}_{I\dot a}
 &=
@@ -2222,6 +2754,7 @@ B^{(1)}_{I\dot a,a}\,\Lambda_{\mathrm{lat}}^a
 \end{equation}
 and similarly for $\widetilde s^{\mathrm{lat}}_{I\widetilde a}$. Here each $B^{(2p+1)}$ is itself allowed to depend on the local finite-$a$ completion data $(\theta_{I_+},\theta_{I_-},\pi_{\theta,I_+},\pi_{\theta,I_-})$. After choosing a definite SO$(8)$ gamma-matrix convention, each $B^{(2p+1)}$ can be expanded on a finite basis of invariant tensors built from $\delta_{IJ}$, $\epsilon_{a_1\cdots a_8}$, and the gamma matrices. For instance, the leading continuum-motivated representatives are of the form
 \begin{equation}
+\label{eq:s15-010}
 B^{(1)}_{I\dot a,a}\propto \gamma^I_{a\dot a},
 \qquad
 B^{(3)}_{I\dot a,abc}\propto (\gamma^{IJ})_{[ab}\gamma^J_{c]\dot a},
@@ -2229,16 +2762,19 @@ B^{(3)}_{I\dot a,abc}\propto (\gamma^{IJ})_{[ab}\gamma^J_{c]\dot a},
 while the degree-$5$ and degree-$7$ sectors are their SO$(8)$ Hodge duals in spinor-index space. I am being explicit here about the level of generality: the note does \emph{not} yet prove that only one coefficient survives at each odd degree, nor does it fix the detailed finite-$a$ endpoint completion. What it does establish is that, once a local support and a gamma-matrix convention are chosen, the cubic supercharge problem becomes a finite-dimensional algebraic system rather than an open-ended functional ansatz.
 In particular, after fixing a concrete invariant basis
 \begin{equation}
+\label{eq:s15-011}
 S^{(1)}_{I\dot a},\ S^{(3)}_{I\dot a},\ S^{(5)}_{I\dot a},\ S^{(7)}_{I\dot a},
 \qquad
 \widetilde S^{(1)}_{I\widetilde a},\ \widetilde S^{(3)}_{I\widetilde a},\ \widetilde S^{(5)}_{I\widetilde a},\ \widetilde S^{(7)}_{I\widetilde a},
 \end{equation}
 for the odd fermionic tensors and
 \begin{equation}
+\label{eq:s15-012}
 V^{(0)}_{IJ},\ V^{(2)}_{IJ},\ V^{(4)}_{IJ},\ V^{(6)}_{IJ},\ V^{(8)}_{IJ},
 \end{equation}
 for the even Hamiltonian tensors, the minimal closure truncation takes the explicit coefficient form
 \begin{equation}
+\label{eq:s15-013}
 s^{\mathrm{lat}}_{I\dot a}
 =
 b_1 S^{(1)}_{I\dot a}
@@ -2247,6 +2783,7 @@ b_1 S^{(1)}_{I\dot a}
 +b_7 S^{(7)}_{I\dot a},
 \end{equation}
 \begin{equation}
+\label{eq:s15-014}
 \widetilde s^{\mathrm{lat}}_{I\widetilde a}
 =
 \widetilde b_1 \widetilde S^{(1)}_{I\widetilde a}
@@ -2255,6 +2792,7 @@ b_1 S^{(1)}_{I\dot a}
 +\widetilde b_7 \widetilde S^{(7)}_{I\widetilde a},
 \end{equation}
 \begin{equation}
+\label{eq:s15-015}
 v^{\mathrm{lat}}_{IJ}
 =
 a_0 V^{(0)}_{IJ}
@@ -2265,11 +2803,13 @@ a_0 V^{(0)}_{IJ}
 \end{equation}
 Combined with the bosonic support-three stencil parameters $(t_+,t_-)$ and the overall normalization ${\cal C}_3^{(S)}$, this turns the lattice cubic supercharge problem into a finite set of unknown coefficients
 \begin{equation}
+\label{eq:s15-016}
 (t_+,t_-,b_1,b_3,b_5,b_7,\widetilde b_1,\widetilde b_3,\widetilde b_5,\widetilde b_7,a_0,a_2,a_4,a_6,a_8,{\cal C}_3^{(S)}),
 \end{equation}
 to be constrained by the discrete superalgebra. The point of writing the problem this way is not to pretend that the coefficients are already known, but to make clear that the remaining task is finite and algebraic once the local support and convention basis are fixed.
 There is also a useful structural simplification before any component calculation is done. On the fermionic zero-mode Clifford module, the \emph{free} dynamical supercharge acts by the sum of one piece that raises the $\Lambda$-degree by one and one piece that lowers it by one. Abstractly one may therefore write
 \begin{equation}
+\label{eq:s15-017}
 Q^-_{2\dot a}
 =
 q^{(+)}_{2\dot a}+q^{(-)}_{2\dot a}+Q^-_{2\dot a,\mathrm{osc}},
@@ -2282,6 +2822,7 @@ where $q^{(+)}$ denotes the part that wedges one more fermionic zero mode, $q^{(
 
 Once one factors out the common bosonic operator $K_{\mathrm{lat}}$ or $\widetilde K_{\mathrm{lat}}$ and suppresses the nonzero-mode bookkeeping, the cubic closure equations split by even $\Lambda$-degree. Schematically, the left-moving sector takes the block-triangular form
 \begin{equation}
+\label{eq:s15-018}
 \begin{aligned}
 \deg 0: &\qquad q^{(-)}\cdot S^{(1)} \sim a_0 V^{(0)},\\
 \deg 2: &\qquad q^{(+)}\cdot S^{(1)} + q^{(-)}\cdot S^{(3)} \sim a_2 V^{(2)},\\
@@ -2295,6 +2836,7 @@ and similarly in the right-moving sector with tilded quantities. Here ``$\sim$''
 This degree decomposition already gives several exact selection rules. For example, the scalar Hamiltonian coefficient $a_0$ can only be generated from the degree-1 supercharge sector, while the top component $a_8$ can only be generated from the degree-7 sector. Likewise, the degree-2, 4, and 6 Hamiltonian blocks couple only neighboring odd sectors. So once a concrete gamma-matrix basis is fixed, the closure equations are not an arbitrary dense system: they are organized into a short nearest-neighbor chain in Grassmann degree. This does not solve the coefficient values, but it sharply constrains how the solution can look.
 One can make this sparsity slightly more explicit without pretending to have solved the component algebra. If the chosen invariant basis is such that each projected block is one-dimensional, then the left-moving free supercharge acts by numerical coefficients
 \begin{equation}
+\label{eq:s15-019}
 \begin{aligned}
 q^{(-)}\cdot S^{(1)}&=\lambda_0\,V^{(0)},\\
 q^{(+)}\cdot S^{(1)}&=\lambda_{21}\,V^{(2)},
@@ -2311,6 +2853,7 @@ q^{(+)}\cdot S^{(7)}&=\lambda_8\,V^{(8)},
 \end{equation}
 and similarly in the right-moving sector with tilded coefficients. Then the projected left-moving closure chain takes the concrete sparse matrix form
 \begin{equation}
+\label{eq:s15-020}
 2
 \begin{pmatrix}
 a_0\\ a_2\\ a_4\\ a_6\\ a_8
@@ -2333,6 +2876,7 @@ At present the note identifies this calculation but does not perform it explicit
 \subsection{On-shell three-graviton check}
 The minimal massless external check in the superstring is the three-graviton amplitude. In lightcone GS gauge the massless states live in the fermionic zero-mode Clifford module, not at the first bosonic oscillator level. After choosing the standard SO$(8)$ vector basis $|I\rangle_r$ and $|\widetilde J\rangle_r$ for the left- and right-moving ground-state multiplets on leg $r$, with all nonzero bosonic and fermionic oscillators in their vacuum, a graviton state may be written as
 \begin{equation}
+\label{eq:s15-1-001}
 |h_r\rangle
 =
 \epsilon_{IJ}^{(r)}\,
@@ -2340,18 +2884,21 @@ The minimal massless external check in the superstring is the three-graviton amp
 \end{equation}
 with $\epsilon_{IJ}^{(r)}$ symmetric and traceless in the transverse SO$(8)$ space. A description based on the first bosonic oscillator level would refer to a higher GS excitation, not to the graviton itself, so it should not be used here. This vector/spinor basis is also the one that appears in the lightcone Ramond-ground-state description familiar from matrix string theory: the left-moving Ramond ground fields are a vector $\psi^I$ and an anti-chiral spinor $S^{\dot a}$, with operator products
 \begin{equation}
+\label{eq:s15-1-002}
 \theta^a(z)\psi^I(0)\sim \frac{1}{\sqrt{2z}}\,\gamma^{I}_{a\dot a}\,S^{\dot a}(0),
 \qquad
 \theta^a(z)S^{\dot a}(0)\sim \frac{1}{\sqrt{2z}}\,\gamma^{I}_{a\dot a}\,\psi^I(0).
 \end{equation}
 Keeping only the zero-mode part gives
 \begin{equation}
+\label{eq:s15-1-003}
 \sqrt2\,S_0^a|I\rangle = \gamma^I_{a\dot a}|\dot a\rangle,
 \qquad
 \sqrt2\,S_0^a|\dot a\rangle = \gamma^I_{a\dot a}|I\rangle,
 \end{equation}
 which is exactly the explicit $8_v\oplus 8_c$ module implemented in the local helper \texttt{gs\_zero\_mode\_module.py}. So the external graviton basis itself is no longer ambiguous; the remaining ambiguity lies in how the even Grassmann symbol $v_{IJ}(\Lambda)$ is quantized as an operator on that module. For strictly real Minkowski momenta, massless three-point kinematics is degenerate, so the standard nontrivial comparison is understood after analytic continuation to complexified momenta (or an equivalent split-signature kinematics). After rewriting the lightcone $1+2\to 3$ process in the usual all-outgoing convention, the required covariant target structure is
 \begin{equation}
+\label{eq:s15-1-004}
 {\cal A}_{hhh}^{\mathrm{cov}}
 =
 \kappa\,
@@ -2362,6 +2909,7 @@ V^{I'J'K'}(p_1,p_2,p_3),
 \end{equation}
 where
 \begin{equation}
+\label{eq:s15-1-005}
 V^{IJK}(p_1,p_2,p_3)
 \equiv
 \delta^{IJ}(p_1-p_2)^K
@@ -2372,14 +2920,17 @@ This is the familiar Einstein-Hilbert three-graviton tensor written as the produ
 
 It is also useful to recall how the corresponding local interaction-point operator appears in the standard continuum three-point derivation. In the NSR presentation one may place three massless $(-1,-1)$-picture vertices at $t=0,1,\infty$ and insert the PCOs at the interaction point
 \begin{equation}
+\label{eq:s15-1-006}
 t_1=\frac{k_1^+}{k_1^++k_2^+}=\frac{\alpha_1}{\alpha_3}.
 \end{equation}
 For lightcone-adapted polarizations with $\zeta_i^+=0$ and $\zeta_i^-=(k_i^\perp\!\cdot\zeta_i^\perp)/k_i^+$, the pure-ghost pieces and the $\psi^+\partial X^-$ term in the PCO do not contribute to the three-point correlator, while the $\psi^-\partial X^+$ term is proportional to
 \begin{equation}
+\label{eq:s15-1-007}
 \frac{k_1^+}{t_1}+\frac{k_2^+}{t_1-1}=0.
 \end{equation}
 So the full local matter insertion reduces to the transverse supercurrents $G^\perp(t_1)\widetilde G^\perp(\bar t_1)$ at the join, and the continuum amplitude takes the lightcone form
 \begin{equation}
+\label{eq:s15-1-008}
 {\cal A}_{hhh}^{\mathrm{cov}}
 \propto
 g_s\,
@@ -2400,6 +2951,7 @@ This NSR comparison is only a consistency check on the continuum target. It is n
 
 From the cubic lightcone vertex written earlier, the actual matrix element to be evaluated is
 \begin{equation}
+\label{eq:s15-1-009}
 \begin{aligned}
 {\cal A}_{hhh}^{\mathrm{lc}}(N)
 &\equiv
@@ -2418,24 +2970,28 @@ v^{\mathrm{lat}}_{IJ}(\Lambda_{\mathrm{lat}})
 For real polarization tensors the complex conjugation on the bra may be dropped, but the starred form is the correct one for the complexified kinematics used in analytic continuation arguments.
 To complete the graviton test one must still evaluate the finite-dimensional fermionic zero-mode contraction sitting inside this matrix element. Concretely, one needs a fixed SO$(8)$ convention in which each lightcone graviton state is represented inside the left- and right-moving Clifford modules, then one must evaluate the action of $v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{lat}})$ on the left-moving zero modes and combine it with the corresponding right-moving/tilded projection. That is the step where SO$(8)$ triality should reproduce the Einstein-Hilbert/Yang--Mills-squared cubic tensor. The imported coefficient set $v_{IJ}$ is now explicit in one fixed convention in the local helper \texttt{gs\_zero\_mode\_prefactor.py}, and the external $8_v\oplus 8_c$ zero-mode module is explicit in \texttt{gs\_zero\_mode\_module.py}. A further diagnostic in \texttt{gs\_weyl\_symbol\_diagnostic.py} shows that the naive Weyl map from the even Grassmann symbol to antisymmetrized Clifford products not only preserves the $8_v$ and $8_c$ sectors, but has its $8_v\to 8_v$ block entirely in the minimal SO$(8)$-covariant tensor span
 \begin{equation}
+\label{eq:s15-1-010}
 A(\alpha)\,\delta_{IJ}\delta_{KL}
-B(\alpha)\,\delta_{IK}\delta_{JL}
-C(\alpha)\,\delta_{IL}\delta_{JK},
+{}+B(\alpha)\,\delta_{IK}\delta_{JL}
+{}+C(\alpha)\,\delta_{IL}\delta_{JK},
 \end{equation}
 with numerical residual at the $10^{-13}$--$10^{-14}$ level in the sample checks $\alpha=\frac12,1,2,3$. Here $K,L$ label the external vector basis states. So the candidate map introduces no exotic tensor structures on the graviton sector. What remains unresolved is whether this Weyl ordering is the physical GS prefactor dictionary and, if so, how its normalization and ordering convention match the standard continuum cubic vertex. The present note has therefore narrowed the missing ingredient from ``which SO$(8)$ tensors can appear?'' to the much sharper question ``which quantization of the known Grassmann symbol is the physically correct one?'' It has not yet carried out the final component contraction; only the bosonic nonzero-mode factor is reduced explicitly below.
 
 The nonzero-mode bosonic part of this matrix element can, however, already be reduced explicitly. Let $S_r$ be an $N_r\times (N_r-1)$ matrix whose columns form an orthonormal real basis of the zero-sum subspace
 \begin{equation}
+\label{eq:s15-1-011}
 \left\{v\in\RR^{N_r}~\big|~{\bf 1}_{N_r}^Tv=0\right\},
 \end{equation}
 so that
 \begin{equation}
+\label{eq:s15-1-012}
 S_r^TS_r=\mathbb I_{N_r-1},
 \qquad
 S_rS_r^T=\mathbb I_{N_r}-\frac{1}{N_r}{\bf 1}_{N_r}{\bf 1}_{N_r}^T.
 \end{equation}
 A concrete choice is the real cosine/sine basis used in the diagnostic scripts, but the formulas below depend only on these abstract projection properties. Also note that the site-space rows $d_+$ and $d_-$ introduced here act on the individual leg variables before the embedding into the global boundary vector ${\bf X}$ discussed in Section~8. With this understood, let
 \begin{equation}
+\label{eq:s15-1-013}
 d_+ = (-1,1,0,\dots,0),
 \qquad
 d_- = (1,0,\dots,0,-1)
@@ -2450,28 +3006,33 @@ and
 \)
 In the stacked incoming real nonzero-mode variable
 \begin{equation}
+\label{eq:s15-1-014}
 Q \equiv \begin{pmatrix} q^{(1)}_{\mathrm{phys}} \\ q^{(2)}_{\mathrm{phys}} \end{pmatrix},
 \end{equation}
 define the corresponding linear functionals
 \begin{equation}
+\label{eq:s15-1-015}
 D_+ \equiv \bigl(d_+S_1,\,0\bigr),
 \qquad
 D_- \equiv \bigl(0,\,d_-S_2\bigr).
 \end{equation}
 With the same Gaussian data $G_T$, $B_T$, $C_T$, and $\gamma_T=C_T-B_T^TG_T^{-1}B_T$ introduced in the bosonic three-tachyon section, the fixed-$y$ bosonic integral satisfies
 \begin{equation}
+\label{eq:s15-1-016}
 \bigl\langle (D_+Q)(D_-Q)\bigr\rangle_y
 =
 \Sigma_{+-}+\eta_+\eta_-\,y^2,
 \end{equation}
 where
 \begin{equation}
+\label{eq:s15-1-017}
 \Sigma_{+-}\equiv D_+G_T^{-1}D_-^T,
 \qquad
 \eta_\pm \equiv -D_\pm G_T^{-1}B_T.
 \end{equation}
 After Fourier transforming the relative center-of-mass displacement $y$ to the relative transverse momentum $q_{\mathrm{rel}}$, one finds the exact finite-$N$ bosonic prefactor tensor
 \begin{equation}
+\label{eq:s15-1-018}
 \begin{aligned}
 \langle 0_{\mathrm{osc}};p_1,p_2,p_3|
 K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}
@@ -2493,48 +3054,73 @@ with ${\cal A}^{(B)}_{\mathrm{vac}}(N;q_{\mathrm{rel}})$ the bosonic vacuum matr
 
 This explicit reduction also exposes a real finite-$a$ issue. For the present minimal right-arc stencil $d_-=(1,0,\dots,0,-1)$, a direct scan of the exact discrete formulas over
 \begin{equation}
+\label{eq:s15-1-019}
 4\le N_1,N_2\le 40
 \end{equation}
 gives
 \begin{equation}
+\label{eq:s15-1-020}
 \max |\eta_-| \approx 5.4\times 10^{-15},
 \end{equation}
 while $\Sigma_{+-}$ and $\eta_+$ remain of order $10^{-1}$ on the same grid. So the current nearest-neighbor ansatz produces, to numerical precision, only the $\delta^{IJ}$ term and no $q_{\mathrm{rel}}^Iq_{\mathrm{rel}}^J$ term at all. By contrast, nearby local one-site differences on the same leg do \emph{not} show this vanishing. Thus the cancellation is specific to the present right-arc choice, not a generic consequence of locality. This is exactly the kind of issue that the discrete supercharge-closure calculation has to settle: either the correct lattice $\widetilde K_{\mathrm{lat}}$ differs from the minimal nearest-neighbor representative, or a finite-$a$ local counterterm/improvement must be included before the three-graviton tensor can match its continuum target.
 
 There is also a simple exact explanation for this vanishing. Let $J_r$ be the site-reversal matrix on incoming leg $r$, $(J_r)_{mn}=\delta_{m,N_r-1-n}$, and let
 \begin{equation}
+\label{eq:s15-1-021}
 \Pi_r \equiv S_r^T J_r S_r,
 \qquad
 \Pi\equiv \mathrm{diag}(\Pi_1,\Pi_2),
 \end{equation}
 be the induced parity operator in the stacked real nonzero-mode basis. The exact discrete Gaussian data satisfy
 \begin{equation}
+\label{eq:s15-1-022}
 \Pi G_T=G_T\Pi,
 \qquad
 \Pi B_T=B_T,
 \end{equation}
 so the source response $G_T^{-1}B_T$ is parity-even. Concretely, the mode metrics commute with $\Pi_r$ because $\omega_{N_r-m}=\omega_m$, and the overlap blocks are compatible with simultaneous site reversal on the incoming and outgoing legs, which together imply the stated symmetry of $G_T$ and $B_T$. By contrast, the minimal right-arc difference
 \begin{equation}
+\label{eq:s15-1-023}
 d_-=(1,0,\dots,0,-1)
 \end{equation}
 is parity-odd under $J_2$, hence $D_-$ is odd under $\Pi$ and therefore
 \begin{equation}
+\label{eq:s15-1-024}
 \eta_-=-D_-G_T^{-1}B_T=0
 \end{equation}
 exactly. So the missing $q_{\mathrm{rel}}^Iq_{\mathrm{rel}}^J$ term is not an accidental floating-point cancellation; it is enforced by a discrete symmetry of the present first-order ansatz.
+Indeed, writing $X\equiv G_T^{-1}B_T$, the parity relations above imply $\Pi X=X$ and $D_-\Pi=-D_-$. Therefore
+\begin{equation}
+\label{eq:s15-1-024a}
+\eta_-
+=
+-D_-X
+=
+-D_-\Pi X
+=
+-(-D_-)X
+=
+D_-X
+=
+-\eta_-,
+\end{equation}
+which forces $\eta_-=0$ exactly.
 
 This also shows how the obstruction can be removed without abandoning locality. The one-sided second-order right-arc stencil already written earlier,
 \begin{equation}
+\label{eq:s15-1-025}
 \widetilde D^{(2)}_{I_-}X^{(2)}
 \equiv
 \frac{3X_{I_-}-4X_{N_2-1}^{(2)}+X_{N_2-2}^{(2)}}{2},
 \end{equation}
 is not parity-odd, so it need not annihilate the even source response. Numerically it indeed restores a nonzero momentum-bilinear coefficient. For example, at
 \begin{equation}
+\label{eq:s15-1-026}
 (N_1,N_2)=(16,24)
 \end{equation}
 one finds
 \begin{equation}
+\label{eq:s15-1-027}
 \eta_-^{(2)}\approx -5.57\times 10^{-2},
 \qquad
 B_{qq}^{(2)}\approx 5.38\times 10^{-2},
@@ -2543,6 +3129,7 @@ whereas the first-order stencil gives $\eta_-\approx 0$ and $B_{qq}\approx 0$. S
 
 The left/right ordering comparison makes the same point more sharply. At $(N_1,N_2)=(16,24)$ one finds
 \begin{equation}
+\label{eq:s15-1-028}
 \begin{aligned}
 (\text{minimal},\text{minimal})&:
 &&\eta_+\approx 1.10\times 10^{-1},\qquad
@@ -2562,6 +3149,7 @@ So the essential obstruction is on the right arc, but a symmetric second-order c
 
 In fact, on the fixed-ratio family $N_1:N_2=2:3$, the symmetric second-order choice has a stable large-$N$ limit:
 \begin{equation}
+\label{eq:s15-1-029}
 N_1 B_{qq}\to 1.156\ldots,
 \qquad
 \sqrt{N_1}\,\eta_+\to 0.575\ldots,
@@ -2574,6 +3162,7 @@ Thus the explicit prefactor coefficient $a^{-1}B_{qq}$ and the one-point respons
 
 The same behavior is not confined to that single ratio. If one samples the large-$N$ family
 \begin{equation}
+\label{eq:s15-1-030}
 N_1=128\,a,
 \qquad
 N_2=128\,b,
@@ -2582,6 +3171,7 @@ N_2=128\,b,
 \end{equation}
 with $(a,b)=(1,3),(1,2),(3,5),(2,3),(1,1)$, one finds
 \begin{equation}
+\label{eq:s15-1-031}
 \begin{array}{c|cccc}
 \lambda & N_1B_{qq} & \sqrt{N_1}\,\eta_+ & \sqrt{N_1}\,\eta_- & A_\delta\\
 \hline
@@ -2596,6 +3186,7 @@ and the coefficients vary smoothly with $\lambda$. So the improved bosonic prefa
 
 It is useful to make this finite local freedom explicit. If one restricts to support on the first three sites of each incoming arc and requires that the site-space rows annihilate constants exactly and differentiate linear profiles exactly, then the most general one-sided local family is
 \begin{equation}
+\label{eq:s15-1-032}
 D^{(t_+)}_{I_+}X^{(1)}
 \equiv
 (-1+t_+)X_{I_+}
@@ -2603,6 +3194,7 @@ D^{(t_+)}_{I_+}X^{(1)}
 +t_+X_2^{(1)},
 \end{equation}
 \begin{equation}
+\label{eq:s15-1-033}
 \widetilde D^{(t_-)}_{I_-}X^{(2)}
 \equiv
 (1+t_-)X_{I_-}
@@ -2611,6 +3203,7 @@ D^{(t_+)}_{I_+}X^{(1)}
 \end{equation}
 The minimal first-order choice corresponds to $(t_+,t_-)=(0,0)$, whereas the standard one-sided second-order choice corresponds to $(t_+,t_-)=(-\frac12,+\frac12)$. The explicit bosonic three-graviton data show that the amplitude-level test already constrains this family, but does not yet fix it uniquely. Within this support-three family, the right-arc stencil is parity-odd only at $t_-=0$. Thus the raw first-order choice carries an accidental discrete symmetry that suppresses the physical momentum-bilinear tensor, whereas the second-order choice already breaks that accidental parity obstruction. For example, at $(N_1,N_2)=(16,24)$ one finds
 \begin{equation}
+\label{eq:s15-1-034}
 \begin{aligned}
 (t_+,t_-)=(0,0)&:
 &&N_1B_{qq}\approx 0,\\
@@ -2624,6 +3217,7 @@ So the bosonic test rules out the parity-odd right-endpoint $t_-=0$, but it does
 
 Accordingly, the concrete bosonic ansatz I would now take into the discrete supercharge-closure problem is the symmetric one-sided second-order pair
 \begin{equation}
+\label{eq:s15-1-035}
 D^{(2)}_{I_+}X^{(1)}
 \equiv
 \frac{-3X_{I_+}+4X_1^{(1)}-X_2^{(1)}}{2},
@@ -2634,6 +3228,7 @@ D^{(2)}_{I_+}X^{(1)}
 \end{equation}
 namely
 \begin{equation}
+\label{eq:s15-1-036}
 K_{\mathrm{lat}}^I
 \stackrel{\rm provisional}{=}
 a^{-1/2}c_K\,D^{(2)}_{I_+}X^I,
@@ -2652,17 +3247,19 @@ Therefore the superstring amplitude check is also sharp: once the lattice prefac
 The discrete framework must recover the usual continuum three-string squeeze data in the limit $N_r\to\infty$ at fixed $\alpha_r=aN_r$, but there are actually \emph{two} different finite-$N$ oscillator objects in play and they should not be conflated:
 \begin{enumerate}
 \item impose the exact overlap in $\sigma$ position space,
-\item either keep all three legs and extract the full squeezed-state matrix $S^{(B)}$, or eliminate one leg and form the reduced sewn Gaussian used in the explicit vacuum-amplitude calculations,
+\item either keep all three legs and extract the full Neumann data from Gaussian moments of the uneliminated vertex, or eliminate one leg and form the reduced sewn Gaussian used in the explicit vacuum-amplitude calculations,
 \item only then transform the chosen object to Fourier modes on each leg.
 \end{enumerate}
 If one follows the second route and eliminates leg $3$ after solving the position-space overlap, one may transform each leg to discrete Fourier modes,
 \begin{equation}
+\label{eq:s16-001}
 q_m^{(r)}=\frac{1}{\sqrt{N_r}}\sum_{n=0}^{N_r-1} X_n^{(r)} e^{-2\pi \ii mn/N_r},
 \qquad
 m=1,\dots,N_r-1,
 \end{equation}
 and the reduced constrained quadratic form at a cubic vertex takes the form
 \begin{equation}
+\label{eq:s16-002}
 Q^{(I)}_{\mathrm{osc}}
 =
 \frac12
@@ -2670,16 +3267,26 @@ Q^{(I)}_{\mathrm{osc}}
 \sum_{m,n\geq 1}
 q_m^{(r)}\,\bar{\mathcal G}^{rs}_{mn}(N)\,q_n^{(s)}.
 \end{equation}
-The coefficients $\bar{\mathcal G}^{rs}_{mn}(N)$ are \emph{not} the standard continuum Neumann coefficients $\bar N^{rs}_{mn}$. They belong to the reduced sewn Gaussian obtained after one leg has been substituted out. By contrast, the standard continuum Neumann data are extracted from the full three-leg squeezed-state matrix $S^{(B)}=-\mathbb M_{\mathrm{phys}}^{-1}\mathbb N_{\mathrm{phys}}$ discussed earlier, after the affine zero-mode completion has been separated. The reduced form $\bar{\mathcal G}$ and the full squeeze matrix $S^{(B)}$ encode related but genuinely different information, and only the latter should be compared entry-by-entry with continuum lightcone Neumann coefficients.
+The coefficients $\bar{\mathcal G}^{rs}_{mn}(N)$ are \emph{not} the standard continuum Neumann coefficients $\bar N^{rs}_{mn}$. They belong to the reduced sewn Gaussian obtained after one leg has been substituted out. By contrast, the standard continuum Neumann data should be extracted from the full three-leg overlap vertex through Gaussian moments such as
+\begin{equation}
+\label{eq:s16-003}
+\bar N^{rs}_{mn}(N)
+=
+-\frac{\langle 0|a_m^{(r)}a_n^{(s)}|V_3^{(B)}\rangle}
+{\langle 0|V_3^{(B)}\rangle},
+\end{equation}
+not by naively inverting the formal boundary-state matrix of Section~11. The reduced form $\bar{\mathcal G}$ and the full Gaussian-moment Neumann data encode related but genuinely different information, and only the latter should be compared entry-by-entry with continuum lightcone Neumann coefficients.
 
 The reason the continuum limit is still plausible is structural: the DFT basis converges to the Fourier basis on the lightcone cylinders, while the embedding maps $P_1,P_2$ converge to inclusion of the two arcs of lengths $\alpha_1,\alpha_2$ into the outgoing cylinder of length $\alpha_3=\alpha_1+\alpha_2$ in the positive-circumference notation. But for the reduced form one must be more careful about what is expected to converge. In a DFT basis with mode metric $M_r$, define the oscillator-normalized reduced coefficients
 \begin{equation}
+\label{eq:s16-004}
 \widehat{\mathcal G}^{rs}_{mn}(N)
 \equiv
 \frac{\bar{\mathcal G}^{rs}_{mn}(N)}{\sqrt{(M_r)_{mm}(M_s)_{nn}}}.
 \end{equation}
 Numerically these \emph{normalized reduced} coefficients do not approach finite entrywise limits. Along the fixed-ratio refinement family $\alpha_1:\alpha_2=2:3$, one finds for example
 \begin{equation}
+\label{eq:s16-005}
 \widehat{\mathcal G}^{11}_{11}
 =
 2.05,\ 2.13,\ 2.21,\ 2.28,\ 2.35,
@@ -2690,11 +3297,12 @@ Numerically these \emph{normalized reduced} coefficients do not approach finite 
 \end{equation}
 at $N_1=8,16,32,64,128$. The growth is logarithmic in $N$, not convergent. This is not a bug: it is the lattice-regulated branch-point normal-ordering divergence caused by eliminating the outgoing leg in the presence of the discontinuous concatenation map. It is precisely this reduced-form ultraviolet divergence that feeds the determinant/vacuum-normalization sector of the three-tachyon amplitude and produces the observed finite-$N$ signal of the critical bosonic dimension.
 
-Consequently the honest continuum comparison splits in two parts. First, the reduced Gaussian should be tested through its \emph{physical scalar outputs}, such as the Schur complement $\gamma_T=C_T-B_T^TG_T^{-1}B_T$ and the determinant factor $\kappa_{1\mathrm d}\propto (\det G_T)^{-1/2}$, because those are the quantities that actually enter the sewn amplitudes. Second, if one wants the standard continuum Neumann coefficients $\bar N^{rs}_{mn}$ themselves, one must extract them from the full squeezed-state matrix $S^{(B)}$ of the uneliminated three-leg oscillator vertex, in a fixed DFT/Fourier convention with the appropriate mode rescalings removed. In an arbitrary real zero-sum basis the raw coefficients can carry trivial $a$-scaling from the mode metric, and basis vectors need not approach fixed Fourier harmonics, so the clean comparison basis remains the DFT basis or an explicitly equivalent fixed-harmonic basis.
+Consequently the honest continuum comparison splits in two parts. First, the reduced Gaussian should be tested through its \emph{physical scalar outputs}, such as the Schur complement $\gamma_T=C_T-B_T^TG_T^{-1}B_T$ and the determinant factor $\kappa_{1\mathrm d}\propto (\det G_T)^{-1/2}$, because those are the quantities that actually enter the sewn amplitudes. Second, if one wants the standard continuum Neumann coefficients $\bar N^{rs}_{mn}$ themselves, one must extract them from the full uneliminated three-leg vertex by Gaussian moments in a fixed DFT/Fourier convention with the appropriate mode rescalings removed. In an arbitrary real zero-sum basis the raw coefficients can carry trivial $a$-scaling from the mode metric, and basis vectors need not approach fixed Fourier harmonics, so the clean comparison basis remains the DFT basis or an explicitly equivalent fixed-harmonic basis.
 
 \section{Zero modes, loop momenta, and determinant primes}
 The prime on bosonic determinants should not be left implicit. The clean implementation is to separate the center-of-mass mode on every cylinder from the start:
 \begin{equation}
+\label{eq:s17-001}
 X_n^{(r)}(\tau)=x_{\mathrm{cm}}^{(r)}(\tau)+X_n^{\prime(r)}(\tau),
 \qquad
 \sum_{n=0}^{N_r-1} X_n^{\prime(r)}(\tau)=0.
@@ -2703,6 +3311,7 @@ Only the oscillator variables $X^{\prime(r)}$ enter the determinant factor. The 
 
 At a cubic vertex, the full-boundary overlap implies the weighted center-of-mass relation, and after Fourier transform this produces the usual transverse momentum conservation
 \begin{equation}
+\label{eq:s17-002}
 \delta^{(\perpD)}(p^{(1)}_\perp+p^{(2)}_\perp-p^{(3)}_\perp).
 \end{equation}
 For a connected genus-$h$ diagram, after imposing momentum conservation at all vertices, there remain $h$ independent loop momenta $\ell_A$, $A=1,\dots,h$. These are not part of the determinant prime and must be integrated explicitly.
@@ -2749,6 +3358,7 @@ $\int \dd^{\perpD}\ell_A$ on the chosen cycle basis};
 
 Accordingly, $\det{}'$ means the determinant of the constrained oscillator block only. For tree amplitudes there is no loop-momentum integral, while for loops one gets
 \begin{equation}
+\label{eq:s17-003}
 \begin{aligned}
 {\cal A}_{\cal D}
 &=(2\pi)^{\perpD}\delta^{(\perpD)}\!\left(\sum p_{\perp}^{\mathrm{ext}}\right)
@@ -2768,6 +3378,7 @@ No additional transverse-space power multiplies the fermionic Pfaffian: unlike t
 
 More explicitly, after separating the oscillator sector the loop-momentum dependence always takes the form
 \begin{equation}
+\label{eq:s17-004}
 \exp\!\left[
 -\frac12 \ell^T Q(T,\varphi)\,\ell
 +L(T,\varphi;p_{\mathrm{ext}})^T\ell
@@ -2781,13 +3392,16 @@ where $Q(T,\varphi)$ is the $h\times h$ positive-definite quadratic form obtaine
 \section{Short-edge limit and regularization}
 One practical advantage of the discrete-$\sigma$ scheme is that the worldsheet spectrum is bounded:
 \begin{equation}
+\label{eq:s18-001}
 \omega_k\leq \omega_{\max}(N)\leq \frac{2}{a},
 \end{equation}
 where $\omega_{\max}(N)=\max_k \omega_k$ reaches exactly $2/a$ only when $N$ is even and otherwise approaches $2/a$ from below as $N$ increases.
 Hence the $T\to 0$ limit of the cylinder kernel is controlled at fixed lattice spacing. For small $T$,
 \begin{align}
-\omega_k\coth(\omega_k T)&=\frac{1}{T}+\frac{\omega_k^2 T}{3}+O(T^3),\\
+\omega_k\coth(\omega_k T)&=\frac{1}{T}+\frac{\omega_k^2 T}{3}+O(T^3),
+\label{eq:s15-smallT-coth}\\
 \omega_k\mathrm{csch}(\omega_k T)&=\frac{1}{T}-\frac{\omega_k^2 T}{6}+O(T^3),
+\label{eq:s15-smallT-csch}
 \end{align}
 so the short cylinder approaches the identity overlap plus local contact corrections. This is precisely where UV/contact divergences of lightcone string field theory should appear in the discrete formalism.
 
@@ -2815,7 +3429,7 @@ I_{\cal D}(T,\varphi)=
 \quad where $J_{\mathrm{M}}$ may be omitted if it has already been absorbed into the chosen definition of the lightcone cell measure $\dd\mu_{\mathrm{lc}}=\prod_e\dd T_e\prod_A\dd\varphi_A$.
 \item Integrate the loop momenta analytically as Gaussian moments, and perform only the remaining moduli $(T,\varphi)$ integration numerically with Monte Carlo / quasi-Monte Carlo.
 \item Use the three-tachyon and three-graviton amplitudes as the first mandatory on-shell validations, then extend the same oscillator-basis comparison to higher external states.
-\item Repeat at increasing lattice resolution and compare the reduced-Gaussian scalars $(\gamma_T,\kappa_{1\mathrm d})$ together with the separately extracted full three-leg squeeze matrix $S^{(B)}$ against their continuum lightcone counterparts.
+\item Repeat at increasing lattice resolution and compare the reduced-Gaussian scalars $(\gamma_T,\kappa_{1\mathrm d})$ together with the separately extracted full three-leg Gaussian-moment Neumann data against their continuum lightcone counterparts.
 \end{enumerate}
 
 \section{Minimal first deliverables}
@@ -2825,7 +3439,7 @@ I_{\cal D}(T,\varphi)=
 \item Implement one cubic join with the full overlap matrix $C_I=(P_1\ P_2\ -\mathbb I_{N_3})$ and verify the bosonic sewing formula.
 \item Perform the bosonic cubic operator check by evaluating the discrete join-local contribution to $[J^{-I}_2,P^-_3]+[J^{-I}_3,P^-_2]$.
 \item Evaluate the on-shell bosonic three-tachyon amplitude and derive the one-string normalization factors that turn the explicitly computed bare diagnostic into a constant, up to the standard external-state normalization convention.
-\item Extract the reduced sewn quadratic-form diagnostics $(\gamma_T,\kappa_{1\mathrm d})$ and the separate full three-leg squeeze matrix $S^{(B)}$, and compare the latter with the continuum Neumann coefficients in a fixed Fourier convention.
+\item Extract the reduced sewn quadratic-form diagnostics $(\gamma_T,\kappa_{1\mathrm d})$ and the separate full three-leg Gaussian-moment Neumann data, and compare the latter with the continuum Neumann coefficients in a fixed Fourier convention.
 \item Construct the lattice dynamical supercharges and solve for the GS prefactor at cubic order.
 \item Evaluate the on-shell superstring three-graviton amplitude and verify that it reproduces the standard Einstein-Hilbert/Yang-Mills-squared cubic tensor.
 \item Compute the first nontrivial loop integrand numerically with explicit twist and analytic loop-momentum elimination.
@@ -2835,6 +3449,7 @@ I_{\cal D}(T,\varphi)=
 \section{Higher-loop numerical form}
 After Gaussian integration over all internal oscillator data and over the finite-dimensional loop-momentum Gaussian moments, each diagram reduces to the explicit finite-dimensional form
 \begin{equation}
+\label{eq:s21-001}
 \begin{aligned}
 {\cal A}_{\cal D}
 &=
@@ -2863,7 +3478,7 @@ With discrete $\sigma$, the free lightcone worldsheet path integral becomes an e
 
 This also determines the natural division of labor between bases. The $\sigma$-position basis is the primary computational basis for higher-loop sewing, because the propagators are exact Gaussians there and the boundary concatenation is local there. The Fourier/oscillator basis is the primary comparison basis, because conventional lightcone Neumann coefficients, Lorentz/SUSY generators, and on-shell amplitudes are written most naturally in that language.
 
-What the note makes explicit is the first two pieces together with the resulting finite-dimensional Gaussian assembly problem. In the bosonic three-tachyon sector, the explicit discrete cubic vertex now goes further: the finite-$N$ amplitude has been reduced to an exact Gaussian formula and the remaining bare normalization factor has been checked numerically to factorize into incoming/outgoing one-string pieces with no irreducible three-body dependence. This detects a critical-dimension signal in the explicit vacuum-channel amplitude, but it does \emph{not} by itself derive $D=26$; that derivation still has to come from the operator-level bosonic Lorentz computation. On the superstring side, the nonzero-mode bosonic part of the three-graviton prefactor has also now been reduced explicitly, and that calculation already shows that the current minimal nearest-neighbor right-arc stencil is too naive: its one-point coefficient vanishes to numerical precision, so the expected momentum-bilinear piece of the graviton tensor cannot yet emerge from that raw choice. What the note still does \emph{not} yet solve in closed form are the continuum lightcone measure factor when kept separate, the operator-level bosonic cubic Lorentz computation that derives those one-string factors and the overall discrete normalization from the Poincare algebra itself, the full higher-genus spin-structure/GSO bookkeeping, the discrete supercharge-closure calculation that fixes the precise lattice prefactor coefficients and overall superstring cubic normalizations, and the resulting on-shell superstring three-graviton amplitude. That is the honest current status of the construction and also the reason it is a plausible numerical/analytic hybrid program rather than already a finished interacting superstring algorithm.
+What the note makes explicit is the first two pieces together with the resulting finite-dimensional Gaussian assembly problem. In the bosonic sector, the explicit discrete cubic vertex now goes further in two complementary ways. First, the three-tachyon amplitude has been reduced to an exact Gaussian formula and the remaining bare normalization factor has been checked numerically to factorize into incoming/outgoing one-string pieces with no irreducible three-body dependence. This detects a critical-dimension signal in the explicit vacuum-channel amplitude, but it does \emph{not} by itself derive $D=26$; that derivation still has to come from the operator-level bosonic Lorentz computation. Second, the bosonic two-tachyon/one-massless diagnostic can now be written with an exact finite-$N$ external-state normalization, $C_{1,N}=\pi\alpha'/(2N\sin(\pi/N))$, and the resulting tensor decomposition already shows that the trace term is $O(a)$ while the physical $q_{\mathrm{rel}}^I q_{\mathrm{rel}}^J$ coefficient approaches a smooth nonzero continuum profile. On the superstring side, the nonzero-mode bosonic part of the three-graviton prefactor has also now been reduced explicitly, and that calculation already shows that the current minimal nearest-neighbor right-arc stencil is too naive: its one-point coefficient vanishes to numerical precision, so the expected momentum-bilinear piece of the graviton tensor cannot yet emerge from that raw choice. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. What the note still does \emph{not} yet solve in closed form are the continuum lightcone measure factor when kept separate, the operator-level bosonic cubic Lorentz computation that derives those one-string factors and the overall discrete normalization from the Poincare algebra itself, the full higher-genus spin-structure/GSO bookkeeping, the discrete supercharge-closure calculation that fixes the precise lattice prefactor coefficients and overall superstring cubic normalizations, and the resulting on-shell superstring three-graviton amplitude. That is the honest current status of the construction and also the reason it is a plausible numerical/analytic hybrid program rather than already a finished interacting superstring algorithm.
 
 \begin{thebibliography}{99}
 
