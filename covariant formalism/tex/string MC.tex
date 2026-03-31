@@ -379,6 +379,106 @@ Since the $Z(l_i, R)$ only depend on $R$ via the zero mode factor $2\pi R$ and t
 R\Theta(4i R^2 T')= R^{-1}\Theta(4i R^{-2} T')
 \fe
 
+\subsection{Torus two point function of compact boson in flat coordinate}
+To compare with the discretized computation, it is useful to write the exact answer directly in the flat torus coordinate $w\sim w+2\pi \sim w+2\pi \tau$. We decompose the compact boson into a single-valued part and a classical winding solution,
+\ie
+X(w,\bar w)=X_q(w,\bar w)+X^{(m,n)}_{\rm cl}(w,\bar w),
+\fe
+where in winding sector $(m,n)\in \mathbb{Z}^2$,
+\ie
+X^{(m,n)}_{\rm cl}(w+2\pi,\bar w+2\pi)=X^{(m,n)}_{\rm cl}(w,\bar w)+2\pi R m,
+\fe
+\ie
+X^{(m,n)}_{\rm cl}(w+2\pi\tau,\bar w+2\pi\bar\tau)=X^{(m,n)}_{\rm cl}(w,\bar w)+2\pi R n.
+\fe
+The harmonic representative is
+\ie
+X^{(m,n)}_{\rm cl}(w,\bar w)=x_0+\frac{R}{2i\tau_2}\left[(n-m\bar\tau)w-(n-m\tau)\bar w\right],
+\fe
+so that
+\ie
+\partial X^{(m,n)}_{\rm cl}= \frac{R}{2i\tau_2}(n-m\bar\tau),\qquad
+\bar\partial X^{(m,n)}_{\rm cl}= -\frac{R}{2i\tau_2}(n-m\tau),
+\fe
+and the classical action is
+\ie
+S_{m,n}= \frac{\pi R^2}{\alpha' \tau_2}|n-m\tau|^2.
+\fe
+Accordingly, the compact boson partition function on the flat torus is, up to a moduli independent normalization factor,
+\ie
+Z_R(\tau,\bar\tau)\propto \frac{1}{\sqrt{\tau_2} |\eta(\tau)|^2}\Theta_R(\tau,\bar\tau),
+\fe
+with the genus one winding lattice sum
+\ie
+\Theta_R(\tau,\bar\tau)=\sum_{m,n\in \mathbb{Z}} e^{-S_{m,n}}
+=\sum_{m,n\in \mathbb{Z}} \exp\left[-\frac{\pi R^2}{\alpha' \tau_2}|n-m\tau|^2\right].
+\fe
+
+Now consider the normalized torus two point function of $\partial X$,
+\ie{}
+\langle \partial X(w_1)\partial X(w_2)\rangle_{T^2,R}
+&=\frac{\sum_{m,n}\int [\mathcal{D}X_q] \left(\partial X_q(w_1)+\partial X^{(m,n)}_{\rm cl}\right)\left(\partial X_q(w_2)+\partial X^{(m,n)}_{\rm cl}\right)e^{-S[X_q]-S_{m,n}}}{\sum_{m,n}\int [\mathcal{D}X_q]e^{-S[X_q]-S_{m,n}}}.
+\fe
+The cross term vanishes because the one point function of $\partial X_q$ in the non-compact boson theory is 0. Hence
+\ie
+\langle \partial X(w_1)\partial X(w_2)\rangle_{T^2,R}
+=\langle \partial X(w_1)\partial X(w_2)\rangle_{T^2,\text{noncompact}}
++\frac{1}{\Theta_R(\tau,\bar\tau)}\sum_{m,n\in \mathbb{Z}} \left(\partial X^{(m,n)}_{\rm cl}\right)^2 e^{-S_{m,n}}.
+\fe
+If we denote
+\ie
+\nu\equiv \frac{w_1-w_2}{2\pi},
+\fe
+then the first term is the usual zero mode subtracted propagator of the non-compact boson,
+\ie
+\langle \partial X(w_1)\partial X(w_2)\rangle_{T^2,\text{noncompact}}
+=\frac{\alpha'}{8\pi^2}\partial_\nu^2 \log \vartheta_1(\nu|\tau)+\frac{\alpha'}{8\pi \tau_2},
+\fe
+which behaves as $-\frac{\alpha'}{2}(w_1-w_2)^{-2}+O(1)$ as $w_1\to w_2$.
+
+For the second term, we use
+\ie
+\left(\partial X^{(m,n)}_{\rm cl}\right)^2=
+-\frac{R^2}{4\tau_2^2}(n-m\bar\tau)^2.
+\fe
+Moreover,
+\ie
+\partial_\tau S_{m,n}=\frac{\pi i R^2}{2\alpha' \tau_2^2}(n-m\bar\tau)^2,
+\fe
+so that
+\ie
+\partial_\tau \Theta_R(\tau,\bar\tau)=
+-\frac{\pi i R^2}{2\alpha' \tau_2^2}\sum_{m,n\in \mathbb{Z}} (n-m\bar\tau)^2 e^{-S_{m,n}}.
+\fe
+It follows that
+\ie
+\frac{1}{\Theta_R(\tau,\bar\tau)}\sum_{m,n\in \mathbb{Z}} \left(\partial X^{(m,n)}_{\rm cl}\right)^2 e^{-S_{m,n}}
+=-\frac{i\alpha'}{2\pi}\partial_\tau \log \Theta_R(\tau,\bar\tau).
+\fe
+Therefore the exact compact boson two point function is
+\ie
+\langle \partial X(w_1)\partial X(w_2)\rangle_{T^2,R}
+=\frac{\alpha'}{8\pi^2}\partial_\nu^2 \log \vartheta_1(\nu|\tau)+\frac{\alpha'}{8\pi \tau_2}
+-\frac{i\alpha'}{2\pi}\partial_\tau \log \Theta_R(\tau,\bar\tau).
+\fe
+The dependence on $w_1-w_2$ is identical to that of the non-compact boson; compactification only changes the constant term through the winding lattice sum. Taking the coincident point limit after subtracting the short distance singularity gives
+\ie
+\langle :\partial X\partial X:(w)\rangle_{T^2,R}
+=\frac{\alpha'}{24\pi^2}\frac{\vartheta_1'''(0|\tau)}{\vartheta_1'(0|\tau)}+\frac{\alpha'}{8\pi \tau_2}
+-\frac{i\alpha'}{2\pi}\partial_\tau \log \Theta_R(\tau,\bar\tau).
+\fe
+
+Compared with the non-compact boson, the compact boson has an additional moduli dependent constant. By comparing the OPE and the series expansion of the two point function at $z\rightarrow w$, we can determine the one point function of operators $:\partial^n X \partial X:$. Compared with the non-compact boson, the extra factor only contributes to the one point function of $:\partial X\partial X:$.
+
+Conduct conformal transformation to the disc coordinate, we have
+\begin{equation}
+\langle :\partial X \bar \partial X:(0) \rangle_{D^2,R} = \langle :\partial X \partial X:(0) \rangle_{T^2,R} -\frac{\alpha'}{12} f''(0),
+\end{equation}
+We should be able to verify this relation by the discretized computation on the disk.
+
+
+
+
 \section{Moduli and Weyl anomaly in disc coordinate}
 \label{sec:WeylAnomaly}
 
@@ -705,8 +805,6 @@ Note that $\ell_1 + \ell_2 + \ell_3 = \wt\ell_1 + \wt \ell_2 = \pi p$.
 
 
 \end{document}
-
-
 
 
 
