@@ -3300,7 +3300,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $44/44$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, a structural comparison to the known flat-space GS lightcone benchmark, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $46/46$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},
@@ -3486,6 +3486,73 @@ the maximum absolute deviation between the explicit contraction and
 \bigr|
 =1.60\times 10^{-14}.
 \end{equation}
+\paragraph{Discrete-vs-continuum comparison.}
+It is worth spelling out exactly what is being compared here. On the discrete
+side,
+\(
+{\cal A}_F^{\rm explicit}
+\)
+means the finite-$N$ lightcone-lattice amplitude obtained by combining:
+\begin{enumerate}
+\item the discretized bosonic nonzero-mode coefficient
+\(
+B_{qq}(N;\lambda,t)
+\)
+extracted from the Gaussian sewing problem, and
+\item the explicit $16$-Grassmann fermionic contraction in the local
+\(
+\Lambda
+\)
+-superfield convention.
+\end{enumerate}
+On the analytic side, the benchmark target is the flat-space GS lightcone cubic
+prefactor projected onto the same polarization channels. In the continuum one has
+\(
+H_3\propto \mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)
+\)
+with
+\(
+\mathbb{P}^I=\alpha_1 p_{(2)}^I-\alpha_2 p_{(1)}^I=-\alpha_3 q_{\mathrm{rel}}^I
+\),
+so after packaging the still-unresolved overall
+$q_{\mathrm{rel}}^Iq_{\mathrm{rel}}^J$ coefficient into
+$B_{qq}$ the benchmark targets are exactly the channel formulas in
+\eqref{eq:s15-1-038d3d}. Equivalently, the comparison is performed channel by
+channel as
+\begin{equation}
+\label{eq:s15-1-038d3f}
+{\cal A}_F^{\rm explicit}(N,\lambda,t)
+\quad\text{vs.}\quad
+{\cal A}_F^{\rm analytic\ target}(N,\lambda,t)
+:=
+B_{qq}(N;\lambda,t)\,{\cal R}^{\rm cont}_{qq}(\lambda),
+\end{equation}
+where
+\(
+{\cal R}^{\rm cont}_{qq}(\lambda)
+\)
+is the known continuum response for the chosen benchmark channel. The new helper
+\texttt{superstring\_continuum\_benchmark.py} checks this explicit
+continuum-lightcone target directly, and the same family scan gives the same
+maximum deviation~\eqref{eq:s15-1-038d3e}. So for these benchmark channels the
+discrete vertex is now being compared directly to the known continuum GS cubic
+tensor structure in the same local convention, but not yet with an
+independently fixed overall normalization. In particular, the present benchmark
+does \emph{not} yet compare the discrete
+\(
+B_{qq}(N;\lambda,t)
+\)
+itself to an independently known continuum normalization coefficient; it tests
+that once the unresolved overall coefficient is packaged into
+\(
+B_{qq}
+\),
+the polarization selection rules, channel ratios, and
+\(
+\lambda
+\)
+-dependence agree with the analytic GS target.
+\paragraph{Benchmark response values.}
 At the benchmark ratio $\lambda=\frac25$, the new response-level helper in
 \texttt{fermionic\_graviton\_contraction.py} gives
 \begin{equation}
@@ -3998,7 +4065,11 @@ What the note makes explicit is the first two pieces together with the resulting
 \frac{{\cal A}_F(\epsilon_\parallel,\epsilon_{23},\epsilon_{23})}
 {{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)}=1,
 \]
-with the dilaton and antisymmetric benchmark channels still vanishing to machine precision in the current regression suite. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic and superstring amplitudes with a clean continuum extrapolation. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but they are secondary to that numerical validation program.
+with the dilaton and antisymmetric benchmark channels still vanishing to machine precision in the current regression suite. More strongly, these benchmark channels are now compared directly to the known flat-space GS lightcone cubic target at the level of tensor structure,
+\(
+\mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)
+\)
+in the same local convention, with maximum finite-$N$ scan error $1.60\times10^{-14}$, but still without an independently fixed overall normalization. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic and superstring amplitudes with a clean continuum extrapolation. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but they are secondary to that numerical validation program.
 
 \begin{thebibliography}{99}
 

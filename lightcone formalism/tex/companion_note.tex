@@ -658,6 +658,22 @@ t
 \),
 and scale grids used in the decisive superstring test, with maximum absolute
 deviation $1.60\times 10^{-14}$.
+\paragraph{Discrete-vs-continuum comparison.}
+This is also a direct structural comparison to the known flat-space GS
+lightcone cubic prefactor in the same local convention. In the continuum one has
+\(
+H_3\propto \mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)
+\)
+with
+\(
+\mathbb{P}^I=\alpha_1 p_{(2)}^I-\alpha_2 p_{(1)}^I=-\alpha_3 q_{\mathrm{rel}}^I
+\),
+so after packaging the still-unresolved overall
+$q_{\mathrm{rel}}^Iq_{\mathrm{rel}}^J$ coefficient into
+$B_{qq}$, the benchmark trace-dropped targets are exactly
+\eqref{eq:ferm-assembled-closed-family} and
+\eqref{eq:ferm-assembled-closed-family-2}. This confirms that the discrete vertex reproduces the correct \emph{tensor structure} of the continuum GS cubic prefactor---selection rules, channel ratios, and $\lambda$-dependence---to machine precision. What it does not yet test is the absolute value of $B_{qq}$ itself: the continuum predicts $B_{qq}\propto \alpha_3^2|q_{\mathrm{rel}}|^2$ (up to the cubic coupling constant), and matching that proportionality coefficient to the known continuum normalization is the remaining open step.
+\paragraph{Benchmark response values.}
 At the benchmark ratio $\lambda = 2/5$, the pure responses are
 \begin{equation}
 {\cal R}^{(23,23,\parallel)}_{qq} = 5.387986636954\ldots,
@@ -674,7 +690,7 @@ with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark di
 \frac{\sigma_2}{\sigma_1} = 1.11 \times 10^{-4}.
 \label{eq:ferm-rank1}
 \end{equation}
-The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 44 tests pass.
+The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 46 tests pass.
 
 %% ======================================================================
 \section{Neumann coefficients from Gaussian moments}
@@ -710,7 +726,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (44/44 tests passing in the automated suite):
+\textbf{Validated} (46/46 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
@@ -719,6 +735,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
 \item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
+\item Direct structural comparison to the known flat-space GS lightcone cubic benchmark $\,\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)\,$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error, up to the still-unfixed overall normalization.
 \item On-shell trace-dropped graviton channels: $\mathcal{A}_{\mathrm{vec},\parallel}/\mathcal{A}_{\mathrm{vec},\perp} = -7$ exact, $\mathcal{A}_{\mathrm{dilaton}} = 0$ to $10^{-13}$.
 \item Pure fermionic response basis at $\lambda = 2/5$: ${\cal R}_\delta = 0$ for the benchmark graviton channels, ${\cal R}^{(23,23,\parallel)}_{qq} = 5.387986636954\ldots$, and the dilaton/$B$-field benchmark responses vanish exactly.
 \item Rank-one factorization~\eqref{eq:rank1} of the stencil family with relative error $10^{-4}$.

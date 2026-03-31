@@ -38,6 +38,7 @@ import test_graviton_prefactor as tgp
 import test_neumann_extraction as tne
 import test_projected_graviton_channels as tpgc
 import test_superstring_decisive_test as tsdt
+import test_superstring_continuum_benchmark as tscb
 import test_superstring_normalization_factorization as tsnf
 import test_tachyon_amplitude as tta
 import test_weyl_vector_formula as twvf
@@ -183,6 +184,17 @@ def run_superstring_decisive_tests() -> dict[str, Any]:
     }
 
 
+def run_superstring_continuum_benchmark_tests() -> dict[str, Any]:
+    results = {
+        "second_order_sample_matches_continuum_target": tscb.test_second_order_sample_matches_continuum_target(),
+        "symmetric_family_scan_matches_continuum_target": tscb.test_symmetric_family_scan_matches_continuum_target(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def run_superstring_normalization_tests() -> dict[str, Any]:
     results = {
         "positive_branch_is_rank_one": tsnf.test_positive_branch_is_rank_one(),
@@ -208,6 +220,9 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     ]
     decisive_closed = report["tests"]["superstring_decisive"]["results"][
         "unblocked_trace_dropped_closed_forms"
+    ]
+    continuum_benchmark = report["tests"]["superstring_continuum_benchmark"]["results"][
+        "symmetric_family_scan_matches_continuum_target"
     ]
     fermionic = report["tests"]["fermionic_graviton_contraction"]["results"]
     factorization = report["tests"]["superstring_normalization"]["results"][
@@ -251,6 +266,7 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "trace_dropped_max_parallel_perp_lambda_sq_error": decisive["max_parallel_perp_lambda_sq_error"],
         "trace_dropped_zero_channel_max": decisive["max_zero_channel"],
         "trace_dropped_max_closed_form_error": decisive_closed["max_benchmark_closed_form_error"],
+        "continuum_benchmark_max_abs_error": continuum_benchmark["max_abs_error"],
         "normalization_rank1_rel_error": factorization["rank1_rel_frob_error"],
         "normalization_sigma2_over_sigma1": factorization["sigma2_over_sigma1"],
         "normalization_max_profile_diff": factorization_profile["max_profile_diff"],
@@ -279,6 +295,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "weyl_formula": run_weyl_formula_tests(),
         "projected_graviton_channels": run_projected_graviton_channel_tests(),
         "superstring_decisive": run_superstring_decisive_tests(),
+        "superstring_continuum_benchmark": run_superstring_continuum_benchmark_tests(),
         "superstring_normalization": run_superstring_normalization_tests(),
     }
 

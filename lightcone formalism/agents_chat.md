@@ -790,6 +790,48 @@ The missing piece is not computational but physical: matching the computed chann
 
 ---
 
+# Review of Latest Codex Updates
+
+## New files and changes
+
+- `superstring_continuum_benchmark.py` + `test_superstring_continuum_benchmark.py`: New comparison against the continuum GS cubic prefactor $\mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)$.
+- `numerical_suite.py`: Updated to 46/46 tests (added 2 continuum benchmark tests).
+- Main note: Added paragraph claiming direct comparison to the known flat-space GS lightcone cubic target.
+- Companion note: Updated test count to 46/46, added continuum benchmark bullet.
+
+## Tests: 2/2 pass
+
+| Test | Max error | Status |
+|---|---|---|
+| `second_order_sample_matches_continuum_target` | $5.6 \times 10^{-17}$ | PASS |
+| `symmetric_family_scan_matches_continuum_target` | $1.6 \times 10^{-14}$ | PASS |
+
+## Critical assessment of the "continuum benchmark"
+
+**The comparison is structurally correct but normalization-incomplete.**
+
+The note claims that the benchmark formulas (eq s15-1-038d3d) are "exactly the channel formulas" from the continuum $\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)$. The logic:
+
+1. In the continuum, $H_3 \propto \mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)$ with $\mathbb{P}^I = -\alpha_3 q_{\rm rel}^I$
+2. So $H_3 \propto q_{\rm rel}^I q_{\rm rel}^J v_{IJ}(\Lambda)$ — this is a pure $\hat{q}^I\hat{q}^J$ tensor, no $\delta^{IJ}$ trace piece
+3. In the discrete computation, after the trace drop, $\mathcal{R}_\delta = 0$ for the benchmark channels, so the amplitude is $B_{qq} \cdot \mathcal{R}_{qq}$
+4. The closed-form $\mathcal{R}_{qq}^{(23,23,\parallel)} = 4\sqrt{14}(1-\lambda)^2$ is verified to $10^{-13}$
+
+**What this DOES verify:** The fermionic zero-mode contraction $\int d^{16}\lambda\, \Psi_1\Psi_2\Psi_3 \cdot \hat{q}^I\hat{q}^J v_{IJ}(\Lambda)$ gives the correct channel structure (dilaton=0, B-field=0, correct ratios). The $\mathcal{R}_\delta = 0$ condition confirms that the trace piece of the bosonic tensor does not contribute — this IS the expected continuum behavior since $\mathbb{P}^I\mathbb{P}^J$ has no trace.
+
+**What this does NOT verify:** The overall coefficient $B_{qq}$ from the discrete computation has not been matched to $\alpha_3^2 |q_{\rm rel}|^2$ (or whatever normalization the continuum prefactor carries). The `benchmark_trace_dropped_amplitude_closed_forms` function computes $B_{qq} \cdot 4\sqrt{14}(1-\lambda)^2$ and compares it to the explicit Grassmann integral with the SAME $B_{qq}$ as input. So it's an internal consistency check (is the Grassmann integral correctly computing $B_{qq} \cdot \mathcal{R}_{qq}$?), not a comparison to an independently known number.
+
+**The honest statement:** The discrete vertex reproduces the correct *tensor structure* of the continuum GS cubic prefactor (up to overall normalization). The coefficient $4\sqrt{14}(1-\lambda)^2$ in the fermionic response is a prediction that should be derivable analytically from the Pankiewicz-Stefanski coefficients. The wording "direct comparison to the known continuum GS cubic structure" in the note is accurate at the structural level, but should not be read as "the overall normalization has been matched."
+
+## Companion note: updated correctly
+
+The companion note adds the continuum benchmark paragraph and updates the test count to 46/46. The new bullet in the Validated list is:
+> "Direct comparison to the known flat-space GS lightcone cubic benchmark $\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error."
+
+This is factually correct as stated.
+
+---
+
 ## 8. Overall Assessment
 
 The note is technically solid. Every formula I have been able to check against the numerical implementations is correct. The conceptual organization---exact kinematic overlap in position space, followed by a local dynamical prefactor---is clean and physically motivated. The identification of the parity obstruction for the minimal right-arc stencil is an important finding that narrows the interaction-point ambiguity.
