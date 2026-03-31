@@ -80,6 +80,17 @@ _CHANNEL_RESPONSE_CACHE: dict[
 ] = {}
 
 
+BENCHMARK_CHANNELS = (
+    ("perp23", "perp23", "parallel"),
+    ("perp23", "perp24", "parallel"),
+    ("parallel", "perp23", "perp23"),
+    ("perp23", "perp23", "dilaton"),
+    ("parallel", "parallel", "dilaton"),
+    ("perp23", "perp23", "b23"),
+    ("parallel", "parallel", "b23"),
+)
+
+
 def json_safe(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): json_safe(item) for key, item in value.items()}
@@ -454,6 +465,41 @@ def fermionic_channel_amplitude(
     return integrate_16(multiply_sparse(external, prefactor_poly))
 
 
+def channel_response_report(
+    lambda_ratio: float,
+    trace_dropped: bool = True,
+    external_alpha_ratio: float = 1.0,
+    channels: tuple[tuple[str, str, str], ...] = BENCHMARK_CHANNELS,
+) -> dict[str, Any]:
+    polarizations = polarization_tensors()
+    rows = []
+    for eps1_name, eps2_name, eps3_name in channels:
+        delta_response, qq_response = fermionic_channel_responses(
+            polarizations[eps1_name],
+            polarizations[eps2_name],
+            polarizations[eps3_name],
+            lambda_ratio,
+            trace_dropped=trace_dropped,
+            external_alpha_ratio=external_alpha_ratio,
+        )
+        rows.append(
+            {
+                "channels": [eps1_name, eps2_name, eps3_name],
+                "delta_response": delta_response,
+                "qq_response": qq_response,
+            }
+        )
+
+    return {
+        "parameters": {
+            "lambda_ratio": float(lambda_ratio),
+            "trace_dropped": bool(trace_dropped),
+            "external_alpha_ratio": float(external_alpha_ratio),
+        },
+        "rows": rows,
+    }
+
+
 def channel_report(
     n1: int,
     n2: int,
@@ -580,10 +626,38 @@ def markdown_report(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def print_response_report(report: dict[str, Any]) -> None:
+    params = report["parameters"]
+    print("=" * 108)
+    print("FERMIONIC ZERO-MODE CHANNEL RESPONSES")
+    print("=" * 108)
+    print(
+        f"lambda={params['lambda_ratio']:.6f} "
+        f"trace_dropped={params['trace_dropped']} "
+        f"external_alpha_ratio={params['external_alpha_ratio']:.6f}"
+    )
+    print()
+    print(
+        f"{'eps1':>10s} {'eps2':>10s} {'eps3':>10s} "
+        f"{'R_delta':>22s} {'R_qq':>22s}"
+    )
+    print("-" * 92)
+    for row in report["rows"]:
+        eps1, eps2, eps3 = row["channels"]
+        delta_response = complex(row["delta_response"])
+        qq_response = complex(row["qq_response"])
+        print(
+            f"{eps1:>10s} {eps2:>10s} {eps3:>10s} "
+            f"{delta_response.real:11.8f}{delta_response.imag:+11.8f}i "
+            f"{qq_response.real:11.8f}{qq_response.imag:+11.8f}i"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--n1", type=int, default=128)
     parser.add_argument("--n2", type=int, default=192)
+    parser.add_argument("--lambda-ratio", type=float, default=None)
     parser.add_argument("--alpha-prime", type=float, default=1.0)
     parser.add_argument("--left-variant", type=str, default="second_order")
     parser.add_argument("--right-variant", type=str, default="second_order")
@@ -592,19 +666,36 @@ def main() -> None:
         action="store_true",
         help="keep the delta_{IJ} pieces of v_{IJ} instead of using the on-shell trace drop",
     )
+    parser.add_argument(
+        "--response-report",
+        action="store_true",
+        help="print the pure fermionic channel responses R_delta and R_qq instead of assembled amplitudes",
+    )
     parser.add_argument("--json-out", type=str, default=None)
     parser.add_argument("--markdown-out", type=str, default=None)
     args = parser.parse_args()
 
-    report = channel_report(
-        args.n1,
-        args.n2,
-        alpha_prime=args.alpha_prime,
-        left_variant=args.left_variant,
-        right_variant=args.right_variant,
-        trace_dropped=not args.no_trace_drop,
-    )
-    print_report(report)
+    if args.response_report:
+        lambda_ratio = (
+            float(args.lambda_ratio)
+            if args.lambda_ratio is not None
+            else args.n1 / (args.n1 + args.n2)
+        )
+        report = channel_response_report(
+            lambda_ratio,
+            trace_dropped=not args.no_trace_drop,
+        )
+        print_response_report(report)
+    else:
+        report = channel_report(
+            args.n1,
+            args.n2,
+            alpha_prime=args.alpha_prime,
+            left_variant=args.left_variant,
+            right_variant=args.right_variant,
+            trace_dropped=not args.no_trace_drop,
+        )
+        print_report(report)
 
     if args.json_out is not None:
         json_path = Path(args.json_out)

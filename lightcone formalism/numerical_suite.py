@@ -30,7 +30,9 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import low_point_validation as lpv
+import test_fermionic_channel_responses as tfcr
 import test_fermionic_graviton_contraction as tfgc
+import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
 import test_neumann_extraction as tne
@@ -129,6 +131,11 @@ def run_graviton_assembly_tests() -> dict[str, Any]:
 
 def run_fermionic_graviton_contraction_tests() -> dict[str, Any]:
     results = {
+        "trace_dropped_benchmark_responses": tfcr.test_trace_dropped_benchmark_responses(),
+        "trace_dropped_zero_response_channels": tfcr.test_trace_dropped_zero_response_channels(),
+        "benchmark_response_value": tfcr.test_benchmark_response_value(),
+        "response_scan_relations": tfrs.test_default_scan_relations(),
+        "response_scan_benchmark_grid": tfrs.test_benchmark_grid_values(),
         "delta_reduction_identity": tfgc.test_delta_reduction_identity(),
         "trace_dropped_zero_channels": tfgc.test_trace_dropped_zero_channels(),
         "trace_dropped_graviton_channels": tfgc.test_trace_dropped_graviton_channels(),
@@ -223,6 +230,13 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "weyl_vector_block_C": graviton["C"],
         "weyl_vector_block_residual": graviton["fit_max_residual"],
         "fermionic_delta_reduction_error": fermionic["delta_reduction_identity"]["abs_error"],
+        "fermionic_response_diag_qq": fermionic["trace_dropped_benchmark_responses"]["diag_qq"],
+        "fermionic_response_mixed_ratio_error": fermionic["trace_dropped_benchmark_responses"]["mixed_ratio_error"],
+        "fermionic_response_lambda_sq_ratio_error": fermionic["trace_dropped_benchmark_responses"]["lambda_sq_ratio_error"],
+        "fermionic_response_zero_max": fermionic["trace_dropped_zero_response_channels"]["max_abs_response"],
+        "fermionic_response_scan_monotone": fermionic["response_scan_relations"]["monotone_decreasing_diag"],
+        "fermionic_response_scan_closed_form_error": fermionic["response_scan_relations"]["max_diag_closed_form_error"],
+        "fermionic_response_scan_grid_error": fermionic["response_scan_benchmark_grid"]["max_abs_error"],
         "fermionic_zero_channel_max": fermionic["trace_dropped_zero_channels"]["max_abs_value"],
         "fermionic_perp_perp_parallel": fermionic["trace_dropped_graviton_channels"]["perp_perp_parallel"],
         "fermionic_parallel_parallel_parallel": fermionic["trace_dropped_graviton_channels"]["parallel_parallel_parallel"],
@@ -338,6 +352,16 @@ def markdown_report(report: dict[str, Any]) -> str:
         ),
         f"- Weyl vector-block fit residual: `{benchmarks['weyl_vector_block_residual']:.12e}`",
         (
+            "- Pure fermionic benchmark responses at `lambda = 2/5`: "
+            f"`R_qq(23,23,||) = {format_complex_pair(benchmarks['fermionic_response_diag_qq'])}`, "
+            f"`max |R_delta| / zero-response error = {benchmarks['fermionic_response_zero_max']:.3e}`, "
+            f"`|mixed/diag - 1/2| = {benchmarks['fermionic_response_mixed_ratio_error']:.3e}`, "
+            f"`|lambda^2 par23/diag - 1| = {benchmarks['fermionic_response_lambda_sq_ratio_error']:.3e}`, "
+            f"`scan monotone = {benchmarks['fermionic_response_scan_monotone']}`, "
+            f"`closed-form error = {benchmarks['fermionic_response_scan_closed_form_error']:.3e}`, "
+            f"`grid benchmark error = {benchmarks['fermionic_response_scan_grid_error']:.3e}`"
+        ),
+        (
             "- Trace-dropped fermionic channel test: "
             f"`A_mix / A_diag = {benchmarks['trace_dropped_mixed_ratio']:.1f}` "
             f"with `max error = {benchmarks['trace_dropped_max_mixed_ratio_error']:.3e}`, "
@@ -408,6 +432,16 @@ def print_console_summary(report: dict[str, Any]) -> None:
     print(
         "  Weyl vector-block residual   = "
         f"{benchmarks['weyl_vector_block_residual']:.12e}"
+    )
+    print(
+        "  Pure fermionic response test  = "
+        f"Rqq_diag {format_complex_pair(benchmarks['fermionic_response_diag_qq'])}, "
+        f"max zero {benchmarks['fermionic_response_zero_max']:.3e}, "
+        f"mixed ratio err {benchmarks['fermionic_response_mixed_ratio_error']:.3e}, "
+        f"lambda^2 ratio err {benchmarks['fermionic_response_lambda_sq_ratio_error']:.3e}, "
+        f"scan monotone {benchmarks['fermionic_response_scan_monotone']}, "
+        f"closed-form err {benchmarks['fermionic_response_scan_closed_form_error']:.3e}, "
+        f"grid err {benchmarks['fermionic_response_scan_grid_error']:.3e}"
     )
     print(
         "  Trace-dropped fermion test   = "

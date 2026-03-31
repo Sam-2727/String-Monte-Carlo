@@ -3300,7 +3300,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, decisive trace-dropped superstring, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $37/37$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $42/42$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},
@@ -3399,6 +3399,68 @@ while ${\cal R}^{\cal C}_{qq}(\lambda)$ is nonzero. Numerically one then finds
 =
 1.
 \end{equation}
+Even more sharply, the dedicated response-grid scan on
+\(
+\lambda\in\{\frac14,\frac13,\frac38,\frac25,\frac12\}
+\)
+shows that the diagonal benchmark response itself fits the simple profile
+\begin{equation}
+\label{eq:s15-1-038d3a}
+{\cal R}^{(23,23,\parallel)}_{qq}(\lambda)
+=
+4\sqrt{14}\,(1-\lambda)^2
+\end{equation}
+with maximum absolute deviation
+\begin{equation}
+\label{eq:s15-1-038d3b}
+\max_{\rm grid}
+\left|
+{\cal R}^{(23,23,\parallel)}_{qq}(\lambda)
+-4\sqrt{14}\,(1-\lambda)^2
+\right|
+=2.13\times 10^{-14}.
+\end{equation}
+So on the sampled grid the other two benchmark graviton responses are already
+fixed by \eqref{eq:s15-1-038d3} to
+\begin{equation}
+\label{eq:s15-1-038d3c}
+{\cal R}^{(23,24,\parallel)}_{qq}(\lambda)
+=
+2\sqrt{14}\,(1-\lambda)^2,
+\qquad
+{\cal R}^{(\parallel,23,23)}_{qq}(\lambda)
+=
+4\sqrt{14}\,\frac{(1-\lambda)^2}{\lambda^2}.
+\end{equation}
+At the benchmark ratio $\lambda=\frac25$, the new response-level helper in
+\texttt{fermionic\_graviton\_contraction.py} gives
+\begin{equation}
+\label{eq:s15-1-038d4}
+{\cal R}^{(23,23,\parallel)}_\delta=0,
+\qquad
+{\cal R}^{(23,23,\parallel)}_{qq}=5.387986636954\ldots,
+\end{equation}
+\begin{equation}
+\label{eq:s15-1-038d5}
+{\cal R}^{(23,24,\parallel)}_\delta=0,
+\qquad
+{\cal R}^{(23,24,\parallel)}_{qq}=2.693993318477\ldots,
+\end{equation}
+\begin{equation}
+\label{eq:s15-1-038d6}
+{\cal R}^{(\parallel,23,23)}_\delta=0,
+\qquad
+{\cal R}^{(\parallel,23,23)}_{qq}=33.674916480965\ldots,
+\end{equation}
+while the dilaton and antisymmetric benchmark channels have both
+\(
+{\cal R}_\delta
+\)
+and
+\(
+{\cal R}_{qq}
+\)
+equal to zero to machine precision in the same check.
 So the later universal channel relations are not mysterious fit accidents: for these benchmark channels the trace-dropped fermionic contraction eliminates the $A_\delta$ contribution entirely, and the only surviving stencil dependence comes from the overall bosonic coefficient $B_{qq}$.
 
 The next question is whether these benchmark channels are isolated accidents or
