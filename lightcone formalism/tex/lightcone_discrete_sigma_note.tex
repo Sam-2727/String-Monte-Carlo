@@ -218,14 +218,14 @@ k,n=0,\dots,N-1.
 Then
 \begin{equation}
 \label{eq:s5-012}
-R_N(\varphi)=F^\dagger \, \mathrm{diag}\!\left(e^{2\pi \ii \kappa_k\varphi}\right) F.
+R_N(\varphi)=F^\dagger \, \mathrm{diag}\!\left(e^{-2\pi \ii \kappa_k\varphi}\right) F.
 \end{equation}
 The twisted bosonic propagator is then
 \begin{equation}
 \label{eq:s5-013}
 K_B(X_f,X_i;T,\varphi)=K_B\bigl(X_f,R_N(\varphi)X_i;T,0\bigr),
 \end{equation}
-so each discrete Fourier mode picks up the phase $e^{2\pi \ii \kappa_k\varphi}$ in the cross-term. For odd $N$ this centered prescription preserves the real site subspace. For even $N$ and generic $\varphi$, however, the self-conjugate Nyquist mode makes $R_N(\varphi)$ a complex interpolation kernel rather than a literal real-site permutation. Thus the geometric-shift interpretation is exact when $\varphi N\in\ZZ$; for generic $\varphi$ one should regard $R_N(\varphi)$ as the finite-$N$ spectral interpolation of the continuum $\sigma$ translation.
+so each discrete Fourier mode picks up the phase $e^{-2\pi \ii \kappa_k\varphi}$ in the cross-term. With the DFT convention \eqref{eq:s5-011}, this minus sign is the one that reproduces the literal forward cyclic site permutation \eqref{eq:s5-009} when $\varphi N\in\ZZ$. For odd $N$ this centered prescription preserves the real site subspace. For even $N$ and generic $\varphi$, however, the self-conjugate Nyquist mode makes $R_N(\varphi)$ a complex interpolation kernel rather than a literal real-site permutation. Thus the geometric-shift interpretation is exact when $\varphi N\in\ZZ$; for generic $\varphi$ one should regard $R_N(\varphi)$ as the finite-$N$ spectral interpolation of the continuum $\sigma$ translation.
 
 \section{Discrete free GS fermions on a cylinder}
 In lightcone GS gauge, the transverse fermions are free. After Fourier transform in $\sigma$, each mode gives a quadratic Grassmann system. A convenient bookkeeping device is to complexify the eight real GS spinor components and use coherent-state labels $\eta_{k,a}$, $\bar\eta_{k,a}$ with $a=1,\dots,8$. This is only a representation choice, not a physical doubling; the equivalent real Majorana formulation and its Pfaffian appear below. In these variables one can write
@@ -254,7 +254,7 @@ With an exact lattice shift, or more generally with the spectral interpolation p
 \begin{equation}
 \label{eq:s6-004}
 K_{F,k}(\bar\eta_f,\eta_i;T,\varphi)=
-\exp\!\left[\bar\eta_f\,e^{-\omega_k T}e^{2\pi \ii \kappa_k\varphi}\eta_i\right],
+\exp\!\left[\bar\eta_f\,e^{-\omega_k T}e^{-2\pi \ii \kappa_k\varphi}\eta_i\right],
 \end{equation}
 up to additional sign choices associated with the fermionic spin structure around the loop. Those signs are not written explicitly in this note because doing so requires fixing a higher-genus spin-structure convention and the associated GSO sum. For a fixed spin structure they amount to extra cycle-dependent phases multiplying the fermionic transport around the relevant loops; the present formulas display only the universal Gaussian part common to every such choice.
 At tree level there is no independent loop spin-structure sum, but one still must choose whether the left- and right-moving sectors have the same or opposite chirality, i.e. whether one is matching type IIB or type IIA conventions. That tree-level choice is conceptually separate from the genuinely higher-genus spin-structure/GSO bookkeeping deferred later in the note.
@@ -279,7 +279,7 @@ A(T)&=\mu\,F^\dagger\,
 \mathrm{diag}\!\big(\omega_k\coth(\omega_k T)\big)\,F,
 \label{eq:s7-A-matrix}\\
 B(T,\varphi)&=\mu\,F^\dagger\,
-\mathrm{diag}\!\big(e^{2\pi \ii \kappa_k\varphi}\omega_k\mathrm{csch}(\omega_k T)\big)\,F.
+\mathrm{diag}\!\big(e^{-2\pi \ii \kappa_k\varphi}\omega_k\mathrm{csch}(\omega_k T)\big)\,F.
 \label{eq:s7-B-matrix}
 \end{align}
 For the zero mode, use the smooth limits
@@ -297,10 +297,10 @@ For fermions (coherent states),
 K_F(\bar\eta_f,\eta_i;T,\varphi)=
 {\cal N}_F(T)\,
 \exp\!\left[\bar\eta_f^{\!T}U(T,\varphi)\eta_i\right],\qquad
-U(T,\varphi)=F^\dagger\mathrm{diag}\!\big(e^{-\omega_k T}e^{2\pi \ii \kappa_k\varphi}\big)F.
+U(T,\varphi)=F^\dagger\mathrm{diag}\!\big(e^{-\omega_k T}e^{-2\pi \ii \kappa_k\varphi}\big)F.
 \end{equation}
 In the coherent-state normalization implicit in Section~6 one may take ${\cal N}_F(T)=1$; under a different but equivalent choice of Berezin measure and vacuum normalization it changes only by an overall convention-dependent constant, not by a new dynamical function of $(T,\varphi)$.
-The $k=0$ entry of $U(T,\varphi)$ is exactly $1$, so the fermionic zero mode propagates without any $T$-dependent damping.
+The $k=0$ entry of $U(T,\varphi)$ is exactly $1$, so the fermionic zero mode propagates without any $T$-dependent damping. The companion diagnostic \texttt{twisted\_cylinder\_check.py} verifies three basic facts numerically: exact lattice twists $\varphi=m/N$ reproduce the literal site permutation to $4\times 10^{-15}$, the cross matrix satisfies $B(T,m/N)=B(T,0)P_m$ to $7\times 10^{-16}$, and on the oscillator sector the real part of the twisted loop-trace quadratic form remains strictly positive on the sampled $(N,T,\varphi)$ grid while its log-determinant matches the closed Fourier-mode formula to $7\times 10^{-13}$. A second helper, \texttt{single\_cylinder\_integrand.py}, then packages these same twisted kernels into the first explicit one-cylinder oscillator trace prototype. On the sampled grid the bosonic one-coordinate factor matches its closed mode-product formula with maximum relative error $2.40\times 10^{-13}$, while the fermionic coherent-state factor matches with maximum relative error $1.22\times 10^{-15}$. This remains a pre-GSO, oscillator-sector building block: it is not yet the physical loop integrand, but it fixes the free-cylinder ingredients that the later spin-structure and zero-mode sums must use.
 
 These formulas are the core building blocks for every edge in a higher-loop diagram. At higher genus the independent twist moduli are integrated together with the Schwinger lengths.
 
@@ -330,7 +330,7 @@ Figure~\ref{fig:twisted-cylinder} shows the geometric meaning of the twist modul
 \node[blue] at (-1.35,-0.85) {initial sites};
 \node[green!50!black] at (-1.35,4.65) {twisted final sites};
 \end{tikzpicture}
-\caption{Twisted propagator cylinder. The lower circle is glued to the upper circle after a translation by $\varphi|\alpha|$ along the $\sigma$ direction. For exact lattice shifts this is a literal site permutation. More generally, in Fourier space it becomes multiplication by the phase $e^{2\pi \mathrm{i}\kappa_k\varphi}$ and in site space it is represented by the spectral interpolation operator $R_N(\varphi)$.}
+\caption{Twisted propagator cylinder. The lower circle is glued to the upper circle after a translation by $\varphi|\alpha|$ along the $\sigma$ direction. For exact lattice shifts this is a literal site permutation. More generally, in Fourier space it becomes multiplication by the phase $e^{-2\pi \mathrm{i}\kappa_k\varphi}$ and in site space it is represented by the spectral interpolation operator $R_N(\varphi)$.}
 \label{fig:twisted-cylinder}
 \end{figure}
 
@@ -3300,7 +3300,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, a structural comparison to the known flat-space GS lightcone benchmark, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $46/46$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, a structural comparison to the known flat-space GS lightcone benchmark, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, and the first single-cylinder oscillator-trace prototype into one reproducible checkpoint. In its present form the suite reports $53/53$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},
@@ -4052,7 +4052,7 @@ where:
 This is the practical sense in which discretized $\sigma$ makes higher-loop superstring amplitudes numerically tractable.
 
 \section{Summary}
-With discrete $\sigma$, the free lightcone worldsheet path integral becomes an exactly computable finite-dimensional Gaussian on each propagator cylinder. The interacting problem is then cleanly separated into three parts: exact free propagation on the cylinders, exact site-space sewing of the boundaries at each cubic join, and a local Green--Schwarz interaction-point prefactor chosen to reproduce the known continuum GS structure.
+With discrete $\sigma$, the free lightcone worldsheet path integral becomes an exactly computable finite-dimensional Gaussian on each propagator cylinder. The interacting problem is then cleanly separated into three parts: exact free propagation on the cylinders, exact site-space sewing of the boundaries at each cubic join, and a local Green--Schwarz interaction-point prefactor chosen to reproduce the known continuum GS structure. The loop-side free building block is now also explicit numerically: the centered-frequency twist operator has been checked against exact lattice shifts, and the corresponding oscillator-sector twisted trace quadratic form has been verified to have strictly positive real part with log-determinant matching its closed Fourier-mode formula on the sampled grid.
 
 This also determines the natural division of labor between bases. The $\sigma$-position basis is the primary computational basis for higher-loop sewing, because the propagators are exact Gaussians there and the boundary concatenation is local there. The Fourier/oscillator basis is the primary comparison basis, because conventional lightcone Neumann coefficients and low-point lightcone amplitudes are written most naturally in that language, with Lorentz/SUSY generators available as optional structural checks when needed.
 
@@ -4069,7 +4069,7 @@ with the dilaton and antisymmetric benchmark channels still vanishing to machine
 \(
 \mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)
 \)
-in the same local convention, with maximum finite-$N$ scan error $1.60\times10^{-14}$, but still without an independently fixed overall normalization. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic and superstring amplitudes with a clean continuum extrapolation. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but they are secondary to that numerical validation program.
+in the same local convention, with maximum finite-$N$ scan error $1.60\times10^{-14}$, but still without an independently fixed overall normalization. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. On the loop side, the free-cylinder checks now go one step further than the twisted trace diagnostic alone: the first explicit single-cylinder oscillator trace prototype, built from the same twisted bosonic and fermionic kernels, matches the closed mode-product formulas on the sampled grid with maximum relative errors $2.40\times10^{-13}$ in the bosonic one-coordinate factor and $1.22\times10^{-15}$ in the fermionic coherent-state factor. The immediate next loop-side target is therefore no longer the derivation of another free building block, but the first quantitative Bose--Fermi cancellation test for this one-cylinder ratio and then the insertion of the remaining zero-mode and spin-structure/GSO factors needed for a physical loop integrand. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic and superstring amplitudes with a clean continuum extrapolation. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but they are secondary to that numerical validation program.
 
 \begin{thebibliography}{99}
 

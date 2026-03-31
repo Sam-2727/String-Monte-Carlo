@@ -37,10 +37,12 @@ import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
 import test_neumann_extraction as tne
 import test_projected_graviton_channels as tpgc
+import test_single_cylinder_integrand as tsci
 import test_superstring_decisive_test as tsdt
 import test_superstring_continuum_benchmark as tscb
 import test_superstring_normalization_factorization as tsnf
 import test_tachyon_amplitude as tta
+import test_twisted_cylinder as ttc
 import test_weyl_vector_formula as twvf
 
 
@@ -206,6 +208,31 @@ def run_superstring_normalization_tests() -> dict[str, Any]:
     }
 
 
+def run_twisted_cylinder_tests() -> dict[str, Any]:
+    results = {
+        "exact_shift_recovery": ttc.test_exact_shift_recovery(),
+        "generic_twist_reality_pattern": ttc.test_generic_twist_reality_pattern(),
+        "oscillator_trace_positivity_and_closed_form": ttc.test_oscillator_trace_positivity_and_closed_form(),
+        "fermionic_transport_spectrum": ttc.test_fermionic_transport_spectrum(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_single_cylinder_integrand_tests() -> dict[str, Any]:
+    results = {
+        "bosonic_trace_factor_closed_form": tsci.test_bosonic_trace_factor_closed_form(),
+        "fermionic_trace_factor_closed_form": tsci.test_fermionic_trace_factor_closed_form(),
+        "even_nyquist_sector_sample": tsci.test_even_nyquist_sector_sample(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     low_point = report["low_point_validation"]
     tachyon = low_point["tachyon"]
@@ -231,6 +258,8 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     factorization_profile = report["tests"]["superstring_normalization"]["results"][
         "reference_normalized_profiles_agree"
     ]
+    twisted = report["tests"]["twisted_cylinder"]["results"]
+    cylinder = report["tests"]["single_cylinder_integrand"]["results"]
     critical_scan = tachyon["d_perp_scan"]
     best_d = min(critical_scan, key=lambda row: row["rmse"])
     return {
@@ -270,6 +299,14 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "normalization_rank1_rel_error": factorization["rank1_rel_frob_error"],
         "normalization_sigma2_over_sigma1": factorization["sigma2_over_sigma1"],
         "normalization_max_profile_diff": factorization_profile["max_profile_diff"],
+        "twisted_shift_max_error": twisted["exact_shift_recovery"]["max_shift_error"],
+        "twisted_cross_max_error": twisted["exact_shift_recovery"]["max_cross_error"],
+        "twisted_trace_logdet_error": twisted["oscillator_trace_positivity_and_closed_form"]["max_logdet_error"],
+        "twisted_trace_factor_rel_error": twisted["oscillator_trace_positivity_and_closed_form"]["max_trace_factor_rel_error"],
+        "twisted_trace_min_real_eigenvalue": twisted["oscillator_trace_positivity_and_closed_form"]["min_real_eigenvalue"],
+        "twisted_fermion_transport_error": twisted["fermionic_transport_spectrum"]["max_abs_error"],
+        "single_cylinder_bosonic_rel_error": cylinder["bosonic_trace_factor_closed_form"]["max_rel_error"],
+        "single_cylinder_fermionic_rel_error": cylinder["fermionic_trace_factor_closed_form"]["max_rel_error"],
     }
 
 
@@ -297,6 +334,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "superstring_decisive": run_superstring_decisive_tests(),
         "superstring_continuum_benchmark": run_superstring_continuum_benchmark_tests(),
         "superstring_normalization": run_superstring_normalization_tests(),
+        "twisted_cylinder": run_twisted_cylinder_tests(),
+        "single_cylinder_integrand": run_single_cylinder_integrand_tests(),
     }
 
     module_summaries = {
@@ -346,6 +385,8 @@ def markdown_report(report: dict[str, Any]) -> str:
     projected_module = report["tests"]["projected_graviton_channels"]["summary"]
     decisive_module = report["tests"]["superstring_decisive"]["summary"]
     normalization_module = report["tests"]["superstring_normalization"]["summary"]
+    twisted_module = report["tests"]["twisted_cylinder"]["summary"]
+    cylinder_module = report["tests"]["single_cylinder_integrand"]["summary"]
 
     lines = [
         "# Numerical Suite Report",
@@ -399,6 +440,20 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`sigma2/sigma1 = {benchmarks['normalization_sigma2_over_sigma1']:.3e}`, "
             f"`max normalized profile diff = {benchmarks['normalization_max_profile_diff']:.3e}`"
         ),
+        (
+            "- Twisted-cylinder checks: "
+            f"`max |R-P| = {benchmarks['twisted_shift_max_error']:.3e}`, "
+            f"`max |B(T,m/N)-B(T,0)P| = {benchmarks['twisted_cross_max_error']:.3e}`, "
+            f"`trace logdet error = {benchmarks['twisted_trace_logdet_error']:.3e}`, "
+            f"`trace-factor rel error = {benchmarks['twisted_trace_factor_rel_error']:.3e}`, "
+            f"`min Re-eigenvalue = {benchmarks['twisted_trace_min_real_eigenvalue']:.3e}`, "
+            f"`fermion transport error = {benchmarks['twisted_fermion_transport_error']:.3e}`"
+        ),
+        (
+            "- Single-cylinder oscillator trace prototype: "
+            f"`bosonic closed-form rel error = {benchmarks['single_cylinder_bosonic_rel_error']:.3e}`, "
+            f"`fermionic closed-form rel error = {benchmarks['single_cylinder_fermionic_rel_error']:.3e}`"
+        ),
         "",
         "## Module Status",
         "",
@@ -409,6 +464,8 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `projected_graviton_channels`: `{projected_module['passed']}/{projected_module['total']}` passed",
         f"- `superstring_decisive`: `{decisive_module['passed']}/{decisive_module['total']}` passed",
         f"- `superstring_normalization`: `{normalization_module['passed']}/{normalization_module['total']}` passed",
+        f"- `twisted_cylinder`: `{twisted_module['passed']}/{twisted_module['total']}` passed",
+        f"- `single_cylinder_integrand`: `{cylinder_module['passed']}/{cylinder_module['total']}` passed",
         "",
         "## Notes",
         "",
@@ -481,6 +538,20 @@ def print_console_summary(report: dict[str, Any]) -> None:
         f"rank1 rel error {benchmarks['normalization_rank1_rel_error']:.3e}, "
         f"sigma2/sigma1 {benchmarks['normalization_sigma2_over_sigma1']:.3e}, "
         f"max profile diff {benchmarks['normalization_max_profile_diff']:.3e}"
+    )
+    print(
+        "  Twisted cylinder checks      = "
+        f"max |R-P| {benchmarks['twisted_shift_max_error']:.3e}, "
+        f"max |B-B0P| {benchmarks['twisted_cross_max_error']:.3e}, "
+        f"trace logdet err {benchmarks['twisted_trace_logdet_error']:.3e}, "
+        f"trace-factor rel err {benchmarks['twisted_trace_factor_rel_error']:.3e}, "
+        f"min Re-eig {benchmarks['twisted_trace_min_real_eigenvalue']:.3e}, "
+        f"fermion transport err {benchmarks['twisted_fermion_transport_error']:.3e}"
+    )
+    print(
+        "  Single-cylinder prototype    = "
+        f"bosonic rel err {benchmarks['single_cylinder_bosonic_rel_error']:.3e}, "
+        f"fermionic rel err {benchmarks['single_cylinder_fermionic_rel_error']:.3e}"
     )
     print()
     print("Per-module summary:")

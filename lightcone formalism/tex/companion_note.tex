@@ -154,7 +154,7 @@ B(T) = \mu\,F^\dagger\,\mathrm{diag}\!\bigl(\omega_k\,\mathrm{csch}\,\omega_k T\
 \end{equation}
 with $F_{kn} = N^{-1/2}e^{2\pi\ii kn/N}$ the unitary DFT matrix and the smooth zero-mode limits $\omega_0\coth(\omega_0 T) \to 1/T$, $\omega_0\,\mathrm{csch}(\omega_0 T) \to 1/T$.
 
-For loop diagrams one includes a $\sigma$-twist: the spectral shift operator $R_N(\varphi)$ multiplies the $k$th Fourier mode by $e^{2\pi\ii\kappa_k\varphi}$, where $\kappa_k = k$ for $0 \le k \le \lfloor(N-1)/2\rfloor$ and $\kappa_k = k - N$ otherwise.
+For loop diagrams one includes a $\sigma$-twist: the spectral shift operator $R_N(\varphi)$ multiplies the $k$th Fourier mode by $e^{-2\pi\ii\kappa_k\varphi}$, where $\kappa_k = k$ for $0 \le k \le \lfloor(N-1)/2\rfloor$ and $\kappa_k = k - N$ otherwise. With the DFT convention used here, this is the sign that reproduces the literal forward cyclic site shift when $\varphi N\in\ZZ$.
 
 \subsection{Fermionic kernel}
 
@@ -690,7 +690,7 @@ with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark di
 \frac{\sigma_2}{\sigma_1} = 1.11 \times 10^{-4}.
 \label{eq:ferm-rank1}
 \end{equation}
-The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 46 tests pass.
+The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 53 tests pass.
 
 %% ======================================================================
 \section{Neumann coefficients from Gaussian moments}
@@ -726,7 +726,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (46/46 tests passing in the automated suite):
+\textbf{Validated} (53/53 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
@@ -740,12 +740,15 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Pure fermionic response basis at $\lambda = 2/5$: ${\cal R}_\delta = 0$ for the benchmark graviton channels, ${\cal R}^{(23,23,\parallel)}_{qq} = 5.387986636954\ldots$, and the dilaton/$B$-field benchmark responses vanish exactly.
 \item Rank-one factorization~\eqref{eq:rank1} of the stencil family with relative error $10^{-4}$.
 \item Explicit fermionic Grassmann contraction~\eqref{eq:ferm-channels} in the fixed local $\Lambda$-superfield convention: dilaton and $B$-field channels vanish exactly; graviton channels show the correct transverse-rotation ratios.
+\item Twisted-cylinder building block: exact lattice twists satisfy $R_N(m/N)=P_m$ to $4\times 10^{-15}$ and $B(T,m/N)=B(T,0)P_m$ to $7\times 10^{-16}$, while the oscillator-sector loop-trace quadratic form has strictly positive real part on the sampled $(N,T,\varphi)$ grid and its log-determinant matches the closed Fourier-mode formula to $7\times 10^{-13}$.
+\item Single-cylinder oscillator trace prototype built from those twisted kernels: the bosonic one-coordinate factor matches the closed mode-product formula with maximum relative error $2.40\times 10^{-13}$ on the sampled grid, while the fermionic coherent-state factor matches to $1.22\times 10^{-15}$. This is a pre-GSO oscillator-sector building block rather than a full physical loop amplitude.
 \end{itemize}
 
 \textbf{Remaining:}
 \begin{enumerate}
 \item Fix the overall cubic normalization by matching to the continuum three-graviton and three-tachyon couplings.
-\item Implement the twisted propagator $K_B(T, \varphi)$ and assemble the first loop integrand.
+\item Use the single-cylinder prototype to test Bose--Fermi cancellation of the oscillator ratio as $N\to\infty$.
+\item Assemble the first loop integrand by adding the remaining zero-mode factor to the now-tested twisted propagator building blocks.
 \item Spin-structure/GSO bookkeeping for physical superstring loops.
 \end{enumerate}
 
