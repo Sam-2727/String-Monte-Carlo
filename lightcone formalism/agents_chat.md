@@ -1260,3 +1260,80 @@ The current superstring three-point results are correct within the zero-mode (PS
 2. Determine the normalization from the Mandelstam-map branch-point geometry
 3. Verify that it reproduces the zero-mode result for three-point vacuum matrix elements
 4. Use it as the foundation for four-point and loop computations
+
+---
+
+# Current Status and Recommended Next Steps (2026-03-31)
+
+## What exists and is validated
+
+### Bosonic (solid)
+- Discrete propagator, cubic overlap, Gaussian sewing: all exact, all tested (overlap algebra to $10^{-15}$)
+- Three-tachyon amplitude: critical dimension $D=26$ from leg factorization ($10^5$ separation), large-$N$ asymptotics with $\mathcal{C}_{\rm tail} \approx -22.50$
+- Two-tachyon/one-massless: correct tensor decomposition, $A_{\rm tr} = O(a) \to 0$, $B_{\rm rel} \to 1.920$
+- Bosonic interaction-point stencils: parity obstruction identified and resolved, second-order stencil converges
+- Neumann coefficients: Gaussian-moment extraction with guaranteed symmetry
+- Twisted cylinder: sign-corrected, exact lattice shifts verified, oscillator trace matches closed form
+- Single-cylinder trace prototype: bosonic and fermionic factors match to $10^{-13}$ relative
+
+### Superstring (provisional — reduced $\Lambda$ ansatz only)
+- Fermionic zero-mode polynomial $v_{IJ}(\Lambda)$: imported from Pankiewicz-Stefanski, explicit in one SO(8) convention
+- Weyl-quantized vector block: closed-form coefficients $A(\alpha), B(\alpha), C(\alpha)$ verified to $10^{-12}$
+- 16-Grassmann contraction: explicit, channel selection rules verified (dilaton=0, B-field=0, transverse ratio=1/2, $\lambda^2$ scaling)
+- Closed-form response: $\mathcal{R}_{qq}^{(23,23,\parallel)} = 4\sqrt{14}(1-\lambda)^2$ verified to $10^{-13}$
+- Stencil family: rank-1 factorization with $\sigma_2/\sigma_1 = 10^{-4}$
+- **Caveat**: all of this uses $\Lambda_{\rm lat} = \sqrt{N_1N_2/N_3}(\theta_{\rm av}^{(1)} - \theta_{\rm av}^{(2)})$ (the zero mode), not the genuinely local interaction-point fermion
+
+### Local fermion scaffolding (new, not yet used for amplitudes)
+- Exact decomposition $\theta_n^{(r)} = \theta_{\rm av}^{(r)} + \sum_m (S_r)_{nm}\vartheta_m^{(r)}$
+- Bridge formula: $\sqrt{N_1N_2/N_3}(\theta_{I_+} - \theta_{I_-}) = \Lambda_{\rm lat} + (\text{nonzero-mode correction})$
+- Mixed zero-mode basis $(\Theta_{\rm cm}, \Lambda_{\rm lat})$ with verified invertibility
+- 58/58 tests passing
+
+### What is NOT done
+- No amplitude has been matched quantitatively to a known continuum number
+- The local finite-$N$ fermionic interaction-point variable has not been constructed
+- No four-point or loop amplitude has been computed
+- The overall cubic normalization is unfixed
+
+## Recommended next steps (in priority order)
+
+### Priority 1: Match the bosonic three-tachyon amplitude to the known continuum value
+
+This is the easiest quantitative check and does not involve the fermionic locality issue. The continuum three-tachyon coupling in the bosonic string is a known number (related to $g_c$ and the Mandelstam map Jacobian). The discrete computation gives $\mathcal{C}_{\rm tail} \approx -22.50$ and $\gamma_T \to 0.357$. Computing the continuum answer for the same kinematic configuration and comparing would settle whether the bosonic normalization is correct.
+
+**Concrete task**: For $\alpha_1/\alpha_3 = 2/5$ and $\alpha' = 1$, compute the continuum $\langle T T T \rangle$ lightcone amplitude analytically (from the standard Mandelstam vertex normalization) and compare to the discrete result at $N_1 = 256, N_2 = 384$.
+
+### Priority 2: Integrate out the fermionic nonzero modes for the three-point vertex
+
+The bridge formula gives $\Lambda_{\rm local} = \Lambda_{\rm lat} + \delta\Lambda_{\rm osc}$ where $\delta\Lambda_{\rm osc}$ is the nonzero-mode correction. For the three-point function with vacuum external states, the task is to compute the induced effective polynomial:
+
+$$\langle v_{IJ}(\Lambda_{\rm local}) \rangle_{\rm osc} = v_{IJ}(\Lambda_{\rm lat}) + (\text{Grassmann Gaussian corrections})$$
+
+Because $v_{IJ}$ is an octic polynomial, the corrections involve 2-point, 4-point, 6-point, and 8-point Grassmann contractions of the nonzero modes against the fermionic kinematic overlap. If these corrections vanish (or are $O(a)$), the current zero-mode numerics are validated. If they produce finite $O(1)$ corrections, the current superstring results need revision.
+
+**Concrete task**: Implement the fermionic nonzero-mode Gaussian contraction (the Grassmann analogue of the bosonic $G_T$ computation) and evaluate $\langle v_{IJ}(\Lambda_{\rm lat} + \delta\Lambda_{\rm osc})\rangle_{\rm osc}$ for the three-graviton matrix element. Compare to the pure zero-mode result.
+
+### Priority 3: Construct the local interaction-point fermion
+
+Based on DM's continuum formula $\Lambda^a = \sqrt{z/2}\theta^a(z) + i\sqrt{\bar z/2}\tilde\theta^a(\bar z)$, determine the correct discrete linear combination of $\theta_{I_+}^a$ and $\theta_{I_-}^a$ (and possibly their arc differences and conjugate momenta) that:
+- Has the correct $a^{1/2}$ scaling from the branch-point geometry
+- Reduces to the DM variable in the continuum limit
+- Gives a finite $v_{IJ}(\Lambda_{\rm local})$ in the continuum limit when combined with $K^I\widetilde{K}^J \sim a^{-1}$
+
+### Priority 4: First loop integrand
+
+With the twisted cylinder building block now tested, assemble a one-loop vacuum or two-point integrand:
+- Sew two cubic vertices with an internal twisted propagator
+- Include the twist modulus $\varphi$ integration
+- Check Bose-Fermi cancellation of the oscillator ratio at $D=10$
+
+### Priority 5: Four-point tree amplitude
+
+This requires two cubic vertices connected by an internal propagator. Each vertex carries its own local fermionic variable. This is the first test of the local formulation beyond three points.
+
+## What NOT to spend time on
+
+- Operator-level Lorentz checks: standard LC gauge background, not the goal of the project
+- Supercharge closure algebra: interesting but secondary to numerical amplitude validation
+- More internal-consistency tests of the reduced $\Lambda$ ansatz: the current 58 tests are sufficient; what's needed is comparison to known answers, not more self-consistency checks

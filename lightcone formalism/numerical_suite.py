@@ -35,7 +35,9 @@ import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
+import test_local_channel_response as tlcr
 import test_local_interaction_point_fermion as tlipf
+import test_local_prefactor_expansion as tlpe
 import test_neumann_extraction as tne
 import test_projected_graviton_channels as tpgc
 import test_single_cylinder_integrand as tsci
@@ -158,6 +160,30 @@ def run_local_interaction_point_fermion_tests() -> dict[str, Any]:
         "local_sites_are_not_leg_averages": tlipf.test_local_sites_are_not_leg_averages(),
         "average_to_mixed_zero_mode_map": tlipf.test_average_to_mixed_zero_mode_map(),
         "canonical_local_difference_isolates_reduced_lambda": tlipf.test_canonical_local_difference_isolates_reduced_lambda(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_local_prefactor_expansion_tests() -> dict[str, Any]:
+    results = {
+        "degree_zero_matches_reduced_prefactor": tlpe.test_degree_zero_matches_reduced_prefactor(),
+        "split_recombines_shifted_prefactor": tlpe.test_split_recombines_shifted_prefactor(),
+        "local_prefactor_has_nontrivial_xi_corrections": tlpe.test_local_prefactor_has_nontrivial_xi_corrections(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_local_channel_response_tests() -> dict[str, Any]:
+    results = {
+        "benchmark_graviton_channels_are_xi_independent": tlcr.test_benchmark_graviton_channels_are_xi_independent(),
+        "benchmark_dilaton_channel_is_pure_quartic": tlcr.test_benchmark_dilaton_channel_is_pure_quartic(),
+        "trace_dropped_delta_benchmark_channel_vanishes": tlcr.test_trace_dropped_delta_benchmark_channel_vanishes(),
     }
     return {
         "summary": summarize_passes(results),
@@ -345,6 +371,8 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "graviton_assembly": run_graviton_assembly_tests(),
         "fermionic_graviton_contraction": run_fermionic_graviton_contraction_tests(),
         "local_interaction_point_fermion": run_local_interaction_point_fermion_tests(),
+        "local_prefactor_expansion": run_local_prefactor_expansion_tests(),
+        "local_channel_response": run_local_channel_response_tests(),
         "weyl_formula": run_weyl_formula_tests(),
         "projected_graviton_channels": run_projected_graviton_channel_tests(),
         "superstring_decisive": run_superstring_decisive_tests(),

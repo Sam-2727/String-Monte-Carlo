@@ -2642,7 +2642,67 @@ Substituting this into \eqref{eq:s14-023b} yields one exact finite-$N$ local-to-
 \sum_{m=1}^{N_2-1}(S_2)_{0m}\,\vartheta_m^{(2)a}
 \right].
 \end{equation}
-So the scaled local endpoint difference is the reduced zero-mode coordinate plus an explicit nonzero-mode correction, and it has \emph{no} center-of-mass contamination. This is the precise finite-$N$ statement that the later local rebuild should start from.
+So the scaled local endpoint difference is the reduced zero-mode coordinate plus an explicit nonzero-mode correction, and it has \emph{no} center-of-mass contamination. Writing
+\begin{equation}
+\label{eq:s14-023e}
+\Xi_{\mathrm{loc}}^a
+\equiv
+\sqrt{\frac{N_1N_2}{N_3}}
+\left[
+\sum_{m=1}^{N_1-1}(S_1)_{0m}\,\vartheta_m^{(1)a}
+\;-\;
+\sum_{m=1}^{N_2-1}(S_2)_{0m}\,\vartheta_m^{(2)a}
+\right],
+\qquad
+\Lambda_{\mathrm{join}}^a
+\equiv
+\sqrt{\frac{N_1N_2}{N_3}}\,
+\bigl(\theta_{I_+}^a-\theta_{I_-}^a\bigr),
+\end{equation}
+one has the exact mixed decomposition
+\begin{equation}
+\label{eq:s14-023f}
+\Lambda_{\mathrm{join}}^a
+=
+\Lambda_{\mathrm{lat}}^a+\Xi_{\mathrm{loc}}^a.
+\end{equation}
+Therefore the genuinely local prefactor symbol is
+\begin{equation}
+\label{eq:s14-023g}
+v_{IJ}\!\bigl(\Lambda_{\mathrm{join}}\bigr)
+=
+\sum_{p=0}^{8}
+\frac{1}{p!}\,
+\Xi_{\mathrm{loc}}^{a_1}\cdots\Xi_{\mathrm{loc}}^{a_p}\,
+\partial_{a_1}\cdots\partial_{a_p}\,
+v_{IJ}\!\bigl(\Lambda_{\mathrm{lat}}\bigr),
+\end{equation}
+with all Grassmann derivatives acting on the continuum SO$(8)$ polynomial. The new helper \texttt{local\_prefactor\_expansion.py} verifies this mixed-variable decomposition exactly in sparse polynomial form: the $\Xi_{\mathrm{loc}}$-degree-$0$ component reproduces the current reduced ansatz, while the higher $\Xi_{\mathrm{loc}}$ sectors are nonzero and therefore carry genuine local information that still has to be integrated out.
+One can already push this one step further before performing any fermionic nonzero-mode average. Define the \emph{local channel polynomial} by integrating over the reduced zero modes $\lambda_1,\lambda_2$ exactly, while keeping $\Xi_{\mathrm{loc}}$ symbolic. The new helper \texttt{local\_channel\_response.py} performs this exact Berezin reduction. For the trace-dropped $q_{\mathrm{rel}}^Iq_{\mathrm{rel}}^J$ benchmark graviton channels, the resulting local polynomials collapse on the sampled ratio grid $\lambda=\frac14,\frac25,\frac12$ to pure $\Xi_{\mathrm{loc}}$-degree-$0$ constants:
+\begin{equation}
+\label{eq:s14-023h}
+\mathcal{R}^{(23,23,\parallel)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(23,23,\parallel)}_{qq}(\lambda),
+\qquad
+\mathcal{R}^{(23,24,\parallel)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(23,24,\parallel)}_{qq}(\lambda),
+\qquad
+\mathcal{R}^{(\parallel,23,23)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(\parallel,23,23)}_{qq}(\lambda),
+\end{equation}
+with no residual $\Xi_{\mathrm{loc}}$ dependence at all. By contrast, the benchmark dilaton response has no reduced piece but does carry a purely quartic local correction sector,
+\begin{equation}
+\label{eq:s14-023i}
+\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+\in \bigwedge\nolimits^4\!\mathrm{Span}\{\Xi_{\mathrm{loc}}^a\},
+\qquad
+\bigl[\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)\bigr]_{\Xi_{\mathrm{loc}}^0}=0,
+\end{equation}
+and the corresponding trace-dropped $\delta^{IJ}$ benchmark channel vanishes identically on the same sampled grid. So, for this specific canonical endpoint-difference local candidate, the benchmark graviton $qq$ channels already reduce exactly to the old reduced ansatz before any further nonzero-mode averaging, whereas the genuinely local correction sectors first appear in channels that are absent in the reduced benchmark.
+This is the precise finite-$N$ statement that the later local rebuild should start from.
 Because $v_{IJ}(\Lambda)$ is an octic Grassmann polynomial, the three-point reduction from a local endpoint insertion to an effective zero-mode polynomial is \emph{not} obtained merely by observing that the nonzero-mode one-point functions vanish. One must integrate out the fermionic nonzero modes against the exact overlap, since higher-order Gaussian contractions can renormalize the induced zero-mode polynomial even when $\langle \vartheta_m^{(r)}\rangle=0$.
 This is the canonically normalized relative averaged zero-mode coordinate that survives the kinematic overlap. It should not be identified, without further derivation, with the genuinely local interaction-point fermion that appears in the continuum GS prefactor. The local strip data $(\theta_{I_+},\theta_{I_-})$ enter the prefactor through the short-distance completion of the interaction-point operator and through possible finite-$a$ counterterms, but at present the note does not derive the exact finite-$N$ local fermionic insertion from those data. What it does have is the reduced overlap variable $\Lambda_{\mathrm{lat}}$, which is later used as an explicit benchmark ansatz for the fermionic zero-mode sector. For the closed string there is, of course, an analogous right-moving relative averaged coordinate $\widetilde\Lambda_{\mathrm{lat}}^{\dot a}$ built from the tilded worldsheet fermions. In the standard lightcone GS convention used here, the continuum polynomial $v_{IJ}$ is written only in terms of the chiral variable $\Lambda^a$. The antichiral zero modes enter through the right-moving dynamical supercharge sector, through the tilded external-state Clifford module, and ultimately through the right-moving part of the three-string matrix element, rather than as separate arguments of $v_{IJ}$ itself. Accordingly, one may therefore regard
 \begin{equation}
@@ -3357,7 +3417,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction in the reduced $\Lambda$ ansatz, pure fermionic response-basis checks, finite-$N$ local interaction-point fermion decomposition checks, the dedicated $\lambda$-profile scan of those reduced responses, trace-dropped superstring ansatz checks, a structural comparison to the known flat-space GS lightcone benchmark within the same reduced ansatz, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, and the first single-cylinder oscillator-trace prototype into one reproducible checkpoint. In its present form the suite reports $58/58$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction in the reduced $\Lambda$ ansatz, pure fermionic response-basis checks, finite-$N$ local interaction-point fermion decomposition checks, the exact mixed-variable local prefactor expansion checks, the exact local channel-polynomial checks, the dedicated $\lambda$-profile scan of those reduced responses, trace-dropped superstring ansatz checks, a structural comparison to the known flat-space GS lightcone benchmark within the same reduced ansatz, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, and the first single-cylinder oscillator-trace prototype into one reproducible checkpoint. In its present form the suite reports $64/64$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},

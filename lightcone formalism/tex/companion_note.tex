@@ -454,7 +454,62 @@ Substituting into \eqref{eq:theta-site-split} gives the exact finite-$N$ identit
 \right].
 \label{eq:theta-local-bridge}
 \end{equation}
-So the scaled local endpoint difference has no center-of-mass contamination, but it still contains an explicit nonzero-mode correction. Because $v_{IJ}(\Lambda)$ is nonlinear, one cannot justify a local-to-zero-mode reduction by vanishing one-point functions alone; the fermionic nonzero modes must be integrated out explicitly against the overlap.
+So the scaled local endpoint difference has no center-of-mass contamination, but it still contains an explicit nonzero-mode correction. Defining
+\begin{equation}
+\Xi_{\mathrm{loc}}^a
+\equiv
+\sqrt{\frac{N_1N_2}{N_3}}
+\left[
+\sum_{m=1}^{N_1-1}(S_1)_{0m}\,\vartheta_m^{(1)a}
+\;-\;
+\sum_{m=1}^{N_2-1}(S_2)_{0m}\,\vartheta_m^{(2)a}
+\right],
+\qquad
+\Lambda_{\mathrm{join}}^a
+\equiv
+\sqrt{\frac{N_1N_2}{N_3}}\,
+\bigl(\theta_{I_+}^a-\theta_{I_-}^a\bigr),
+\label{eq:theta-local-xi}
+\end{equation}
+one has the exact local split
+\begin{equation}
+\Lambda_{\mathrm{join}}^a
+=
+\Lambda_{\mathrm{lat}}^a+\Xi_{\mathrm{loc}}^a,
+\qquad
+v_{IJ}(\Lambda_{\mathrm{join}})
+=
+\sum_{p=0}^{8}
+\frac{1}{p!}\,
+\Xi_{\mathrm{loc}}^{a_1}\cdots\Xi_{\mathrm{loc}}^{a_p}\,
+\partial_{a_1}\cdots\partial_{a_p}v_{IJ}(\Lambda_{\mathrm{lat}}).
+\label{eq:theta-local-prefactor-expand}
+\end{equation}
+The new helper \texttt{local\_prefactor\_expansion.py} verifies this sparse-polynomial decomposition exactly: the degree-$0$ $\Xi_{\mathrm{loc}}$ piece reproduces the current reduced ansatz, while the higher-degree correction sectors are genuinely nonzero. Because $v_{IJ}(\Lambda)$ is nonlinear, one cannot justify a local-to-zero-mode reduction by vanishing one-point functions alone; the fermionic nonzero modes must be integrated out explicitly against the overlap.
+One can, however, integrate over the reduced zero modes \emph{first} while keeping $\Xi_{\mathrm{loc}}$ symbolic. The new helper \texttt{local\_channel\_response.py} performs this exact Berezin reduction for the benchmark polarization channels. On the sampled ratio grid $\lambda=\frac14,\frac25,\frac12$, the trace-dropped graviton $qq$ channels collapse already to degree-$0$ constants:
+\begin{equation}
+\mathcal{R}^{(23,23,\parallel)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(23,23,\parallel)}_{qq}(\lambda),
+\qquad
+\mathcal{R}^{(23,24,\parallel)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(23,24,\parallel)}_{qq}(\lambda),
+\qquad
+\mathcal{R}^{(\parallel,23,23)}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+=
+\mathcal{R}^{(\parallel,23,23)}_{qq}(\lambda),
+\label{eq:theta-local-channel-collapse}
+\end{equation}
+with no residual $\Xi_{\mathrm{loc}}$ dependence. By contrast, the benchmark dilaton channel has zero reduced piece but a purely quartic local sector,
+\begin{equation}
+\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)
+\in \bigwedge\nolimits^4\!\mathrm{Span}\{\Xi_{\mathrm{loc}}^a\},
+\qquad
+\bigl[\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)\bigr]_{\Xi_{\mathrm{loc}}^0}=0,
+\label{eq:theta-local-channel-dilaton}
+\end{equation}
+and the corresponding trace-dropped $\delta^{IJ}$ benchmark channel vanishes on the same grid. So, for this canonical endpoint-difference local candidate, the benchmark graviton channels already reduce exactly to the old reduced ansatz before any further nonzero-mode averaging, while the genuinely local correction sectors first appear in channels that are absent in the reduced benchmark.
 
 \subsection{Bosonic prefactor: parity obstruction and stencil choice}
 
@@ -742,7 +797,7 @@ with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark di
 \frac{\sigma_2}{\sigma_1} = 1.11 \times 10^{-4}.
 \label{eq:ferm-rank1}
 \end{equation}
-The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 58 tests pass.
+The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 64 tests pass.
 
 %% ======================================================================
 \section{Neumann coefficients from Gaussian moments}
@@ -778,7 +833,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (58/58 tests passing in the automated suite):
+\textbf{Validated} (64/64 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
@@ -787,6 +842,8 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
 \item Finite-$N$ local interaction-point fermion scaffolding: the exact identities \eqref{eq:theta-site-split}, \eqref{eq:theta-mixed-avg}, and \eqref{eq:theta-local-bridge}, together with the corresponding one-sided local arc-difference rows, are implemented and regression-tested, making the distinction between join-local data and reduced zero-mode coordinates explicit.
+\item Exact mixed local prefactor expansion: the sparse-polynomial decomposition \eqref{eq:theta-local-prefactor-expand} is implemented and regression-tested, with the $\Xi_{\mathrm{loc}}$-degree-$0$ sector reducing exactly to the current reduced ansatz and the higher-degree correction sectors remaining explicitly nonzero.
+\item Exact local channel reduction at fixed benchmark polarizations: on the sampled ratio grid, the trace-dropped graviton $qq$ channels already collapse to the reduced responses \eqref{eq:theta-local-channel-collapse}, while the benchmark dilaton channel is purely quartic in $\Xi_{\mathrm{loc}}$ as in \eqref{eq:theta-local-channel-dilaton}.
 \item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
 \item Direct structural comparison to the known flat-space GS lightcone cubic benchmark $\,\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)\,$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error, but only within the same reduced $\Lambda$ ansatz and still up to the unfixed overall normalization.
 \item On-shell trace-dropped graviton channels: $\mathcal{A}_{\mathrm{vec},\parallel}/\mathcal{A}_{\mathrm{vec},\perp} = -7$ exact, $\mathcal{A}_{\mathrm{dilaton}} = 0$ to $10^{-13}$.
