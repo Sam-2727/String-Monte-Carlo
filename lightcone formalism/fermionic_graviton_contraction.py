@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Explicit tree-level fermionic zero-mode contraction for the superstring graviton vertex.
+Explicit tree-level fermionic zero-mode contraction in a reduced Lambda ansatz.
 
-This module works in the local Lambda-superfield convention suggested by the
-matrix-string / light-cone dictionary
+This module does not derive the genuinely local finite-N interaction-point
+fermion of the lattice GS vertex. Instead it works in a reduced Lambda ansatz
+motivated by the matrix-string / light-cone dictionary
 
     v^{ij}(Lambda) <-> 16 Sigma^j Sigma_tilde^i.
 
@@ -30,9 +31,10 @@ with lambda = alpha_1 / alpha_3 and
     T_bos^{IJ} = A_delta delta^{IJ} + B_qq qhat^I qhat^J.
 
 This does not yet fix the overall continuum normalization of the full cubic
-vertex, but it *does* complete the missing fermionic zero-mode contraction in a
-definite local convention and makes concrete graviton / dilaton / B-field
-channel checks possible.
+vertex, and it does not establish that the reduced Lambda variable used here is
+the correct local lattice interaction-point fermion. What it does provide is an
+explicit fermionic zero-mode contraction inside one definite reduced ansatz,
+which makes concrete graviton / dilaton / B-field channel checks possible.
 """
 
 from __future__ import annotations
@@ -51,6 +53,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import gs_zero_mode_prefactor as gp
+import local_interaction_point_fermion as lif
 import superstring_prefactor_check as sp
 
 
@@ -371,22 +374,23 @@ def basis_prefactor_polynomials(
     if key in _BASIS_PREF_CACHE:
         return _BASIS_PREF_CACHE[key]
 
-    alpha_1 = float(lambda_ratio)
-    alpha_2 = 1.0 - alpha_1
+    coeff_leg1, coeff_leg2 = lif.reduced_lambda_zero_mode_substitution_weights(
+        lambda_ratio
+    )
 
     delta_piece: dict[tuple[int, ...], complex] = {}
     for i in range(8):
         base = substitute_two_leg(
             v_prefactor_polynomial(lambda_ratio, i, i, trace_dropped),
-            -alpha_2,
-            alpha_1,
+            coeff_leg1,
+            coeff_leg2,
         )
         delta_piece = _sparse_add(delta_piece, base)
 
     qq_piece = substitute_two_leg(
         v_prefactor_polynomial(lambda_ratio, 0, 0, trace_dropped),
-        -alpha_2,
-        alpha_1,
+        coeff_leg1,
+        coeff_leg2,
     )
     _BASIS_PREF_CACHE[key] = (delta_piece, qq_piece)
     return _BASIS_PREF_CACHE[key]
@@ -480,8 +484,9 @@ def fermionic_channel_amplitude(
             external_alpha_ratio=external_alpha_ratio,
         )
 
-    alpha_1 = float(lambda_ratio)
-    alpha_2 = 1.0 - alpha_1
+    coeff_leg1, coeff_leg2 = lif.reduced_lambda_zero_mode_substitution_weights(
+        lambda_ratio
+    )
     external = external_state_product(
         epsilon_1,
         epsilon_2,
@@ -496,8 +501,8 @@ def fermionic_channel_amplitude(
                 continue
             base = substitute_two_leg(
                 v_prefactor_polynomial(lambda_ratio, i, j, trace_dropped),
-                -alpha_2,
-                alpha_1,
+                coeff_leg1,
+                coeff_leg2,
             )
             prefactor_poly = _sparse_add(prefactor_poly, _sparse_scale(base, coefficient))
     return integrate_16(multiply_sparse(external, prefactor_poly))

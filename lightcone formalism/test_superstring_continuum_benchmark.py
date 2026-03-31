@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Regression tests for the direct continuum lightcone benchmark comparison.
+Regression tests for the reduced-Lambda structural benchmark comparison.
 """
 
 from __future__ import annotations

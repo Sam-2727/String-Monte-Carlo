@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Decisive superstring channel test from the explicit fermionic contraction.
+Superstring channel test inside the reduced Lambda ansatz.
 
 This module no longer uses the Weyl vector-block proxy as its primary object.
-Instead, it extrapolates the actual trace-dropped tree-level fermionic channel
+Instead, it extrapolates the trace-dropped tree-level fermionic channel
 amplitudes obtained from `fermionic_graviton_contraction.py` across fixed-ratio
 families and the symmetric support-three branch
 
@@ -16,6 +16,8 @@ The main questions are:
    - A(23,24,||) / A(23,23,||) = 1/2
    - A(||,23,23) / A(23,23,||) = 1 / lambda^2
    - dilaton and B-field benchmark channels vanish?
+
+All conclusions from this module are conditional on that reduced ansatz.
 """
 
 from __future__ import annotations
@@ -320,7 +322,7 @@ def print_report(report: dict[str, object]) -> None:
 def markdown_report(report: dict[str, object]) -> str:
     universal = report["universal_relations"]
     lines = [
-        "# Decisive Superstring Test From Explicit Fermionic Contraction",
+        "# Superstring Channel Test In Reduced Lambda Ansatz",
         "",
         f"- Blocked t values: `{report['blocked_t_values']}`",
         f"- Unblocked t values: `{report['unblocked_t_values']}`",

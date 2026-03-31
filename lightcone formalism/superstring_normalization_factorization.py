@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Check whether the surviving fermionic graviton branch differs only by normalization.
+Check whether the surviving reduced-Lambda graviton branch differs only by normalization.
 
 This is the explicit-fermionic counterpart of the earlier proxy test. We use
 the continuum-extrapolated benchmark channel
@@ -16,7 +16,9 @@ is approximately rank one. With the explicit trace-dropped response reduction,
     A_diag(lambda, t) = 4 sqrt(14) (1-lambda)^2 B_qq(lambda, t),
 
 so this is equivalently a factorization check on the remaining bosonic
-coefficient B_qq along the unblocked branch.
+coefficient B_qq along the unblocked branch. As with the underlying channel
+data, this is a statement about the reduced Lambda ansatz, not yet about a
+derived local finite-N fermionic interaction-point operator.
 """
 
 from __future__ import annotations

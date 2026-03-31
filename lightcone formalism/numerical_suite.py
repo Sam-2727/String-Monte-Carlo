@@ -35,6 +35,7 @@ import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
+import test_local_interaction_point_fermion as tlipf
 import test_neumann_extraction as tne
 import test_projected_graviton_channels as tpgc
 import test_single_cylinder_integrand as tsci
@@ -143,6 +144,18 @@ def run_fermionic_graviton_contraction_tests() -> dict[str, Any]:
         "delta_reduction_identity": tfgc.test_delta_reduction_identity(),
         "trace_dropped_zero_channels": tfgc.test_trace_dropped_zero_channels(),
         "trace_dropped_graviton_channels": tfgc.test_trace_dropped_graviton_channels(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_local_interaction_point_fermion_tests() -> dict[str, Any]:
+    results = {
+        "site_decomposition_identity": tlipf.test_site_decomposition_identity(),
+        "join_arc_difference_rows": tlipf.test_join_arc_difference_rows(),
+        "local_sites_are_not_leg_averages": tlipf.test_local_sites_are_not_leg_averages(),
     }
     return {
         "summary": summarize_passes(results),
@@ -329,6 +342,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "graviton_prefactor": run_graviton_prefactor_tests(),
         "graviton_assembly": run_graviton_assembly_tests(),
         "fermionic_graviton_contraction": run_fermionic_graviton_contraction_tests(),
+        "local_interaction_point_fermion": run_local_interaction_point_fermion_tests(),
         "weyl_formula": run_weyl_formula_tests(),
         "projected_graviton_channels": run_projected_graviton_channel_tests(),
         "superstring_decisive": run_superstring_decisive_tests(),
@@ -382,6 +396,7 @@ def markdown_report(report: dict[str, Any]) -> str:
     neumann_module = report["tests"]["neumann_extraction"]["summary"]
     prefactor_module = report["tests"]["graviton_prefactor"]["summary"]
     graviton_module = report["tests"]["graviton_assembly"]["summary"]
+    local_fermion_module = report["tests"]["local_interaction_point_fermion"]["summary"]
     projected_module = report["tests"]["projected_graviton_channels"]["summary"]
     decisive_module = report["tests"]["superstring_decisive"]["summary"]
     normalization_module = report["tests"]["superstring_normalization"]["summary"]
@@ -461,6 +476,7 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `neumann_extraction`: `{neumann_module['passed']}/{neumann_module['total']}` passed",
         f"- `graviton_prefactor`: `{prefactor_module['passed']}/{prefactor_module['total']}` passed",
         f"- `graviton_assembly`: `{graviton_module['passed']}/{graviton_module['total']}` passed",
+        f"- `local_interaction_point_fermion`: `{local_fermion_module['passed']}/{local_fermion_module['total']}` passed",
         f"- `projected_graviton_channels`: `{projected_module['passed']}/{projected_module['total']}` passed",
         f"- `superstring_decisive`: `{decisive_module['passed']}/{decisive_module['total']}` passed",
         f"- `superstring_normalization`: `{normalization_module['passed']}/{normalization_module['total']}` passed",

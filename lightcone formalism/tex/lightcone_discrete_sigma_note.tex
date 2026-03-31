@@ -2573,7 +2573,7 @@ A^{(0)}_{IJ}
 +A^{(8)}_{IJ}\epsilon_{a_1\cdots a_8}\Lambda_{\mathrm{lat}}^{a_1}\cdots\Lambda_{\mathrm{lat}}^{a_8}.
 \end{aligned}
 \end{equation}
-Equivalently, $(\theta_{I_+},\theta_{I_-})$ are the local strip data at the join, while the averaged leg modes obey weighted overlap relations exactly as in the bosonic sector. A convenient explicit finite-$N$ choice of the surviving fermionic zero mode is
+Equivalently, $(\theta_{I_+},\theta_{I_-})$ are the local strip data at the join, while the averaged leg modes obey weighted overlap relations exactly as in the bosonic sector. A convenient explicit finite-$N$ coordinate on the surviving overlap-constrained fermionic zero-mode sector is
 \begin{equation}
 \label{eq:s14-023}
 \Theta_{\mathrm{cm}}^a\equiv \theta_{\mathrm{av}}^{(3)a}
@@ -2587,7 +2587,33 @@ Equivalently, $(\theta_{I_+},\theta_{I_-})$ are the local strip data at the join
 =
 \sqrt{\frac{N_1N_2}{N_3}}\,\upsilon^a.
 \end{equation}
-This is the canonically normalized relative average fermion that survives the kinematic overlap. The local strip data $(\theta_{I_+},\theta_{I_-})$ enter the prefactor through the short-distance completion of the interaction-point operator and through possible finite-$a$ counterterms, but the leading zero-mode variable carried by $v_{IJ}$ is $\Lambda_{\mathrm{lat}}$. For the closed string there is, of course, an analogous right-moving relative average fermion $\widetilde\Lambda_{\mathrm{lat}}^{\dot a}$ built from the tilded worldsheet fermions. In the standard lightcone GS convention used here, the polynomial $v_{IJ}$ is written only in terms of the chiral variable $\Lambda_{\mathrm{lat}}^a$. The antichiral zero modes enter through the right-moving dynamical supercharge sector, through the tilded external-state Clifford module, and ultimately through the right-moving part of the three-string matrix element, rather than as separate arguments of $v_{IJ}$ itself. Accordingly, one may therefore regard
+However, the local endpoint fermions are \emph{not} equal to those averages. In the same real zero-sum basis $S_r$ used for the bosonic nonzero modes, one has the exact finite-$N$ decomposition
+\begin{equation}
+\label{eq:s14-023a}
+\theta_n^{(r)a}
+\;=\;
+\theta_{\mathrm{av}}^{(r)a}
+\;+\;
+\sum_{m=1}^{N_r-1}(S_r)_{nm}\,\vartheta_m^{(r)a},
+\end{equation}
+so in particular
+\begin{equation}
+\label{eq:s14-023b}
+\theta_{I_+}^a
+=
+\theta_{\mathrm{av}}^{(1)a}
+\;+\;
+\sum_{m=1}^{N_1-1}(S_1)_{0m}\,\vartheta_m^{(1)a},
+\qquad
+\theta_{I_-}^a
+=
+\theta_{\mathrm{av}}^{(2)a}
+\;+\;
+\sum_{m=1}^{N_2-1}(S_2)_{0m}\,\vartheta_m^{(2)a}.
+\end{equation}
+The accompanying helper \texttt{local\_interaction\_point\_fermion.py} records these exact site-level decompositions and the corresponding one-sided local arc differences explicitly.
+Because $v_{IJ}(\Lambda)$ is an octic Grassmann polynomial, the three-point reduction from a local endpoint insertion to an effective zero-mode polynomial is \emph{not} obtained merely by observing that the nonzero-mode one-point functions vanish. One must integrate out the fermionic nonzero modes against the exact overlap, since higher-order Gaussian contractions can renormalize the induced zero-mode polynomial even when $\langle \vartheta_m^{(r)}\rangle=0$.
+This is the canonically normalized relative averaged zero-mode coordinate that survives the kinematic overlap. It should not be identified, without further derivation, with the genuinely local interaction-point fermion that appears in the continuum GS prefactor. The local strip data $(\theta_{I_+},\theta_{I_-})$ enter the prefactor through the short-distance completion of the interaction-point operator and through possible finite-$a$ counterterms, but at present the note does not derive the exact finite-$N$ local fermionic insertion from those data. What it does have is the reduced overlap variable $\Lambda_{\mathrm{lat}}$, which is later used as an explicit benchmark ansatz for the fermionic zero-mode sector. For the closed string there is, of course, an analogous right-moving relative averaged coordinate $\widetilde\Lambda_{\mathrm{lat}}^{\dot a}$ built from the tilded worldsheet fermions. In the standard lightcone GS convention used here, the continuum polynomial $v_{IJ}$ is written only in terms of the chiral variable $\Lambda^a$. The antichiral zero modes enter through the right-moving dynamical supercharge sector, through the tilded external-state Clifford module, and ultimately through the right-moving part of the three-string matrix element, rather than as separate arguments of $v_{IJ}$ itself. Accordingly, one may therefore regard
 \begin{equation}
 \label{eq:s14-024}
 \Lambda_{\mathrm{lat}}^a = \sqrt{\frac{N_1N_2}{N_3}}\,\upsilon^a
@@ -2597,7 +2623,7 @@ O(a^{1/2})
 \text{with optional local completion by }
 (\theta_{I_+},\theta_{I_-},\pi_{\theta,I_+},\pi_{\theta,I_-}),
 \end{equation}
-where $\pi_{\theta,I_\pm}$ denotes the local site-space Grassmann momentum canonically conjugate to $\theta_{I_\pm}$, if one chooses to keep those endpoint canonical variables explicitly in a first-order lattice formalism. The note does not otherwise construct those endpoint momenta in detail, so at present this is only a description of the possible local data entering a finite-$a$ completion, not a completed formula. No unique explicit finite-$a$ completion is chosen here. Different local completions differ by terms that are irrelevant in the continuum limit, and a preferred lattice definition emerges only after one imposes an additional renormalization condition, for example matching the discrete dynamical supercharge algebra. Thus $\Lambda_{\mathrm{lat}}$ should be read as the independent local Grassmann variable extracted from the interaction-region fermions and their conjugate data. The prefactor is therefore a local polynomial of total degree $0,2,4,6,8$ at the join:
+where $\pi_{\theta,I_\pm}$ denotes the local site-space Grassmann momentum canonically conjugate to $\theta_{I_\pm}$, if one chooses to keep those endpoint canonical variables explicitly in a first-order lattice formalism. The note does not otherwise construct those endpoint momenta in detail, so at present this is only a description of the possible local data entering a finite-$a$ completion, not a completed formula. No unique explicit finite-$a$ completion is chosen here. Different local completions differ by terms that are irrelevant in the continuum limit, and a preferred lattice definition emerges only after one imposes an additional renormalization condition, for example matching the discrete dynamical supercharge algebra. Thus $\Lambda_{\mathrm{lat}}$ should be read only as a reduced coordinate on the overlap-constrained fermionic zero-mode sector. Whenever the later numerics use $v_{IJ}(\Lambda_{\mathrm{lat}})$ directly, they are using a reduced $\Lambda$ ansatz motivated by the continuum local operator, not a derivation of that local operator itself. The prefactor is therefore a local polynomial of total degree $0,2,4,6,8$ at the join:
 \begin{equation}
 \label{eq:s14-025}
 v_{IJ}^{\mathrm{lat}} = v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{lat}};\theta_{I_+},\theta_{I_-},\pi_{\theta,I_+},\pi_{\theta,I_-}).
@@ -2968,7 +2994,7 @@ v^{\mathrm{lat}}_{IJ}(\Lambda_{\mathrm{lat}})
 \end{aligned}
 \end{equation}
 For real polarization tensors the complex conjugation on the bra may be dropped, but the starred form is the correct one for the complexified kinematics used in analytic continuation arguments.
-For the tree-level graviton check this zero-mode contraction can now be written explicitly in the local $\Lambda$-superfield convention suggested by the Dijkgraaf--Motl dictionary
+For the tree-level graviton check this zero-mode contraction can now be written explicitly in one reduced $\Lambda$ ansatz suggested by the Dijkgraaf--Motl dictionary
 \(
 v^{ij}(\Lambda)\leftrightarrow 16\,\Sigma^j\widetilde\Sigma^i
 \).
@@ -3029,14 +3055,14 @@ In practice the code expands the three external wavefunctions and the local pref
 \bigl|{\cal A}^{(F)}_{\rm brute}-{\cal A}^{(F)}_{\rm reduced}\bigr|
 =1.7\times 10^{-13}
 \end{equation}
-in the benchmark reduction test. So the missing tree-level fermionic zero-mode contraction is no longer merely schematic: in a fixed local superfield convention it is now an explicit finite-dimensional Grassmann calculation. A further diagnostic in \texttt{gs\_weyl\_symbol\_diagnostic.py} still provides an independent structural check by asking how the same Grassmann symbol acts under the candidate Weyl map on the $8_v\oplus 8_c$ module. Under that auxiliary map the $8_v\to 8_v$ block remains entirely in the minimal SO$(8)$-covariant tensor span
+in the benchmark reduction test. So the missing tree-level fermionic zero-mode contraction is no longer merely schematic: in a fixed reduced $\Lambda$ ansatz it is now an explicit finite-dimensional Grassmann calculation. This statement needs a clear caveat. The calculation below does not derive the exact local finite-$N$ interaction-point fermion from the strip endpoint data. Instead it assumes that the overlap-constrained averaged coordinate $\Lambda_{\mathrm{lat}}$ is an adequate reduced variable on which to evaluate the continuum polynomial $v_{IJ}$. The resulting numerics are therefore tests of that reduced ansatz, not yet of the full local lattice superstring vertex. A further diagnostic in \texttt{gs\_weyl\_symbol\_diagnostic.py} still provides an independent structural check by asking how the same Grassmann symbol acts under the candidate Weyl map on the $8_v\oplus 8_c$ module. Under that auxiliary map the $8_v\to 8_v$ block remains entirely in the minimal SO$(8)$-covariant tensor span
 \begin{equation}
 \label{eq:s15-1-010}
 A(\alpha)\,\delta_{IJ}\delta_{KL}
 {}+B(\alpha)\,\delta_{IK}\delta_{JL}
 {}+C(\alpha)\,\delta_{IL}\delta_{JK},
 \end{equation}
-with numerical residual at the $10^{-13}$--$10^{-14}$ level in the sample checks $\alpha=\frac12,1,2,3$. Here $K,L$ label the external vector basis states. So the candidate Weyl map introduces no exotic tensor structures on the graviton sector. What remains unresolved is no longer the existence of the tree-level fermionic contraction itself, but rather the overall normalization and the precise relation between this local superfield convention, the Weyl-ordered Clifford realization, and the lattice supercharge-closure derivation.
+with numerical residual at the $10^{-13}$--$10^{-14}$ level in the sample checks $\alpha=\frac12,1,2,3$. Here $K,L$ label the external vector basis states. So the candidate Weyl map introduces no exotic tensor structures on the graviton sector. What remains unresolved is not only the overall normalization, but also the precise relation between this reduced $\Lambda$ ansatz, the genuinely local interaction-point operator, the Weyl-ordered Clifford realization, and the lattice supercharge-closure derivation.
 
 The nonzero-mode bosonic part of this matrix element can, however, already be reduced explicitly. Let $S_r$ be an $N_r\times (N_r-1)$ matrix whose columns form an orthonormal real basis of the zero-sum subspace
 \begin{equation}
@@ -3300,7 +3326,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, a structural comparison to the known flat-space GS lightcone benchmark, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, and the first single-cylinder oscillator-trace prototype into one reproducible checkpoint. In its present form the suite reports $53/53$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction in the reduced $\Lambda$ ansatz, pure fermionic response-basis checks, finite-$N$ local interaction-point fermion decomposition checks, the dedicated $\lambda$-profile scan of those reduced responses, trace-dropped superstring ansatz checks, a structural comparison to the known flat-space GS lightcone benchmark within the same reduced ansatz, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, and the first single-cylinder oscillator-trace prototype into one reproducible checkpoint. In its present form the suite reports $56/56$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},
@@ -3533,10 +3559,10 @@ where
 \)
 is the known continuum response for the chosen benchmark channel. The new helper
 \texttt{superstring\_continuum\_benchmark.py} checks this explicit
-continuum-lightcone target directly, and the same family scan gives the same
+continuum-lightcone target directly within the same reduced $\Lambda$ ansatz, and the same family scan gives the same
 maximum deviation~\eqref{eq:s15-1-038d3e}. So for these benchmark channels the
-discrete vertex is now being compared directly to the known continuum GS cubic
-tensor structure in the same local convention, but not yet with an
+reduced discrete superstring ansatz is now being compared directly to the known continuum GS cubic
+tensor structure in the same reduced convention, but not yet with an
 independently fixed overall normalization. In particular, the present benchmark
 does \emph{not} yet compare the discrete
 \(
@@ -3551,7 +3577,7 @@ the polarization selection rules, channel ratios, and
 \(
 \lambda
 \)
--dependence agree with the analytic GS target.
+-dependence agree with the analytic GS target. Because the locality of the finite-$N$ fermionic insertion has not yet been derived, this should be read as a structural check of the reduced ansatz rather than as a complete validation of the local lattice superstring vertex.
 \paragraph{Benchmark response values.}
 At the benchmark ratio $\lambda=\frac25$, the new response-level helper in
 \texttt{fermionic\_graviton\_contraction.py} gives
@@ -3797,9 +3823,9 @@ and after calibrating each candidate at $\lambda=\frac25$ against the second-ord
 \right|
 =7.14\times 10^{-4}.
 \end{equation}
-This sharpens the superstring story substantially. First, the actual tree-level
-fermionic zero-mode contraction has been carried out explicitly in the local
-$\Lambda$-superfield convention, and its benchmark polarization channels already
+This sharpens the superstring story substantially, but only at the level of a reduced fermionic ansatz. First, the tree-level
+fermionic zero-mode contraction has been carried out explicitly in that reduced
+$\Lambda$ convention, and its benchmark polarization channels already
 show the expected graviton / dilaton / $B$-field separation in
 \eqref{eq:s15-1-038c}--\eqref{eq:s15-1-038d}. Second, the full
 continuum-extrapolated fermionic scan itself now shows that the parity-blocked
@@ -3813,11 +3839,11 @@ structural diagnostic. In that sense the superstring test is now genuinely
 binary at the level of normalized observables: the parity-blocked minimal
 stencil fails, and the unblocked local branch passes the explicit tree-level
 fermionic channel relations while differing almost entirely by one
-normalization factor.
+normalization factor. What these statements do not show is that the underlying local finite-$N$ interaction-point fermion has been derived correctly; they show only that once one uses the present reduced $\Lambda$ ansatz, the resulting benchmark channels behave coherently.
 
 So in the superstring case there is no analogue of the bosonic tachyon simplification to a single scalar vacuum amplitude. The bosonic derivative part and the tree-level fermionic zero-mode contraction are now both explicit, but the correct local prefactor basis and the overall normalization are still not fixed uniquely from first principles. This is precisely why the supercharge-closure problem cannot be skipped. Until the lattice coefficients in $K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}v^{\mathrm{lat}}_{IJ}$ are fixed, the three-graviton amplitude cannot yet be claimed as a derived prediction of the cubic vertex rather than a highly constrained numerical candidate.
 
-Therefore the superstring amplitude check is also sharp: once the lattice prefactor $K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}v_{IJ}^{\mathrm{lat}}$ and the overall normalization ${\cal C}_3^{(S)}$ have been fixed by the discrete dynamical supercharge algebra, the matrix element $\langle h_1,h_2,h_3|H_3\rangle$ must reduce in the continuum limit to the tensor above, again up to the conventional external-state normalization. The present note has now completed the explicit tree-level fermionic contraction and reduced the remaining uncertainty to the choice and normalization of the local lattice prefactor, rather than to the existence of the fermionic computation itself.
+Therefore the superstring amplitude check is also sharp: once the lattice prefactor $K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}v_{IJ}^{\mathrm{lat}}$ and the overall normalization ${\cal C}_3^{(S)}$ have been fixed by the discrete dynamical supercharge algebra, the matrix element $\langle h_1,h_2,h_3|H_3\rangle$ must reduce in the continuum limit to the tensor above, again up to the conventional external-state normalization. The present note has now completed the explicit tree-level fermionic contraction only in the reduced $\Lambda$ ansatz, and the remaining uncertainty is therefore not just the choice and normalization of the local lattice prefactor, but also the derivation of the correct local finite-$N$ fermionic interaction-point variable itself.
 
 \section{Continuum limit and Neumann structure}
 The discrete framework must recover the usual continuum three-string squeeze data in the limit $N_r\to\infty$ at fixed $\alpha_r=aN_r$, but there are actually \emph{two} different finite-$N$ oscillator objects in play and they should not be conflated:
@@ -3991,8 +4017,8 @@ Conversely, the long-cylinder limit $T\to\infty$ projects onto low modes and giv
 \item At each cubic vertex, impose the full-boundary overlap matrix $C_I=(P_1\ P_2\ -\mathbb I_{N_3})$ and construct the kinematic overlap state.
 \item In the bosonic theory, evaluate the explicit low-point amplitudes already accessible from the finite-$N$ Gaussian vertex, beginning with the three-tachyon and $2T+1M$ channels, and determine the one-string normalization factors needed to match the standard lightcone targets.
 \item Use the join-local analysis only as guidance for which local finite-$a$ structures matter, while keeping the main validation criterion amplitude-level agreement and smooth continuum extrapolation.
-\item On the superstring side, restrict to a small local family of interaction-point stencils, compare their finite-$N$ three-graviton data directly with the known continuum tensor structure, and keep only representatives with a smooth ratio-dependent continuum profile.
-\item Use the known continuum GS prefactor as target data to fix a practical lattice representative of $K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}v^{\mathrm{lat}}_{IJ}$ well enough to compute explicit tree amplitudes numerically.
+\item On the superstring side, restrict to a small local family of interaction-point stencils, but treat the present reduced $\Lambda$ computations only as provisional diagnostics until the local finite-$N$ fermionic insertion has been derived.
+\item Use the known continuum GS prefactor first as target data for testing reduced ans\"atze, and then return to the derivation of a genuinely local lattice representative of $K^I_{\mathrm{lat}}\widetilde K^J_{\mathrm{lat}}v^{\mathrm{lat}}_{IJ}$.
 \item Assemble the global oscillator matrices ${\cal M}_{B,\mathrm{osc}}(T,\varphi)$, $\mathbb A_{F,\mathrm{osc}}(T,\varphi)$, and the explicit loop-momentum dependence.
 \item Integrate all internal boundary fields analytically to get diagram integrand
 \[
@@ -4017,8 +4043,8 @@ I_{\cal D}(T,\varphi)=
 \item Evaluate the on-shell bosonic three-tachyon amplitude over several $(N_1,N_2)$ families and extract the one-string normalization factors that turn the explicit bare diagnostic into the standard constant target, up to the conventional external-state normalization.
 \item Evaluate the bosonic $2T+1M$ amplitude with the exact finite-$N$ first-harmonic normalization and verify the expected tensor decomposition numerically.
 \item Extract the reduced sewn quadratic-form diagnostics $(\gamma_T,\kappa_{1\mathrm d})$ and the separate full three-leg Gaussian-moment Neumann data, and compare the latter with the continuum Neumann coefficients in a fixed Fourier convention.
-\item On the superstring side, scan a small local family of lattice prefactors and identify representatives whose three-graviton data have a smooth ratio-dependent continuum profile.
-\item Evaluate the on-shell superstring three-graviton amplitude numerically and verify that it reproduces the standard Einstein-Hilbert/Yang-Mills-squared cubic tensor.
+\item On the superstring side, scan a small local family of lattice prefactors only as provisional ans\"atze, and identify which reduced computations have a smooth ratio-dependent continuum profile.
+\item Derive the local finite-$N$ fermionic interaction-point variable and then reevaluate the on-shell superstring three-graviton amplitude numerically against the standard Einstein-Hilbert/Yang-Mills-squared cubic tensor.
 \item Compute the first nontrivial loop integrand numerically with explicit twist and analytic loop-momentum elimination.
 \item Add continuum extrapolation and uncertainty estimates.
 \item Return to operator-level commutators and supercharge closure only after the low-point amplitude numerics are working reliably.
@@ -4052,11 +4078,11 @@ where:
 This is the practical sense in which discretized $\sigma$ makes higher-loop superstring amplitudes numerically tractable.
 
 \section{Summary}
-With discrete $\sigma$, the free lightcone worldsheet path integral becomes an exactly computable finite-dimensional Gaussian on each propagator cylinder. The interacting problem is then cleanly separated into three parts: exact free propagation on the cylinders, exact site-space sewing of the boundaries at each cubic join, and a local Green--Schwarz interaction-point prefactor chosen to reproduce the known continuum GS structure. The loop-side free building block is now also explicit numerically: the centered-frequency twist operator has been checked against exact lattice shifts, and the corresponding oscillator-sector twisted trace quadratic form has been verified to have strictly positive real part with log-determinant matching its closed Fourier-mode formula on the sampled grid.
+With discrete $\sigma$, the free lightcone worldsheet path integral becomes an exactly computable finite-dimensional Gaussian on each propagator cylinder. The interacting problem is then cleanly separated into three parts: exact free propagation on the cylinders, exact site-space sewing of the boundaries at each cubic join, and a Green--Schwarz interaction-point prefactor whose bosonic derivative part is explicit while the fermionic interaction-point variable still needs a genuinely local finite-$N$ derivation. The loop-side free building block is now also explicit numerically: the centered-frequency twist operator has been checked against exact lattice shifts, and the corresponding oscillator-sector twisted trace quadratic form has been verified to have strictly positive real part with log-determinant matching its closed Fourier-mode formula on the sampled grid.
 
 This also determines the natural division of labor between bases. The $\sigma$-position basis is the primary computational basis for higher-loop sewing, because the propagators are exact Gaussians there and the boundary concatenation is local there. The Fourier/oscillator basis is the primary comparison basis, because conventional lightcone Neumann coefficients and low-point lightcone amplitudes are written most naturally in that language, with Lorentz/SUSY generators available as optional structural checks when needed.
 
-What the note makes explicit is the first two pieces together with the resulting finite-dimensional Gaussian assembly problem. In the bosonic sector, the explicit discrete cubic vertex now goes further in two complementary ways. First, the three-tachyon amplitude has been reduced to an exact Gaussian formula and the remaining bare normalization factor has been checked numerically to factorize into incoming/outgoing one-string pieces with no irreducible three-body dependence; in the current automated suite this factorization still holds with residual at the $10^{-9}$ level and the critical-dimension scan still singles out $D_\perp=24$. Second, the bosonic two-tachyon/one-massless diagnostic can now be written with an exact finite-$N$ external-state normalization, $C_{1,N}=\pi\alpha'/(2N\sin(\pi/N))$, and the resulting tensor decomposition already shows that the trace term is $O(a)$ while the physical $q_{\mathrm{rel}}^I q_{\mathrm{rel}}^J$ coefficient approaches a smooth nonzero continuum profile, numerically $A_{\rm tr}\approx 0$ and $B_{\rm rel}\to 1.9203$ in the present continuum fit. These are exactly the kinds of amplitude-level checks that matter for the present project: the standard continuum lightcone construction is taken as known, and the question is whether the discrete-$\sigma$ method reproduces it numerically. On the superstring side, the nonzero-mode bosonic part of the three-graviton prefactor has also now been reduced explicitly, and that calculation already shows that the current minimal nearest-neighbor right-arc stencil is too naive: its one-point coefficient vanishes to numerical precision, so the expected momentum-bilinear piece of the graviton tensor cannot yet emerge from that raw choice. The present numerical picture is now considerably sharper. The actual tree-level fermionic zero-mode contraction is explicit in the local $\Lambda$-superfield convention, and the direct continuum scan of those fermionic amplitudes shows that the minimal stencil is the only blocked candidate while every unblocked positive-$t$ candidate satisfies
+What the note makes explicit is the first two pieces together with the resulting finite-dimensional Gaussian assembly problem. In the bosonic sector, the explicit discrete cubic vertex now goes further in two complementary ways. First, the three-tachyon amplitude has been reduced to an exact Gaussian formula and the remaining bare normalization factor has been checked numerically to factorize into incoming/outgoing one-string pieces with no irreducible three-body dependence; in the current automated suite this factorization still holds with residual at the $10^{-9}$ level and the critical-dimension scan still singles out $D_\perp=24$. Second, the bosonic two-tachyon/one-massless diagnostic can now be written with an exact finite-$N$ external-state normalization, $C_{1,N}=\pi\alpha'/(2N\sin(\pi/N))$, and the resulting tensor decomposition already shows that the trace term is $O(a)$ while the physical $q_{\mathrm{rel}}^I q_{\mathrm{rel}}^J$ coefficient approaches a smooth nonzero continuum profile, numerically $A_{\rm tr}\approx 0$ and $B_{\rm rel}\to 1.9203$ in the present continuum fit. These are exactly the kinds of amplitude-level checks that matter for the present project: the standard continuum lightcone construction is taken as known, and the question is whether the discrete-$\sigma$ method reproduces it numerically. On the superstring side, the nonzero-mode bosonic part of the three-graviton prefactor has also now been reduced explicitly, and that calculation already shows that the current minimal nearest-neighbor right-arc stencil is too naive: its one-point coefficient vanishes to numerical precision, so the expected momentum-bilinear piece of the graviton tensor cannot yet emerge from that raw choice. Beyond that, the present fermionic numerics must now be read more carefully than before. The explicit tree-level Grassmann contraction is explicit only in the reduced $\Lambda$ ansatz built from the overlap-constrained averaged zero mode, not from a derived local finite-$N$ interaction-point fermion. Within that reduced ansatz the direct continuum scan of the fermionic amplitudes shows that the minimal stencil is the only blocked candidate while every unblocked positive-$t$ candidate satisfies
 \[
 \frac{{\cal A}_F(\epsilon_{23},\epsilon_{24},\epsilon_\parallel)}
 {{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)}=\frac12,
@@ -4069,7 +4095,7 @@ with the dilaton and antisymmetric benchmark channels still vanishing to machine
 \(
 \mathbb{P}^I\mathbb{P}^J v_{IJ}(\Lambda)
 \)
-in the same local convention, with maximum finite-$N$ scan error $1.60\times10^{-14}$, but still without an independently fixed overall normalization. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. On the loop side, the free-cylinder checks now go one step further than the twisted trace diagnostic alone: the first explicit single-cylinder oscillator trace prototype, built from the same twisted bosonic and fermionic kernels, matches the closed mode-product formulas on the sampled grid with maximum relative errors $2.40\times10^{-13}$ in the bosonic one-coordinate factor and $1.22\times10^{-15}$ in the fermionic coherent-state factor. The immediate next loop-side target is therefore no longer the derivation of another free building block, but the first quantitative Bose--Fermi cancellation test for this one-cylinder ratio and then the insertion of the remaining zero-mode, spin-structure/GSO, and coherent-state/Pfaffian normalization factors needed for a physical loop integrand. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic and superstring amplitudes with a clean continuum extrapolation. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but they are secondary to that numerical validation program.
+in the same reduced convention, with maximum finite-$N$ scan error $1.60\times10^{-14}$, but still without an independently fixed overall normalization and still without an independent derivation of the local fermionic insertion. After removing the trivial $1/N_1$ scaling, the surviving positive branch is also again very close to one common $\lambda$-profile times one overall normalization, now for the actual scaled channel amplitude $N_1{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel)$ itself, with relative rank-one error and singular-value ratio both at $1.11\times 10^{-4}$. On the loop side, the free-cylinder checks now go one step further than the twisted trace diagnostic alone: the first explicit single-cylinder oscillator trace prototype, built from the same twisted bosonic and fermionic kernels, matches the closed mode-product formulas on the sampled grid with maximum relative errors $2.40\times10^{-13}$ in the bosonic one-coordinate factor and $1.22\times10^{-15}$ in the fermionic coherent-state factor. The immediate next loop-side target is therefore no longer the derivation of another free building block, but the first quantitative Bose--Fermi cancellation test for this one-cylinder ratio and then the insertion of the remaining zero-mode, spin-structure/GSO, and coherent-state/Pfaffian normalization factors needed for a physical loop integrand. The older Weyl-block and projected-channel calculations remain useful as auxiliary structure checks, but they are no longer the strongest statement we have. What this still does \emph{not} determine is the exact physical normalization and operator interpretation of the surviving branch, nor does it remove the need to fix the actual lattice prefactor by the discrete supercharge algebra or to derive the correct local finite-$N$ fermionic interaction-point variable. The fermionic squeezed-state notation is likewise only formal at present: the exact overlap constraints are explicit, but a dedicated Grassmann-moment extraction of finite-$N$ fermionic cubic data is still deferred. So the immediate task is not to reprove standard lightcone-gauge consistency, but to demonstrate that the discrete-$\sigma$ machinery produces the correct bosonic amplitudes and to rebuild the superstring calculation on a genuinely local fermionic definition. Operator-level bosonic commutators and discrete supercharge closure remain worthwhile structural follow-ups, but for the superstring they are also part of fixing the vertex itself rather than optional afterthoughts.
 
 \begin{thebibliography}{99}
 

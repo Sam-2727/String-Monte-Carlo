@@ -832,6 +832,201 @@ This is factually correct as stated.
 
 ---
 
+# Review of Latest Codex Updates (twisted cylinder + sign fix)
+
+## Changes
+
+1. **Sign fix in twist operator** (Sections 5, 6, 7 of the main note): $e^{+2\pi i\kappa_k\varphi} \to e^{-2\pi i\kappa_k\varphi}$ in $R_N(\varphi)$, $B(T,\varphi)$, $U(T,\varphi)$, and the figure caption.
+
+2. **New file `twisted_cylinder_check.py`** + test: implements the twisted bosonic/fermionic propagator and verifies exact lattice shifts, cross-matrix factorization, oscillator-trace positivity, and log-determinant matching.
+
+3. **Test count: 50/50** (up from 46).
+
+## Sign fix verification
+
+**The fix is correct.** With the DFT convention $F_{kn} = N^{-1/2}e^{+2\pi ikn/N}$, the forward cyclic shift $(RX)_n = X_{n+m}$ requires:
+
+$$R_N(\varphi) = F^\dagger\,\mathrm{diag}(e^{-2\pi i\kappa_k\varphi})\,F$$
+
+because $F^\dagger$ on the left contributes $e^{-2\pi ikn/N}$ and $F$ on the right contributes $e^{+2\pi ikj/N}$, so the total phase is $e^{2\pi ik(j-n)/N} \cdot e^{-2\pi ik\varphi}$, which gives $\delta_{j, n+m}$ when $\varphi = m/N$.
+
+The **old** formula with $+$ would give a backward shift. Numerically verified: $\|R_N(m/N) - P_m\| = 3.6 \times 10^{-15}$ with the minus sign.
+
+All four occurrences in the main note and the companion note are consistently updated.
+
+## Twisted cylinder tests: 4/4 pass
+
+| Test | Result | Status |
+|---|---|---|
+| Exact shift recovery | $R_N(m/N) = P_m$ to $3.6 \times 10^{-15}$, $B(T,m/N) = B(T,0)P_m$ to $6.7 \times 10^{-16}$ | PASS |
+| Generic twist reality pattern | Odd $N$: real to $10^{-15}$. Even $N$: complex (Nyquist mode) as expected | PASS |
+| Oscillator trace positivity | Strictly positive real part on sampled grid; log-det matches Fourier formula to $6.5 \times 10^{-13}$ | PASS |
+| Fermionic transport spectrum | Matches closed-form eigenvalues to $2.6 \times 10^{-15}$ | PASS |
+
+## Impact on existing results
+
+The sign fix affects only the **loop** sector (twisted propagators). All tree-level results ($\gamma_T$, three-tachyon factorization, TTM, graviton prefactor, fermionic contraction) are **unaffected** because they use $\varphi = 0$.
+
+---
+
+---
+
+# Review: `single_cylinder_integrand.py`
+
+## Purpose
+Prototype single-cylinder oscillator trace for the loop-side numerics. Computes:
+- Bosonic one-coordinate trace factor: $\det(I - B(T,0)^{-1}B(T,\varphi))^{-1/2}$ (direct) vs closed Fourier-mode product
+- Fermionic one-component trace: $\det(I + s\cdot U_{\rm osc}(T,\varphi))$ (direct) vs closed-form product
+- Combined prototype ratio: $(\text{fermionic})^{16} / (\text{bosonic})^8$
+
+## Correctness
+- Fermionic trace: direct vs closed match to $10^{-13}$. **Correct.**
+- Bosonic trace: direct vs closed show absolute error $\sim 10^{-2}$ at short $T$, but this is **relative** error $2.4 \times 10^{-13}$ on a quantity of order $10^{10}$. Not a bug.
+
+## Issue: scan `pass` threshold
+The `default_scan` uses `max_bosonic_error < 1e-12` as an absolute threshold, which fails at short $T$ where the trace factor is exponentially large. Should use a relative threshold or log-space comparison. This is a test-infrastructure issue, not a physics bug.
+
+## Physics check
+- The fermionic closed form (line 100-114) correctly handles paired modes $k, N-k$ with factor $(1 + 2s\lambda\cos\theta + \lambda^2)$ and the unpaired Nyquist mode for even $N$. **Correct.**
+- The bosonic factor uses `tcc.bosonic_trace_factor_direct/closed` which were already verified in the twisted cylinder tests. **Correct.**
+- The prototype ratio `fermionic_total / bosonic_total` is the single-cylinder building block for the one-loop cosmological constant. For the superstring with matching bosonic and fermionic spectra, this should approach 1 (Bose-Fermi cancellation) in the continuum limit at $D=10$. This has NOT been tested yet.
+
+---
+
+---
+
+# Review of Commit `9c95986`: Loop-side cylinder diagnostics and trace prototype
+
+## New files (committed)
+
+| File | Purpose | Tests | Status |
+|---|---|---|---|
+| `twisted_cylinder_check.py` | Twist operator, twisted bosonic/fermionic kernels, oscillator-trace diagnostics | 4/4 | PASS |
+| `test_twisted_cylinder.py` | Tests for above | — | — |
+| `single_cylinder_integrand.py` | Single-cylinder bosonic and fermionic trace factors (direct determinant + closed-form Fourier product) | 3/3 | PASS |
+| `test_single_cylinder_integrand.py` | Tests for above (using relative error thresholds) | — | — |
+
+Total suite: **53/53** (up from 46).
+
+## Sign fix (already reviewed)
+
+$e^{+2\pi i\kappa_k\varphi} \to e^{-2\pi i\kappa_k\varphi}$ in $R_N$, $B(T,\varphi)$, $U(T,\varphi)$, and figure caption. Correct: reproduces forward cyclic shift. All four occurrences in both notes updated consistently.
+
+## Single-cylinder integrand: key results
+
+- Bosonic one-coordinate trace: direct vs closed-form match to relative error $2.4 \times 10^{-13}$ across the full $(N,T,\varphi)$ grid including short $T$ and even $N$.
+- Fermionic one-component trace: match to relative error $1.2 \times 10^{-15}$.
+- Previous absolute-error threshold issue (flagged in my last review) is **fixed** — all tests now use relative error $< 10^{-12}$.
+
+## What's new for the loop program
+
+The note now identifies the immediate next steps:
+1. **Bose-Fermi cancellation test**: check the oscillator ratio $(\text{fermionic})^{16}/(\text{bosonic})^8 \to 1$ as $N \to \infty$ at $D=10$ (this is the superstring one-loop cosmological constant vanishing).
+2. **Zero-mode and spin-structure/GSO factors**: these must be added to the oscillator trace to get a physical loop integrand.
+
+## Companion note: correctly updated
+
+- Sign fix in the twist operator description
+- Test count 53/53
+- Two new validated items (twisted-cylinder building block + single-cylinder prototype)
+- "Remaining" list updated: twisted propagator is now tested, next step is Bose-Fermi cancellation and loop assembly
+
+## Issues found
+
+**None.** All formulas correct, all tests pass with appropriate thresholds, both notes compile cleanly.
+
+---
+
+---
+
+# CRITICAL ISSUE: Definition of $\Lambda^a$ in the superstring vertex
+
+## The concern
+
+The note defines:
+$$\Lambda_{\rm lat}^a \equiv \sqrt{\frac{N_1 N_2}{N_3}}\left(\theta_{\rm av}^{(1)a} - \theta_{\rm av}^{(2)a}\right)$$
+where $\theta_{\rm av}^{(r)a} = \frac{1}{N_r}\sum_n \theta_n^{(r)a}$ is the average over the whole string. This is the **Fourier zero mode**, a delocalized quantity — not a local interaction-point variable.
+
+## Resolution after checking the literature
+
+After careful examination: **the variable entering $v_{IJ}(\Lambda)$ in the continuum GS cubic vertex IS the fermionic zero mode, not the interaction-point value of $\theta(\sigma)$.** This is the standard factorization in Spradlin-Volovich (hep-th/0204146) and Pankiewicz-Stefanski (hep-th/0210246). The locality of the interaction is carried by the bosonic operators $K^I = \lim_{\rho\to\rho_I}\sqrt{2(\rho-\rho_I)}\partial_\rho X^I$ and $\widetilde{K}^J$; the polynomial $v_{IJ}(\Lambda)$ is a function of the surviving fermionic zero mode after the kinematic overlap is imposed.
+
+So the note's definition is **not wrong in kind** — it correctly identifies $\Lambda$ as the relative zero mode. However:
+
+## Remaining normalization concern
+
+The Pankiewicz-Stefanski coefficients use a dimensionful parameter $\alpha$ (the Mandelstam width), while the code passes `alpha_ratio = N_1/N_3` (dimensionless). This could introduce missing powers of lattice spacing or $\alpha_3$. The full prefactor $K^I\widetilde{K}^Jv_{IJ}(\Lambda)$ must be checked end-to-end for dimensional consistency.
+
+## What still needs to be done
+
+The superstring channel selection rules (dilaton=0, transverse ratios) follow from SO(8) algebra regardless of the $\Lambda$ normalization. The missing check remains: **match the overall normalization of the discrete amplitude to the known continuum three-graviton coupling for at least one specific kinematic point.**
+
+---
+
+# Locality of the fermionic interaction vertex: DM vs PS and implications for higher-point amplitudes
+
+## The three formulations
+
+**Dijkgraaf-Motl (DM)**: Define $\Lambda^a$ as the regulated local field at the interaction point:
+
+$$\Lambda^a = \sqrt{z/2}\,\theta^a(z) + i\sqrt{\bar z/2}\,\tilde\theta^a(\bar z), \quad z \to 0$$
+
+This is explicitly local — it uses $\theta(\sigma)$ evaluated at the branch point, with the $\sqrt{z}$ regulator extracting the finite part from the square-root singularity. The polynomial $v^{ij}(\Lambda)$ built from this local variable reproduces the spin-field operator $\Sigma^j\tilde\Sigma^i$ at the join.
+
+**Pankiewicz-Stefanski (PS)**: Define $\Lambda = \alpha_1\lambda_{0(2)} - \alpha_2\lambda_{0(1)}$ where $\lambda_{0(r)}$ is the fermionic zero mode on leg $r$. This is a global (delocalized) quantity.
+
+**The note**: $\Lambda_{\rm lat} = \sqrt{N_1 N_2/N_3}(\theta_{\rm av}^{(1)} - \theta_{\rm av}^{(2)})$, also the zero mode.
+
+## Why PS works for the three-point function
+
+For the three-point function with on-shell external states, the only fermionic data surviving after the kinematic overlap contracts the nonzero modes are the zero modes. So PS's $\Lambda$ (zero mode) and DM's $\Lambda$ (local field) give equivalent three-point matrix elements. The zero-mode projection happens automatically because there are no internal propagators.
+
+This is why the current numerical results (channel selection rules, closed-form $4\sqrt{14}(1-\lambda)^2$, dilaton/B-field zeros) are valid: they correctly compute the three-point vertex.
+
+## Why PS does NOT generalize to higher-point/loop amplitudes
+
+For a four-point tree amplitude with two cubic vertices connected by an internal propagator:
+- Each vertex has its own branch point on the Mandelstam diagram
+- The local prefactor at each vertex must use the local fermionic field at THAT vertex's branch point
+- The internal propagator transports full boundary data (all oscillator modes) between the two vertices
+- The zero-mode projection happens only after the full diagram is assembled
+
+DM's local $\Lambda^a(\sigma_I) = \sqrt{z/2}\theta^a(z)|_{z\to 0}$ makes sense independently at each vertex. PS's $\Lambda = \alpha_1\lambda_{0(2)} - \alpha_2\lambda_{0(1)}$ is defined in terms of external zero modes and does not have a natural generalization to internal vertices.
+
+For loop amplitudes, the situation is even clearer: the twist modulus $\varphi$ mixes all Fourier modes around the loop, so there is no clean separation of zero modes from oscillator modes at the interaction vertices. The local DM variable is the correct one.
+
+## Implications for the discrete-sigma program
+
+1. **Three-point results are valid.** The current three-graviton computation using the zero-mode $\Lambda_{\rm lat}$ is correct for the three-point function, because DM and PS agree there. The numerical checks (53/53 tests) remain valid.
+
+2. **Higher-point amplitudes require the local variable.** For the four-point function or any loop amplitude, the interaction-point prefactor must use the **site-level fermion** at the join:
+
+$$\theta_{I_+}^a \equiv \theta_0^{(1)a} = \theta_0^{(3)a}, \qquad \theta_{I_-}^a \equiv \theta_0^{(2)a} = \theta_{N_1}^{(3)a}$$
+
+These are the discrete analogues of DM's local $\Lambda^a$. They are already identified in the note (Section 14) but not used in the actual superstring computation.
+
+3. **The discrete local variable needs the branch-point regulator.** Just as $K^I \sim a^{-1/2}\Delta X^I$ carries a $\sqrt{a}$ factor from the branch-point geometry, the fermionic local variable should carry a similar factor: $\Lambda_{\rm local}^a \sim a^{1/2}\theta_{I_\pm}^a$ (schematically). The precise normalization is fixed by the requirement that $K^I\widetilde{K}^Jv_{IJ}(\Lambda_{\rm local})$ has a finite continuum limit.
+
+4. **The relationship between the local and zero-mode variables** for the three-point function is:
+
+At the cubic vertex, the kinematic overlap fixes $\theta^{(3)} = P_1\theta^{(1)} + P_2\theta^{(2)}$, so the site-level values at the join are $\theta_{I_+} = \theta_0^{(1)}$ and $\theta_{I_-} = \theta_0^{(2)}$. These individual site values differ from $\theta_{\rm av}^{(r)}$ by the nonzero-mode contributions:
+
+$$\theta_0^{(r)} = \theta_{\rm av}^{(r)} + \frac{1}{\sqrt{N_r}}\sum_{m=1}^{N_r-1}\vartheta_m^{(r)}$$
+
+For the three-point function with vacuum external states, the nonzero-mode terms are contracted by the Gaussian overlap, so $\theta_0^{(r)}$ and $\theta_{\rm av}^{(r)}$ give the same matrix element. But for higher-point amplitudes or with excited external states, they differ.
+
+## Recommended path forward
+
+1. **Keep the current three-point code as is** — it correctly computes the three-point vertex using the PS/zero-mode approach.
+
+2. **For the four-point function and loops**, implement the local DM-style interaction: replace $\Lambda_{\rm lat}$ with the site-level variables $\theta_{I_\pm}$ at each cubic vertex, with the appropriate branch-point regulator.
+
+3. **Validate the local formulation** by checking that it reproduces the same three-point results as the zero-mode approach (they must agree for three external vacua).
+
+4. **The conceptual framework of the note should be revised** to present the local DM variable as the primary definition, with the zero-mode reduction as a three-point simplification. This is important for the consistency of the higher-loop program.
+
+---
+
 ## 8. Overall Assessment
 
 The note is technically solid. Every formula I have been able to check against the numerical implementations is correct. The conceptual organization---exact kinematic overlap in position space, followed by a local dynamical prefactor---is clean and physically motivated. The identification of the parity obstruction for the minimal right-arc stencil is an important finding that narrows the interaction-point ambiguity.
@@ -841,3 +1036,227 @@ The main risk is that the program stalls at the supercharge-closure step (Priori
 The secondary risk is that the continuum lightcone measure factor $J_{\rm M}$, which the note does not determine, turns out to interact nontrivially with the discrete sewing in a way that complicates the higher-loop program. At tree level this is a normalization issue; at loop level it could affect the integrand structure.
 
 Overall: a well-constructed framework with the right internal consistency checks in place, awaiting the two decisive calculations (bosonic Lorentz algebra and superstring supercharge closure) that will determine whether the program succeeds.
+
+---
+
+# Follow-up discussion: DM locality vs PS zero-mode representation
+
+## User concern
+
+The user raised the key conceptual objection:
+
+> The superstring interaction vertex should be localized at the interaction point. If the note defines $\Lambda^a$ using the average GS fermion over an entire leg, that seems incompatible with a local worldsheet interaction.
+
+This is not a cosmetic issue. It affects how seriously we should take the present superstring cubic-vertex calculation.
+
+## Claude's latest position
+
+Claude's later analysis separates three objects:
+
+1. **Dijkgraaf--Motl (DM):** a genuinely local interaction-point fermion,
+   \[
+   \Lambda^a \sim \sqrt{z}\,\theta^a(z) + i\sqrt{\bar z}\,\widetilde\theta^a(\bar z),
+   \qquad z\to 0,
+   \]
+   defined at the branch point of the Mandelstam map.
+
+2. **Pankiewicz--Stefanski (PS):** a reduced oscillator/zero-mode variable,
+   \[
+   \Lambda \equiv \alpha_1 \lambda_{0(2)} - \alpha_2 \lambda_{0(1)},
+   \]
+   used in the standard oscillator representation of the cubic vertex.
+
+3. **The current note/code:** a lattice reduced variable
+   \[
+   \Lambda_{\rm lat}^a
+   =
+   \sqrt{\frac{N_1N_2}{N_3}}
+   \left(\theta_{\rm av}^{(1)a}-\theta_{\rm av}^{(2)a}\right),
+   \]
+   where $\theta_{\rm av}^{(r)}$ is the leg average.
+
+Claude's strong claim was:
+
+- PS is adequate for the isolated cubic three-point function,
+- but DM's local formulation is the one that generalizes correctly to arbitrary diagrams,
+- so for the discrete-$\sigma$ program the local interaction-point fermion should be primary.
+
+## Refined conclusion
+
+I agree with the **main conceptual point** and disagree only with one overstatement.
+
+### What I agree with
+
+- For the discrete-$\sigma$ program, **worldsheet locality should be primary**.
+- A local Mandelstam cubic join is conceptually described by a local interaction-point operator.
+- DM makes that locality explicit.
+- The current note/code does **not** derive a genuinely local finite-$N$ fermionic interaction-point variable.
+- Therefore the present superstring numerics should not be advertised as a derivation of the local lattice superstring vertex.
+
+### What I would soften
+
+I would not say that PS is therefore "incorrect" beyond three points in standard lightcone SFT. Standard oscillator lightcone SFT does sew cubic vertices and propagators successfully, so a PS-type reduced representation can be a valid description of the cubic vertex. But in that framework the reduced variable is part of an already-established operator construction.
+
+For **this** project, the issue is different:
+
+- We are trying to build the cubic vertex from a discrete worldsheet formulation.
+- In that setting, taking the reduced zero-mode variable as the *definition* of the vertex is too strong.
+- The reduced variable should arise only **after** we understand the local interaction-point operator and evaluate its matrix elements.
+
+So the right hierarchy for this project is:
+
+1. derive the local finite-$N$ interaction-point fermion,
+2. define the local lattice prefactor there,
+3. then show whether its cubic matrix element reduces to a PS-like zero-mode polynomial.
+
+## Consequence for the current results
+
+This changes the interpretation of the current superstring numerics.
+
+### What still survives
+
+- The **bosonic** prefactor numerics are still meaningful.
+- The Grassmann-contraction machinery is still a correct computation **within the chosen reduced $\Lambda$ ansatz**.
+- The observed benchmark channel relations are still useful data:
+  - dilaton and $B$-field benchmark channels vanish,
+  - graviton-channel ratios are rigid,
+  - the surviving branch is nearly rank one after scaling.
+
+### What no longer survives as a claim
+
+- We should **not** claim that the local finite-$N$ superstring cubic vertex has been established.
+- We should **not** claim that the current superstring continuum comparison validates the actual local lattice vertex.
+- We should **not** say that only an overall normalization remains open.
+
+What remains open is more serious:
+
+1. the derivation of the local finite-$N$ fermionic interaction-point variable,
+2. its relation to the reduced overlap-constrained zero mode,
+3. the correct weighting/normalization relative to the PS coefficients,
+4. then the superstring cubic amplitude comparison rebuilt on that basis.
+
+## Higher-point / loop implication
+
+This is where the locality issue becomes unavoidable.
+
+At a four-point tree diagram or a loop diagram, each cubic join should carry its own local interaction-point fermion. A reduced variable defined from whole-string averages is at best a derived object, not the fundamental vertex datum. So even if the present reduced-$\Lambda$ ansatz is good enough to organize the three-point benchmark channels, it is not a satisfactory foundation for higher-point or loop superstring amplitudes.
+
+This is the practical conclusion:
+
+- the present superstring three-point numerics are provisional diagnostics of a reduced ansatz,
+- the next serious superstring task is to construct the **local** lattice fermionic interaction-point operator,
+- and only after that should the three-point superstring comparison be regarded as decisive.
+
+---
+
+# Detailed next steps: constructing the local fermionic interaction-point variable
+
+## 1. What DM's formula means on the discrete lattice
+
+In the continuum, DM define the regulated fermionic variable at the branch point as:
+
+$$\Lambda^a = \sqrt{\frac{z}{2}}\,\theta^a(z) + i\sqrt{\frac{\bar z}{2}}\,\tilde\theta^a(\bar z)$$
+
+evaluated in the limit $z \to 0$. Here $z$ is the local coordinate on the worldsheet near the branch point of the Mandelstam map, and $\theta^a(z)$, $\tilde\theta^a(\bar z)$ are the left- and right-moving GS fermions.
+
+In the unfolded closed-string strip (the picture used throughout the note), the branch point appears as two representatives: $I_+$ (where strings 1 and 3 share a boundary) and $I_-$ (where strings 2 and 3 share a boundary). Near $I_+$, the local coordinate $w$ satisfies $\rho - \rho_I = \frac{1}{2}\rho''(z_I)w^2$, so one step in the strip direction has $|\Delta w| \sim a^{1/2}$ (this is the same branch-point geometry that gives $K^I \sim a^{-1/2}\Delta X^I$ for the bosonic operator).
+
+The left-moving fermion $\theta^a(z)$ near $I_+$ is approximated by the site value $\theta_0^{(1)a} = \theta_{I_+}^a$ on the discrete lattice. Similarly, the right-moving fermion $\tilde\theta^a(\bar z)$ near $I_-$ is approximated by $\theta_0^{(2)a} = \theta_{I_-}^a$. The $\sqrt{z/2}$ regulator in DM's formula extracts the finite part; on the lattice this becomes a factor of order $a^{1/2}$ (the same branch-point scaling).
+
+So the discrete analogue of DM's $\Lambda^a$ is schematically:
+
+$$\Lambda_{\rm local}^a \sim c_\Lambda\,a^{1/2}\left(\theta_{I_+}^a + i\,\theta_{I_-}^a\right)$$
+
+where $c_\Lambda$ is a normalization constant fixed by the Mandelstam-map local geometry (analogous to $c_K, \tilde c_K$ for the bosonic operators), and the relative phase $i$ comes from the holomorphic/antiholomorphic structure in DM's formula. The precise form of this linear combination — including whether it involves the endpoint fermion momenta $\pi_{\theta,I_\pm}$ as well — needs to be worked out from the branch-point expansion.
+
+## 2. The key structural difference from the zero-mode variable
+
+The zero-mode variable $\Lambda_{\rm lat} = \sqrt{N_1 N_2/N_3}(\theta_{\rm av}^{(1)} - \theta_{\rm av}^{(2)})$ involves the **average** of $\theta$ over all $N_r$ sites on each leg. It is a delocalized, infrared quantity.
+
+The local variable $\Lambda_{\rm local} \sim a^{1/2}(\theta_{I_+} + i\theta_{I_-})$ involves the fermion at **two specific sites** — the endpoints of the cut in the unfolded strip. It is an ultraviolet, interaction-point quantity.
+
+The relationship between them:
+
+$$\theta_0^{(r)a} = \theta_{\rm av}^{(r)a} + \frac{1}{\sqrt{N_r}}\sum_{m=1}^{N_r-1}\vartheta_m^{(r)a}$$
+
+The second term involves all nonzero Fourier modes evaluated at site $n=0$. For the three-point function with vacuum external states, the nonzero modes $\vartheta_m^{(r)}$ are contracted by the Gaussian kinematic overlap, so after the contraction:
+
+$$\langle \theta_0^{(r)a} \rangle_{\rm overlap} = \theta_{\rm av}^{(r)a} + O(\text{Gaussian contraction of nonzero modes})$$
+
+The Gaussian contraction produces a specific correction that vanishes in the vacuum matrix element (because the nonzero-mode expectation value is zero in the Fock vacuum). So for three external ground states, $\Lambda_{\rm local}$ and $\Lambda_{\rm lat}$ give the same three-point matrix element. But for excited external states, or when an internal propagator connects two vertices (as in the four-point function), the nonzero-mode terms contribute and the two variables diverge.
+
+## 3. What needs to be computed
+
+### Step 3a: Derive the precise discrete $\Lambda_{\rm local}$
+
+Starting from the Mandelstam map near the interaction point:
+
+$$\rho(z) = \rho_I + \frac{1}{2}\rho''(z_I)(z - z_I)^2 + O((z-z_I)^3)$$
+
+and the branch-point local coordinate $w = z - z_I$ with $\rho - \rho_I \approx \frac{1}{2}\rho''w^2$, one has $\sqrt{z} \approx w/\sqrt{\rho''}$ near $z_I$. On the lattice, one step in the strip direction from $I_+$ gives $\Delta\rho = a$ (one lattice spacing in the $\sigma$ direction), so $|w| \sim \sqrt{2a/\rho''}$. The DM factor $\sqrt{z/2}$ becomes:
+
+$$\sqrt{\frac{z}{2}} \sim \frac{w}{\sqrt{2\rho''}} \sim \frac{1}{\rho''}\sqrt{\frac{a}{\rho''}} \sim \frac{a^{1/2}}{(\rho'')^{3/4}}$$
+
+Wait — this needs to be done more carefully. The local coordinate $w$ satisfies $z = z_I + w$, so $\sqrt{z/2} = \sqrt{(z_I + w)/2}$. At $z \to 0$ (which in DM means $w \to 0$), this is $\sqrt{z/2} \to 0$. The point is that $\sqrt{z/2}\theta^a(z)$ has a finite limit because $\theta^a(z) \sim 1/\sqrt{z}$ near the branch point.
+
+On the lattice, $\theta^a$ at site $n=0$ on leg 1 is $\theta_{I_+}^a = \theta_0^{(1)a}$, which is finite (no $1/\sqrt{z}$ singularity because the lattice regulates the UV). So the lattice $\Lambda_{\rm local}$ should be:
+
+$$\Lambda_{\rm local}^a = c_\Lambda \cdot \theta_{I_+}^a \quad \text{(left-moving part)}$$
+
+with $c_\Lambda$ a finite constant that depends on the Mandelstam-map geometry and absorbs the branch-point regulator. Similarly for the right-moving part with $\theta_{I_-}^a$.
+
+The task is to determine $c_\Lambda$ from the requirement that $v_{IJ}(\Lambda_{\rm local})$ reproduces the continuum DM result in the limit $a \to 0$. This is analogous to how $c_K$ in $K^I = a^{-1/2}c_K\Delta X^I$ is fixed by matching to the continuum $K^I$.
+
+### Step 3b: Implement the local variable in the Grassmann contraction code
+
+Replace the call to `substitute_two_leg` that currently substitutes $\Lambda \to -(1-\lambda)\lambda_1 + \lambda\lambda_2$ (the zero-mode relation) with a substitution that uses the site-level fermion data at the join. For the three-point function this means:
+
+- $\theta_{I_+}^a = \theta_0^{(1)a}$: the site-0 fermion on leg 1
+- $\theta_{I_-}^a = \theta_0^{(2)a}$: the site-0 fermion on leg 2
+
+The Grassmann integral now involves not just the zero modes $\lambda_{1,2}$ but also the nonzero modes $\vartheta_m^{(r)}$ through their contribution to $\theta_0^{(r)}$. For vacuum external states, the nonzero-mode integral is Gaussian and can be done analytically (it's the fermionic analogue of the bosonic Schur complement). The result should reduce to the current zero-mode computation, providing a nontrivial check.
+
+### Step 3c: Verify three-point equivalence
+
+Compute the three-graviton matrix element using $\Lambda_{\rm local}$ (with the full site-level fermion) and verify it matches the current zero-mode result to machine precision. This tests:
+
+1. The local-to-zero-mode reduction for vacuum external states
+2. The normalization constant $c_\Lambda$
+3. The consistency of the branch-point regulator
+
+### Step 3d: Extend to the four-point function
+
+With the local variable validated at three points, use it to compute the four-point tree amplitude. This requires:
+
+1. Two cubic vertices, each with its own $\Lambda_{\rm local}$ at its branch point
+2. An internal propagator (bosonic + fermionic) connecting the two vertices
+3. The sewing of the two vertices through the propagator
+
+The fermionic internal propagator transports the nonzero modes between the two vertices. At each vertex, $\Lambda_{\rm local}$ includes contributions from these internal nonzero modes, which are not accessible in the zero-mode formulation.
+
+## 4. Impact on the current codebase
+
+### Unchanged:
+- All bosonic code (tachyon, TTM, prefactor stencils, Neumann extraction, twisted cylinder)
+- The Grassmann algebra infrastructure (sparse polynomial multiplication, top-form extraction)
+- The SO(8) gamma-matrix and Clifford module code
+- The Pankiewicz-Stefanski coefficient import
+
+### Needs revision:
+- `fermionic_graviton_contraction.py`: the substitution of $\Lambda$ in terms of external zero modes must be generalized to use site-level fermion data
+- The three-point Grassmann integral must include the nonzero-mode Gaussian contraction (trivial for vacuum external states, nontrivial for excited states)
+- The companion note and main note should present DM's local formulation as primary
+
+### New code needed:
+- A function that constructs $\Lambda_{\rm local}^a$ from the site-level fermion data at the join, with the correct branch-point regulator
+- A function that performs the fermionic nonzero-mode Gaussian contraction for the kinematic overlap (the fermionic analogue of the bosonic $G_T$ computation)
+- A four-point tree amplitude assembler (long-term)
+
+## 5. Summary
+
+The current superstring three-point results are correct within the zero-mode (PS) reduction. The local (DM) formulation is the correct general framework for the discrete-sigma program. The immediate task is to:
+
+1. Write down the discrete $\Lambda_{\rm local}^a$ in terms of $\theta_{I_+}^a, \theta_{I_-}^a$
+2. Determine the normalization from the Mandelstam-map branch-point geometry
+3. Verify that it reproduces the zero-mode result for three-point vacuum matrix elements
+4. Use it as the foundation for four-point and loop computations

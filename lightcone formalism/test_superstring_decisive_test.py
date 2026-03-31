@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Regression tests for the trace-dropped superstring decisive test.
+Regression tests for the reduced-Lambda trace-dropped superstring channel scan.
 """
 
 from __future__ import annotations

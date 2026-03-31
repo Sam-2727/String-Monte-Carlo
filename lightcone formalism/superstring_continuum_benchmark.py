@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Direct comparison with the known flat-space GS lightcone cubic prefactor.
+Structural comparison with the known flat-space GS lightcone cubic prefactor.
 
 In the flat-space Green-Schwarz lightcone cubic vertex, the local prefactor is
 
@@ -10,12 +10,14 @@ with
 
     P^I = alpha_1 p_{(2)}^I - alpha_2 p_{(1)}^I = -alpha_3 q_rel^I.
 
-In the local Lambda-superfield convention used throughout this repo, the
-trace-dropped benchmark channel targets are therefore the explicit continuum
+In the same reduced Lambda ansatz used throughout the current superstring
+helpers, the trace-dropped benchmark channel targets are therefore the explicit continuum
 lightcone formulas obtained by contracting qhat^I qhat^J v_{IJ}(Lambda) against
 the benchmark polarization states. Those formulas are encoded by
 `benchmark_trace_dropped_amplitude_closed_forms` and can be compared directly
-to the explicit discrete finite-N amplitudes.
+to the explicit discrete finite-N amplitudes. This is a structural comparison
+inside the reduced ansatz, not an independent validation of the genuinely local
+finite-N fermionic interaction-point operator.
 """
 
 from __future__ import annotations
