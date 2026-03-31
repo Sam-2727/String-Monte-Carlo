@@ -156,6 +156,8 @@ def run_local_interaction_point_fermion_tests() -> dict[str, Any]:
         "site_decomposition_identity": tlipf.test_site_decomposition_identity(),
         "join_arc_difference_rows": tlipf.test_join_arc_difference_rows(),
         "local_sites_are_not_leg_averages": tlipf.test_local_sites_are_not_leg_averages(),
+        "average_to_mixed_zero_mode_map": tlipf.test_average_to_mixed_zero_mode_map(),
+        "canonical_local_difference_isolates_reduced_lambda": tlipf.test_canonical_local_difference_isolates_reduced_lambda(),
     }
     return {
         "summary": summarize_passes(results),

@@ -67,6 +67,28 @@ class JoinLocalFermionData:
     reduced_lambda_average_weights: tuple[float, float]
 
 
+@dataclass(frozen=True)
+class MixedLinearFermionDecomposition:
+    """
+    Linear join-local fermion written in mixed variables.
+
+    The mixed variables are:
+    - the center-of-mass average mode Theta_cm,
+    - the reduced relative zero mode Lambda_lat,
+    - the real nonzero-mode coordinates on legs 1 and 2.
+    """
+
+    n1: int
+    n2: int
+    n3: int
+    coeff_i_plus: complex
+    coeff_i_minus: complex
+    theta_cm_coefficient: complex
+    lambda_lat_coefficient: complex
+    oscillator_row_leg1: np.ndarray
+    oscillator_row_leg2: np.ndarray
+
+
 def average_selector(n_sites: int) -> np.ndarray:
     """Uniform average row on one leg."""
     return np.full(n_sites, 1.0 / n_sites, dtype=float)
@@ -139,6 +161,24 @@ def reduced_lambda_average_weights(n1: int, n2: int) -> tuple[float, float]:
     return (scale, -scale)
 
 
+def average_to_mixed_zero_mode_map(
+    n1: int,
+    n2: int,
+) -> tuple[tuple[float, float], tuple[float, float]]:
+    """
+    Express leg averages in the mixed zero-mode basis (Theta_cm, Lambda_lat).
+
+    The returned pair gives the coefficients of theta_av^(1) and theta_av^(2):
+
+        theta_av^(1) = Theta_cm + c1 * Lambda_lat,
+        theta_av^(2) = Theta_cm + c2 * Lambda_lat.
+    """
+    n3 = n1 + n2
+    coeff_1 = math.sqrt(n2 / (n1 * n3))
+    coeff_2 = -math.sqrt(n1 / (n2 * n3))
+    return ((1.0, coeff_1), (1.0, coeff_2))
+
+
 def reduced_lambda_zero_mode_substitution_weights(
     lambda_ratio: float,
 ) -> tuple[float, float]:
@@ -155,6 +195,62 @@ def reduced_lambda_zero_mode_substitution_weights(
     alpha_1 = float(lambda_ratio)
     alpha_2 = 1.0 - alpha_1
     return (-alpha_2, alpha_1)
+
+
+def decompose_join_linear_combination(
+    n1: int,
+    n2: int,
+    coeff_i_plus: complex,
+    coeff_i_minus: complex,
+) -> MixedLinearFermionDecomposition:
+    """
+    Decompose coeff_i_plus * theta_{I_+} + coeff_i_minus * theta_{I_-}.
+
+    The result is exact at finite N in the mixed variable basis
+    (Theta_cm, Lambda_lat, vartheta^(1), vartheta^(2)).
+    """
+    n3 = n1 + n2
+    data = join_local_fermion_data(n1, n2)
+    (theta1_cm, theta1_lambda), (theta2_cm, theta2_lambda) = average_to_mixed_zero_mode_map(
+        n1, n2
+    )
+    theta_cm_coefficient = coeff_i_plus * theta1_cm + coeff_i_minus * theta2_cm
+    lambda_lat_coefficient = (
+        coeff_i_plus * theta1_lambda + coeff_i_minus * theta2_lambda
+    )
+    return MixedLinearFermionDecomposition(
+        n1=n1,
+        n2=n2,
+        n3=n3,
+        coeff_i_plus=complex(coeff_i_plus),
+        coeff_i_minus=complex(coeff_i_minus),
+        theta_cm_coefficient=complex(theta_cm_coefficient),
+        lambda_lat_coefficient=complex(lambda_lat_coefficient),
+        oscillator_row_leg1=np.asarray(
+            coeff_i_plus * data.theta_i_plus.oscillator_row,
+            dtype=complex,
+        ),
+        oscillator_row_leg2=np.asarray(
+            coeff_i_minus * data.theta_i_minus.oscillator_row,
+            dtype=complex,
+        ),
+    )
+
+
+def canonical_local_difference_decomposition(
+    n1: int,
+    n2: int,
+) -> MixedLinearFermionDecomposition:
+    """
+    Exact decomposition of the scaled local difference.
+
+        Lambda_join := sqrt(N1 N2 / N3) * (theta_{I_+} - theta_{I_-})
+
+    This has zero center-of-mass piece and unit Lambda_lat coefficient, with an
+    explicit nonzero-mode correction carried by the site rows on the two legs.
+    """
+    scale, minus_scale = reduced_lambda_average_weights(n1, n2)
+    return decompose_join_linear_combination(n1, n2, scale, minus_scale)
 
 
 def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
@@ -188,6 +284,7 @@ def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
 def local_join_summary(n1: int, n2: int) -> dict[str, object]:
     """Structured report for debugging and note-writing."""
     data = join_local_fermion_data(n1, n2)
+    canonical = canonical_local_difference_decomposition(n1, n2)
     return {
         "n1": n1,
         "n2": n2,
@@ -208,5 +305,19 @@ def local_join_summary(n1: int, n2: int) -> dict[str, object]:
         ),
         "nabla_minus_oscillator_norm": float(
             np.linalg.norm(data.nabla_minus_oscillator_row)
+        ),
+        "canonical_theta_cm_coefficient": {
+            "real": float(canonical.theta_cm_coefficient.real),
+            "imag": float(canonical.theta_cm_coefficient.imag),
+        },
+        "canonical_lambda_lat_coefficient": {
+            "real": float(canonical.lambda_lat_coefficient.real),
+            "imag": float(canonical.lambda_lat_coefficient.imag),
+        },
+        "canonical_leg1_oscillator_norm": float(
+            np.linalg.norm(canonical.oscillator_row_leg1)
+        ),
+        "canonical_leg2_oscillator_norm": float(
+            np.linalg.norm(canonical.oscillator_row_leg2)
         ),
     }

@@ -77,11 +77,50 @@ def test_local_sites_are_not_leg_averages() -> dict[str, object]:
     }
 
 
+def test_average_to_mixed_zero_mode_map() -> dict[str, object]:
+    n1, n2 = 5, 8
+    ((theta1_cm, theta1_lambda), (theta2_cm, theta2_lambda)) = (
+        lif.average_to_mixed_zero_mode_map(n1, n2)
+    )
+
+    theta_cm = 1.7
+    lambda_lat = -0.35
+    theta1 = theta1_cm * theta_cm + theta1_lambda * lambda_lat
+    theta2 = theta2_cm * theta_cm + theta2_lambda * lambda_lat
+
+    n3 = n1 + n2
+    theta_cm_back = (n1 * theta1 + n2 * theta2) / n3
+    lambda_back = np.sqrt(n1 * n2 / n3) * (theta1 - theta2)
+
+    max_error = float(max(abs(theta_cm_back - theta_cm), abs(lambda_back - lambda_lat)))
+    return {
+        "test": "average_to_mixed_zero_mode_map",
+        "max_error": max_error,
+        "pass": max_error < 1.0e-12,
+    }
+
+
+def test_canonical_local_difference_isolates_reduced_lambda() -> dict[str, object]:
+    report = lif.canonical_local_difference_decomposition(5, 8)
+    theta_cm_error = abs(report.theta_cm_coefficient)
+    lambda_error = abs(report.lambda_lat_coefficient - 1.0)
+    return {
+        "test": "canonical_local_difference_isolates_reduced_lambda",
+        "theta_cm_error": float(theta_cm_error),
+        "lambda_error": float(lambda_error),
+        "oscillator_norm_leg1": float(np.linalg.norm(report.oscillator_row_leg1)),
+        "oscillator_norm_leg2": float(np.linalg.norm(report.oscillator_row_leg2)),
+        "pass": theta_cm_error < 1.0e-12 and lambda_error < 1.0e-12,
+    }
+
+
 def run_all_tests() -> dict[str, object]:
     results = {
         "site_decomposition_identity": test_site_decomposition_identity(),
         "join_arc_difference_rows": test_join_arc_difference_rows(),
         "local_sites_are_not_leg_averages": test_local_sites_are_not_leg_averages(),
+        "average_to_mixed_zero_mode_map": test_average_to_mixed_zero_mode_map(),
+        "canonical_local_difference_isolates_reduced_lambda": test_canonical_local_difference_isolates_reduced_lambda(),
     }
     passed = sum(1 for item in results.values() if item.get("pass"))
     total = len(results)
