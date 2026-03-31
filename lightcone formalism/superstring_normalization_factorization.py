@@ -11,7 +11,12 @@ on the positive symmetric branch t > 0 and ask whether
 
     A_diag(lambda, t) ≈ N(t) F(lambda)
 
-is approximately rank one.
+is approximately rank one. With the explicit trace-dropped response reduction,
+
+    A_diag(lambda, t) = 4 sqrt(14) (1-lambda)^2 B_qq(lambda, t),
+
+so this is equivalently a factorization check on the remaining bosonic
+coefficient B_qq along the unblocked branch.
 """
 
 from __future__ import annotations

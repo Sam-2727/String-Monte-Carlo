@@ -50,10 +50,21 @@ def test_unblocked_trace_dropped_relations() -> dict[str, object]:
     }
 
 
+def test_unblocked_trace_dropped_closed_forms() -> dict[str, object]:
+    report = cached_report()
+    universal = report["universal_relations"]
+    return {
+        "test": "unblocked_trace_dropped_closed_forms",
+        "max_benchmark_closed_form_error": universal["max_benchmark_closed_form_error"],
+        "pass": universal["max_benchmark_closed_form_error"] < 1.0e-12,
+    }
+
+
 def run_all_tests() -> dict[str, object]:
     results = {
         "minimal_stencil_is_only_blocked": test_minimal_stencil_is_only_blocked(),
         "unblocked_trace_dropped_relations": test_unblocked_trace_dropped_relations(),
+        "unblocked_trace_dropped_closed_forms": test_unblocked_trace_dropped_closed_forms(),
     }
     passed = sum(1 for item in results.values() if item.get("pass"))
     total = len(results)

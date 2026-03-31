@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+import fermionic_graviton_contraction as fgc
 import fermionic_response_scan as frs
 
 
@@ -53,10 +54,36 @@ def test_benchmark_grid_values() -> dict[str, object]:
     }
 
 
+def test_offgrid_closed_form_values() -> dict[str, object]:
+    offgrid_lambdas = [0.2, 0.6]
+    max_abs_error = 0.0
+    for lambda_ratio in offgrid_lambdas:
+        report = frs.run_scan(lambdas=[lambda_ratio])
+        row = report["rows"][0]
+        diag = complex(row["diag_qq"])
+        mixed = complex(row["mixed_qq"])
+        parallel = complex(row["parallel_perp_qq"])
+        closed = fgc.benchmark_response_closed_forms(lambda_ratio)
+        max_abs_error = max(
+            max_abs_error,
+            abs(diag - closed[("perp23", "perp23", "parallel")]),
+            abs(mixed - closed[("perp23", "perp24", "parallel")]),
+            abs(parallel - closed[("parallel", "perp23", "perp23")]),
+        )
+
+    return {
+        "test": "offgrid_closed_form_values",
+        "lambdas": offgrid_lambdas,
+        "max_abs_error": float(max_abs_error),
+        "pass": max_abs_error < 1.0e-12,
+    }
+
+
 def run_all_tests() -> dict[str, object]:
     results = {
         "default_scan_relations": test_default_scan_relations(),
         "benchmark_grid_values": test_benchmark_grid_values(),
+        "offgrid_closed_form_values": test_offgrid_closed_form_values(),
     }
 
     print("Running default response-scan relation test...")
@@ -76,6 +103,14 @@ def run_all_tests() -> dict[str, object]:
     print(
         f"  max diag-qq error = {second['max_abs_error']:.3e} "
         f"[{'PASS' if second['pass'] else 'FAIL'}]"
+    )
+
+    print("\nRunning off-grid closed-form test...")
+    third = results["offgrid_closed_form_values"]
+    print(
+        f"  lambdas = {third['lambdas']} "
+        f"max response error = {third['max_abs_error']:.3e} "
+        f"[{'PASS' if third['pass'] else 'FAIL'}]"
     )
 
     print("\n" + "=" * 60)

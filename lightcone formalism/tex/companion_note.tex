@@ -616,7 +616,9 @@ on the sampled grid
 \(
 \lambda\in\{\frac14,\frac13,\frac38,\frac25,\frac12\}
 \)
-with maximum absolute deviation $2.13\times 10^{-14}$. Therefore
+with maximum absolute deviation $2.13\times 10^{-14}$. Additional off-grid
+checks at $\lambda=\frac15$ and $\lambda=\frac35$ match the same formula with
+maximum absolute deviation $1.99\times 10^{-13}$. Therefore
 \begin{equation}
 {\cal R}^{(23,24,\parallel)}_{qq}(\lambda)
 =
@@ -628,6 +630,34 @@ with maximum absolute deviation $2.13\times 10^{-14}$. Therefore
 \label{eq:ferm-response-closed-family}
 \end{equation}
 on the same scan, by the exact ratio relations already observed.
+Since ${\cal R}_\delta=0$ in these benchmark trace-dropped channels, the
+assembled amplitudes themselves reduce to
+\begin{equation}
+\mathcal{A}_F(23,23,\parallel;N,\lambda,t)
+=
+4\sqrt{14}\,(1-\lambda)^2\,B_{qq}(N;\lambda,t),
+\qquad
+\mathcal{A}_F(23,24,\parallel;N,\lambda,t)
+=
+2\sqrt{14}\,(1-\lambda)^2\,B_{qq}(N;\lambda,t),
+\label{eq:ferm-assembled-closed-family}
+\end{equation}
+\begin{equation}
+\mathcal{A}_F(\parallel,23,23;N,\lambda,t)
+=
+4\sqrt{14}\,\frac{(1-\lambda)^2}{\lambda^2}\,B_{qq}(N;\lambda,t),
+\label{eq:ferm-assembled-closed-family-2}
+\end{equation}
+with the benchmark dilaton and antisymmetric channels still vanishing. The
+finite-$N$ family scan checks these assembled formulas directly on the same
+\(
+t
+\),
+\(
+\lambda
+\),
+and scale grids used in the decisive superstring test, with maximum absolute
+deviation $1.60\times 10^{-14}$.
 At the benchmark ratio $\lambda = 2/5$, the pure responses are
 \begin{equation}
 {\cal R}^{(23,23,\parallel)}_{qq} = 5.387986636954\ldots,
@@ -637,15 +667,14 @@ At the benchmark ratio $\lambda = 2/5$, the pure responses are
 {\cal R}^{(\parallel,23,23)}_{qq} = 33.674916480965\ldots,
 \label{eq:ferm-response-benchmark}
 \end{equation}
-with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark dilaton and $B$-field channels giving ${\cal R}_\delta = {\cal R}_{qq} = 0$ to machine precision.
-so the observed continuum channel ratios are controlled entirely by the $B_{qq}$ term. The raw amplitudes scale as $1/N_1$ (from $B_{qq} \sim 1/N$), so the finite continuum quantity is $\widetilde{\mathcal{A}}_{\mathrm{diag}}(\lambda, t) \equiv \lim_{N_1 \to \infty}N_1\,\mathcal{A}_F(\epsilon_{23}, \epsilon_{23}, \epsilon_\parallel;\lambda, t)$. On the positive branch this is again nearly rank one:
+with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark dilaton and $B$-field channels giving ${\cal R}_\delta = {\cal R}_{qq} = 0$ to machine precision. So the observed continuum channel ratios are controlled entirely by the $B_{qq}$ term. The raw amplitudes scale as $1/N_1$ (from $B_{qq} \sim 1/N$), so the finite continuum quantity is $\widetilde{\mathcal{A}}_{\mathrm{diag}}(\lambda, t) \equiv \lim_{N_1 \to \infty}N_1\,\mathcal{A}_F(\epsilon_{23}, \epsilon_{23}, \epsilon_\parallel;\lambda, t)$. On the positive branch this is again nearly rank one:
 \begin{equation}
 \widetilde{\mathcal{A}}_{\mathrm{diag}}(\lambda, t) \approx \mathcal{N}(t)\,\mathcal{F}(\lambda),
 \qquad
 \frac{\sigma_2}{\sigma_1} = 1.11 \times 10^{-4}.
 \label{eq:ferm-rank1}
 \end{equation}
-The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 42 tests pass.
+The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 44 tests pass.
 
 %% ======================================================================
 \section{Neumann coefficients from Gaussian moments}
@@ -681,7 +710,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (42/42 tests passing in the automated suite):
+\textbf{Validated} (44/44 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
@@ -689,6 +718,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
+\item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
 \item On-shell trace-dropped graviton channels: $\mathcal{A}_{\mathrm{vec},\parallel}/\mathcal{A}_{\mathrm{vec},\perp} = -7$ exact, $\mathcal{A}_{\mathrm{dilaton}} = 0$ to $10^{-13}$.
 \item Pure fermionic response basis at $\lambda = 2/5$: ${\cal R}_\delta = 0$ for the benchmark graviton channels, ${\cal R}^{(23,23,\parallel)}_{qq} = 5.387986636954\ldots$, and the dilaton/$B$-field benchmark responses vanish exactly.
 \item Rank-one factorization~\eqref{eq:rank1} of the stencil family with relative error $10^{-4}$.

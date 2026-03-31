@@ -3300,7 +3300,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $42/42$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction, pure fermionic response-basis checks, dedicated $\lambda$-profile scan of the pure responses, decisive trace-dropped superstring, and normalization-factorization scripts into one reproducible checkpoint. In its present form the suite reports $44/44$ passing tests. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},
@@ -3420,6 +3420,18 @@ with maximum absolute deviation
 \right|
 =2.13\times 10^{-14}.
 \end{equation}
+This is not confined to the default scan points: the current off-grid
+regression check at $\lambda=\frac15$ and $\lambda=\frac35$ also matches the
+same closed form, with maximum absolute deviation
+\begin{equation}
+\label{eq:s15-1-038d3b2}
+\max_{\lambda\in\{\frac15,\frac35\}}
+\left|
+{\cal R}^{(23,23,\parallel)}_{qq}(\lambda)
+-4\sqrt{14}\,(1-\lambda)^2
+\right|
+=1.99\times 10^{-13}.
+\end{equation}
 So on the sampled grid the other two benchmark graviton responses are already
 fixed by \eqref{eq:s15-1-038d3} to
 \begin{equation}
@@ -3431,6 +3443,48 @@ fixed by \eqref{eq:s15-1-038d3} to
 {\cal R}^{(\parallel,23,23)}_{qq}(\lambda)
 =
 4\sqrt{14}\,\frac{(1-\lambda)^2}{\lambda^2}.
+\end{equation}
+Since the benchmark trace-dropped channels also satisfy
+\(
+{\cal R}_\delta=0
+\),
+the assembled amplitudes themselves collapse to
+\begin{equation}
+\label{eq:s15-1-038d3d}
+\begin{aligned}
+{\cal A}_F(\epsilon_{23},\epsilon_{23},\epsilon_\parallel;N,\lambda,t)
+&=
+4\sqrt{14}\,(1-\lambda)^2\,B_{qq}(N;\lambda,t),\\
+{\cal A}_F(\epsilon_{23},\epsilon_{24},\epsilon_\parallel;N,\lambda,t)
+&=
+2\sqrt{14}\,(1-\lambda)^2\,B_{qq}(N;\lambda,t),\\
+{\cal A}_F(\epsilon_\parallel,\epsilon_{23},\epsilon_{23};N,\lambda,t)
+&=
+4\sqrt{14}\,\frac{(1-\lambda)^2}{\lambda^2}\,B_{qq}(N;\lambda,t),
+\end{aligned}
+\end{equation}
+with the benchmark dilaton and antisymmetric channels still vanishing. This is
+now checked directly in the finite-$N$ family scan: across
+\(
+t\in\{0,\frac18,\frac14,\frac38,\frac12,\frac58,\frac34\}
+\),
+\(
+\lambda\in\{\frac14,\frac13,\frac38,\frac25,\frac12\}
+\),
+and
+\(
+s\in\{16,32,64,128\}
+\),
+the maximum absolute deviation between the explicit contraction and
+\eqref{eq:s15-1-038d3d} is
+\begin{equation}
+\label{eq:s15-1-038d3e}
+\max_{\rm scan}
+\bigl|
+{\cal A}_F^{\rm explicit}
+-{\cal A}_F^{\rm closed\ form}
+\bigr|
+=1.60\times 10^{-14}.
 \end{equation}
 At the benchmark ratio $\lambda=\frac25$, the new response-level helper in
 \texttt{fermionic\_graviton\_contraction.py} gives

@@ -91,6 +91,44 @@ BENCHMARK_CHANNELS = (
 )
 
 
+def benchmark_response_closed_forms(lambda_ratio: float) -> dict[tuple[str, str, str], complex]:
+    """
+    Closed forms observed for the trace-dropped benchmark pure responses.
+
+    These formulas are verified numerically on the default lambda grid and
+    additional off-grid spot checks used in the regression tests.
+    """
+    lambda_ratio = float(lambda_ratio)
+    diag = 4.0 * math.sqrt(14.0) * (1.0 - lambda_ratio) ** 2
+    return {
+        ("perp23", "perp23", "parallel"): complex(diag),
+        ("perp23", "perp24", "parallel"): complex(0.5 * diag),
+        ("parallel", "perp23", "perp23"): complex(diag / (lambda_ratio**2)),
+        ("perp23", "perp23", "dilaton"): 0.0j,
+        ("parallel", "parallel", "dilaton"): 0.0j,
+        ("perp23", "perp23", "b23"): 0.0j,
+        ("parallel", "parallel", "b23"): 0.0j,
+    }
+
+
+def benchmark_trace_dropped_amplitude_closed_forms(
+    lambda_ratio: float,
+    b_qq: complex,
+) -> dict[tuple[str, str, str], complex]:
+    """
+    Closed forms for the trace-dropped assembled benchmark channels.
+
+    For the benchmark channels used in the superstring scans, the trace-dropped
+    fermionic contraction kills the A_delta contribution and leaves only the
+    universal qq-response profile multiplied by the bosonic coefficient B_qq.
+    """
+    responses = benchmark_response_closed_forms(lambda_ratio)
+    return {
+        channel: complex(b_qq) * response
+        for channel, response in responses.items()
+    }
+
+
 def json_safe(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): json_safe(item) for key, item in value.items()}

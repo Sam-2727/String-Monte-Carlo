@@ -50,10 +50,6 @@ def _row_map(report: dict[str, object]) -> dict[tuple[str, str, str], dict[str, 
     }
 
 
-def diag_closed_form(lambda_ratio: float) -> float:
-    return 4.0 * math.sqrt(14.0) * (1.0 - float(lambda_ratio)) ** 2
-
-
 def run_scan(
     lambdas: list[float] | None = None,
     trace_dropped: bool = True,
@@ -89,7 +85,8 @@ def run_scan(
 
         mixed_ratio = mixed_qq / diag_qq
         lambda_sq_ratio = (lambda_ratio**2) * parallel_perp_qq / diag_qq
-        diag_target = diag_closed_form(lambda_ratio)
+        closed_forms = fgc.benchmark_response_closed_forms(lambda_ratio)
+        diag_target = closed_forms[("perp23", "perp23", "parallel")].real
         diag_closed_form_error = abs(diag_qq.real - diag_target) + abs(diag_qq.imag)
 
         zero_channels = [

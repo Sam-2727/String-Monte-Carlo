@@ -136,6 +136,7 @@ def run_fermionic_graviton_contraction_tests() -> dict[str, Any]:
         "benchmark_response_value": tfcr.test_benchmark_response_value(),
         "response_scan_relations": tfrs.test_default_scan_relations(),
         "response_scan_benchmark_grid": tfrs.test_benchmark_grid_values(),
+        "response_scan_offgrid_closed_form": tfrs.test_offgrid_closed_form_values(),
         "delta_reduction_identity": tfgc.test_delta_reduction_identity(),
         "trace_dropped_zero_channels": tfgc.test_trace_dropped_zero_channels(),
         "trace_dropped_graviton_channels": tfgc.test_trace_dropped_graviton_channels(),
@@ -174,6 +175,7 @@ def run_superstring_decisive_tests() -> dict[str, Any]:
     results = {
         "minimal_stencil_is_only_blocked": tsdt.test_minimal_stencil_is_only_blocked(),
         "unblocked_trace_dropped_relations": tsdt.test_unblocked_trace_dropped_relations(),
+        "unblocked_trace_dropped_closed_forms": tsdt.test_unblocked_trace_dropped_closed_forms(),
     }
     return {
         "summary": summarize_passes(results),
@@ -203,6 +205,9 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     graviton = report["tests"]["graviton_assembly"]["results"]["graviton_v_matrix_elements"]
     decisive = report["tests"]["superstring_decisive"]["results"][
         "unblocked_trace_dropped_relations"
+    ]
+    decisive_closed = report["tests"]["superstring_decisive"]["results"][
+        "unblocked_trace_dropped_closed_forms"
     ]
     fermionic = report["tests"]["fermionic_graviton_contraction"]["results"]
     factorization = report["tests"]["superstring_normalization"]["results"][
@@ -237,6 +242,7 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "fermionic_response_scan_monotone": fermionic["response_scan_relations"]["monotone_decreasing_diag"],
         "fermionic_response_scan_closed_form_error": fermionic["response_scan_relations"]["max_diag_closed_form_error"],
         "fermionic_response_scan_grid_error": fermionic["response_scan_benchmark_grid"]["max_abs_error"],
+        "fermionic_response_scan_offgrid_error": fermionic["response_scan_offgrid_closed_form"]["max_abs_error"],
         "fermionic_zero_channel_max": fermionic["trace_dropped_zero_channels"]["max_abs_value"],
         "fermionic_perp_perp_parallel": fermionic["trace_dropped_graviton_channels"]["perp_perp_parallel"],
         "fermionic_parallel_parallel_parallel": fermionic["trace_dropped_graviton_channels"]["parallel_parallel_parallel"],
@@ -244,6 +250,7 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "trace_dropped_max_mixed_ratio_error": decisive["max_mixed_ratio_error"],
         "trace_dropped_max_parallel_perp_lambda_sq_error": decisive["max_parallel_perp_lambda_sq_error"],
         "trace_dropped_zero_channel_max": decisive["max_zero_channel"],
+        "trace_dropped_max_closed_form_error": decisive_closed["max_benchmark_closed_form_error"],
         "normalization_rank1_rel_error": factorization["rank1_rel_frob_error"],
         "normalization_sigma2_over_sigma1": factorization["sigma2_over_sigma1"],
         "normalization_max_profile_diff": factorization_profile["max_profile_diff"],
@@ -359,7 +366,8 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`|lambda^2 par23/diag - 1| = {benchmarks['fermionic_response_lambda_sq_ratio_error']:.3e}`, "
             f"`scan monotone = {benchmarks['fermionic_response_scan_monotone']}`, "
             f"`closed-form error = {benchmarks['fermionic_response_scan_closed_form_error']:.3e}`, "
-            f"`grid benchmark error = {benchmarks['fermionic_response_scan_grid_error']:.3e}`"
+            f"`grid benchmark error = {benchmarks['fermionic_response_scan_grid_error']:.3e}`, "
+            f"`off-grid error = {benchmarks['fermionic_response_scan_offgrid_error']:.3e}`"
         ),
         (
             "- Trace-dropped fermionic channel test: "
@@ -441,7 +449,8 @@ def print_console_summary(report: dict[str, Any]) -> None:
         f"lambda^2 ratio err {benchmarks['fermionic_response_lambda_sq_ratio_error']:.3e}, "
         f"scan monotone {benchmarks['fermionic_response_scan_monotone']}, "
         f"closed-form err {benchmarks['fermionic_response_scan_closed_form_error']:.3e}, "
-        f"grid err {benchmarks['fermionic_response_scan_grid_error']:.3e}"
+        f"grid err {benchmarks['fermionic_response_scan_grid_error']:.3e}, "
+        f"off-grid err {benchmarks['fermionic_response_scan_offgrid_error']:.3e}"
     )
     print(
         "  Trace-dropped fermion test   = "

@@ -80,6 +80,7 @@ def _channel_series_for_family(
     ns: list[int] = []
     series = {name: [] for name in CHANNELS}
     max_imag = {name: 0.0 for name in CHANNELS}
+    max_benchmark_closed_form_error = 0.0
 
     for scale in scales:
         n1 = a * scale
@@ -92,6 +93,10 @@ def _channel_series_for_family(
             alpha_prime,
         )
         ns.append(n1)
+        closed_forms = fgc.benchmark_trace_dropped_amplitude_closed_forms(
+            lambda_ratio,
+            prefactor.b_qq_reduced,
+        )
 
         for name, (eps1, eps2, eps3) in CHANNELS.items():
             amplitude = fgc.fermionic_channel_amplitude_from_ab(
@@ -105,6 +110,12 @@ def _channel_series_for_family(
             )
             series[name].append(float(amplitude.real))
             max_imag[name] = max(max_imag[name], float(abs(amplitude.imag)))
+            benchmark_key = (eps1, eps2, eps3)
+            if benchmark_key in closed_forms:
+                max_benchmark_closed_form_error = max(
+                    max_benchmark_closed_form_error,
+                    float(abs(amplitude - closed_forms[benchmark_key])),
+                )
 
     channel_summaries = {
         name: ce.summary_to_dict(ce.summarize_extrapolation(ns, values))
@@ -146,6 +157,7 @@ def _channel_series_for_family(
         "ratio_parallel_perp_over_diag": ratio_parallel_perp,
         "ratio_parallel_parallel_over_diag": ratio_parallel_parallel,
         "zero_channel_max": zero_channel_max,
+        "max_benchmark_closed_form_error": max_benchmark_closed_form_error,
     }
 
 
@@ -168,9 +180,14 @@ def _summarize_candidate(
     max_parallel_perp_lambda_sq_error = 0.0
     max_zero_channel = 0.0
     max_abs_imag = 0.0
+    max_benchmark_closed_form_error = 0.0
     for row in rows:
         max_zero_channel = max(max_zero_channel, float(row["zero_channel_max"]))
         max_abs_imag = max(max_abs_imag, max(row["max_abs_imag"].values()))
+        max_benchmark_closed_form_error = max(
+            max_benchmark_closed_form_error,
+            float(row["max_benchmark_closed_form_error"]),
+        )
         if blocked:
             continue
         lam = float(row["lambda"])
@@ -192,6 +209,7 @@ def _summarize_candidate(
         "max_parallel_perp_lambda_sq_error": max_parallel_perp_lambda_sq_error,
         "max_zero_channel": max_zero_channel,
         "max_abs_imag": max_abs_imag,
+        "max_benchmark_closed_form_error": max_benchmark_closed_form_error,
     }
 
 
@@ -231,6 +249,10 @@ def run_decisive_scan(
         (summary["max_abs_imag"] for summary in summaries),
         default=math.nan,
     )
+    max_benchmark_closed_form_error = max(
+        (summary["max_benchmark_closed_form_error"] for summary in summaries),
+        default=math.nan,
+    )
 
     return {
         "parameters": {
@@ -251,11 +273,13 @@ def run_decisive_scan(
             "max_parallel_perp_lambda_sq_error": float(max_parallel_perp_lambda_sq_error),
             "max_zero_channel": float(max_zero_channel),
             "max_abs_imag": float(max_abs_imag),
+            "max_benchmark_closed_form_error": float(max_benchmark_closed_form_error),
             "all_unblocked_universal": bool(
                 max_mixed_ratio_error < 1.0e-12
                 and max_parallel_perp_lambda_sq_error < 1.0e-12
                 and max_zero_channel < 1.0e-12
                 and max_abs_imag < 1.0e-12
+                and max_benchmark_closed_form_error < 1.0e-12
             ),
         },
     }
@@ -272,7 +296,8 @@ def print_report(report: dict[str, object]) -> None:
         f"(max |A_mix/A_diag - 1/2| = {universal['max_mixed_ratio_error']:.3e}, "
         f"max |lambda^2 A_par23/A_diag - 1| = {universal['max_parallel_perp_lambda_sq_error']:.3e}, "
         f"max |zero channel| = {universal['max_zero_channel']:.3e}, "
-        f"max |imag part| = {universal['max_abs_imag']:.3e})"
+        f"max |imag part| = {universal['max_abs_imag']:.3e}, "
+        f"max |A - A_closed| = {universal['max_benchmark_closed_form_error']:.3e})"
     )
     print(f"Blocked t values   : {report['blocked_t_values']}")
     print(f"Unblocked t values : {report['unblocked_t_values']}")
@@ -305,7 +330,8 @@ def markdown_report(report: dict[str, object]) -> str:
             f"`max |A_mix/A_diag - 1/2| = {universal['max_mixed_ratio_error']:.3e}`, "
             f"`max |lambda^2 A_par23/A_diag - 1| = {universal['max_parallel_perp_lambda_sq_error']:.3e}`, "
             f"`max |zero channel| = {universal['max_zero_channel']:.3e}`, "
-            f"`max |imag part| = {universal['max_abs_imag']:.3e}`"
+            f"`max |imag part| = {universal['max_abs_imag']:.3e}`, "
+            f"`max |A - A_closed| = {universal['max_benchmark_closed_form_error']:.3e}`"
         ),
         "",
         "| t | blocked | mean|diag| | max|mix-1/2| | max|lambda^2 par-1| | max|zero| |",
