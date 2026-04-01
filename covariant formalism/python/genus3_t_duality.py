@@ -42,6 +42,17 @@ GENUS3_DEFAULT_EDGE_LENGTHS = tuple(100 + i for i in range(15))
 GENUS3_DEFAULT_R_VALUES = tuple(round(1.0 + 0.1 * i, 1) for i in range(1, 11))
 GENUS3_DEFAULT_THETA_CUTOFF = 4
 
+# This is compact storage, not cryptographic encryption.
+# Packing format:
+# 1. Enumerate the 818 stored genus-3 one-face ribbon graphs as JSON.
+# 2. For each topology, keep only the minimal data needed to rebuild graph_data:
+#    "e" = edge endpoint pairs, "v" = boundary vertex sequence, "x" = boundary edge labels.
+# 3. Compress the JSON bytes with zlib.
+# 4. Base85-encode the compressed bytes so the payload can live as printable ASCII
+#    inside this .py file.
+# At runtime, _decode_payload() reverses those steps and _payload_to_graph_data()
+# expands the compact entry back into:
+#   {"edges": ..., "boundary": ..., "sewing_pairs": ...}
 _GENUS3_F1_GRAPH_DATA_B85 = (
     "c-qyyOOEVF4yC=98pj~?a!I|FLJfNhKYpOmd+%_`<uW7BA*lqq$eu)H){TrC9}izfd-"
     "%Wq*T4Sfzy8O+|2_Q7|M~g*`Z~UDe_zL+>G--FU)R5{)A2pi&;IvyKE87~{{Q7?`2G8z*YOAI`7hh?FWdWH{`2#%|L^aw`1>1v{{"
@@ -248,6 +259,7 @@ _GENUS3_F1_GRAPH_DATA_B85 = (
 
 @lru_cache(maxsize=1)
 def _decode_payload() -> tuple[dict, ...]:
+    # Reverse the storage pipeline above: ASCII base85 -> compressed bytes -> JSON payload.
     raw = zlib.decompress(base64.b85decode(_GENUS3_F1_GRAPH_DATA_B85.encode("ascii")))
     payload = tuple(json.loads(raw.decode("ascii")))
     if len(payload) != GENUS3_GRAPH_COUNT:

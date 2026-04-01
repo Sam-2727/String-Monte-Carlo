@@ -10,6 +10,10 @@ import compact_partition as cp
 import ell_to_tau as elt
 import genus3_t_duality as g3
 
+THETA_CUTOFF = 4
+GENUS2_RANDOM_SEED = 20260402
+GENUS3_RANDOM_SEED = 20260403
+
 
 def _incidence_matrix(oriented_edges):
     vertices = sorted({v for edge in oriented_edges for v in edge})
@@ -81,30 +85,135 @@ def _analytic_compact_lattice_sum(Omega: np.ndarray, R: float, N: int) -> float:
     return total
 
 
+def _full_ratio_from_sums(sum_r1: float, sum_r2: float, R1: float, R2: float) -> float:
+    """Equation-(9.11) style compact-boson ratio, including the explicit zero-mode factor."""
+    return (R1 * sum_r1) / (R2 * sum_r2)
+
+
+def _random_topology_case(*, seed: int, topology_count: int, edge_count: int) -> dict:
+    """Reproducible random test geometry with edge lengths in [50, 300]."""
+    rng = np.random.default_rng(seed)
+    topology = int(rng.integers(1, topology_count + 1))
+    edge_lengths = [int(x) for x in rng.integers(50, 301, size=edge_count)]
+    return {
+        "seed": seed,
+        "topology": topology,
+        "edge_lengths": edge_lengths,
+    }
+
+
+def _genus2_random_case() -> dict:
+    return _random_topology_case(seed=GENUS2_RANDOM_SEED, topology_count=4, edge_count=9)
+
+
+def _genus3_random_case() -> dict:
+    return _random_topology_case(
+        seed=GENUS3_RANDOM_SEED,
+        topology_count=g3.GENUS3_GRAPH_COUNT,
+        edge_count=15,
+    )
+
+
 def _check_higher_genus_ratio(graph_data, edge_lengths, R1, R2, *,
                               theta_cutoff, analytic_cutoff):
     """
-    Compare the compact-partition theta ratio against the analytic lattice-sum ratio.
+    Compare the full compact-boson ratio in equation (9.11).
 
-    The analytic expression in the TeX notes already isolates the radius-dependent
-    classical lattice sum, so the comparison is between the reduced theta sums
-    themselves rather than the full graph partition function with its explicit
-    lattice zero-mode factor.
+    Both sides include the explicit compact-boson zero-mode factor R, so this
+    compares
+      (R1 * Theta_graph(R1)) / (R2 * Theta_graph(R2))
+    against
+      (R1 * LatticeSum_analytic(R1)) / (R2 * LatticeSum_analytic(R2)).
     """
     ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
     forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
     Omega = elt.period_matrix(forms=forms, ribbon_graph=ribbon_graph, ell_list=edge_lengths)
 
     geom = cp.compact_boson_graph_geometry(edge_lengths, graph_data)
-    ratio_lattice = (
-        cp.theta_sum_reduced(geom["T_reduced"], R1, N=theta_cutoff)
-        / cp.theta_sum_reduced(geom["T_reduced"], R2, N=theta_cutoff)
+    lattice_sum_r1 = cp.theta_sum_reduced(geom["T_reduced"], R1, N=theta_cutoff)
+    lattice_sum_r2 = cp.theta_sum_reduced(geom["T_reduced"], R2, N=theta_cutoff)
+    analytic_sum_r1 = _analytic_compact_lattice_sum(Omega, R1, analytic_cutoff)
+    analytic_sum_r2 = _analytic_compact_lattice_sum(Omega, R2, analytic_cutoff)
+
+    ratio_lattice = _full_ratio_from_sums(
+        lattice_sum_r1,
+        lattice_sum_r2,
+        R1,
+        R2,
     )
-    ratio_analytic = (
-        _analytic_compact_lattice_sum(Omega, R1, analytic_cutoff)
-        / _analytic_compact_lattice_sum(Omega, R2, analytic_cutoff)
+    ratio_analytic = _full_ratio_from_sums(
+        analytic_sum_r1,
+        analytic_sum_r2,
+        R1,
+        R2,
     )
     return ratio_lattice, ratio_analytic
+
+
+def _print_ratio_report(label, graph_data, edge_lengths, R1, R2, *,
+                        theta_cutoff, analytic_cutoff, topology=None, seed=None):
+    """Print a readable analytic-vs-graph comparison for one higher-genus geometry."""
+    ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
+        graph_data,
+        edge_lengths,
+        R1,
+        R2,
+        theta_cutoff=theta_cutoff,
+        analytic_cutoff=analytic_cutoff,
+    )
+    resid = ratio_lattice - ratio_analytic
+    rel = abs(resid) / abs(ratio_analytic)
+
+    print(label)
+    if topology is not None:
+        print(f"  topology         = {topology}")
+    if seed is not None:
+        print(f"  rng seed         = {seed}")
+    print(f"  edge_lengths     = {edge_lengths}")
+    print(f"  R1, R2           = {R1}, {R2}")
+    print(f"  theta_cutoff     = {theta_cutoff}")
+    print(f"  analytic_cutoff  = {analytic_cutoff}")
+    print(f"  graph ratio      = {ratio_lattice:.15g}")
+    print(f"  analytic ratio   = {ratio_analytic:.15g}")
+    print(f"  residual         = {resid:.6e}")
+    print(f"  relative error   = {rel:.6e}")
+    print()
+
+
+def print_reference_reports():
+    """Diagnostic output for reproducible random higher-genus checks."""
+    genus2_case = _genus2_random_case()
+    genus3_case = _genus3_random_case()
+
+    print("Higher-genus compact-boson ratio checks")
+    print("Comparing (R1 * Theta_graph(R1)) / (R2 * Theta_graph(R2))")
+    print("against   (R1 * LatticeSum_analytic(R1)) / (R2 * LatticeSum_analytic(R2))")
+    print("Each topology and edge-length set below is chosen reproducibly from a fixed RNG seed.")
+    print()
+
+    _print_ratio_report(
+        "Genus 2 random sample",
+        cp.get_stored_genus2_graph(genus2_case["topology"]),
+        genus2_case["edge_lengths"],
+        1.2,
+        1.6,
+        theta_cutoff=THETA_CUTOFF,
+        analytic_cutoff=3,
+        topology=genus2_case["topology"],
+        seed=genus2_case["seed"],
+    )
+
+    _print_ratio_report(
+        "Genus 3 random sample",
+        g3.get_stored_genus3_graph(genus3_case["topology"]),
+        genus3_case["edge_lengths"],
+        1.2,
+        1.6,
+        theta_cutoff=THETA_CUTOFF,
+        analytic_cutoff=3,
+        topology=genus3_case["topology"],
+        seed=genus3_case["seed"],
+    )
 
 
 class TestCompactPartitionHigherGenus(unittest.TestCase):
@@ -118,13 +227,13 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
         T1 = cp.mat_t_first_part(L, l1, l2, Mat)
         T2 = cp.mat_t_second_part(L, l1, l2, W, Aprime)
         Tp = cp.mat_t_prime(cp.symm(T1 - T2))
-        z_torus = cp.partition_function_z(Aprime, R, Tp, N=6)
+        z_torus = cp.partition_function_z(Aprime, R, Tp, N=THETA_CUTOFF)
 
         z_graph = cp.compute_graph_compact_partition(
             [l1, l2, l3],
             R,
             cp.GENUS1_F1_GRAPH_DATA,
-            N=6,
+            N=THETA_CUTOFF,
         )["Z"]
 
         self.assertAlmostEqual(z_graph, z_torus, places=12)
@@ -135,7 +244,7 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
 
         for topology in range(1, 5):
             graph_data = cp.get_stored_genus2_graph(topology)
-            geom = cp.compute_graph_compact_partition(edge_lengths, 1.2, graph_data, N=3)
+            geom = cp.compute_graph_compact_partition(edge_lengths, 1.2, graph_data, N=THETA_CUTOFF)
             incidence = _incidence_matrix(cp._gluing_data(edge_lengths, graph_data)["oriented_edges"])
 
             self.assertEqual(geom["A_prime"].shape, (14, 14))
@@ -151,29 +260,36 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
         self.assertGreater(max(values) - min(values), 1e-6)
 
     def test_genus2_theta_ratio_matches_analytic_period_matrix_sum(self):
+        case = _genus2_random_case()
         ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
-            cp.get_stored_genus2_graph(1),
-            [40, 42, 44, 46, 48, 50, 52, 54, 56],
+            cp.get_stored_genus2_graph(case["topology"]),
+            case["edge_lengths"],
             1.2,
             1.6,
-            theta_cutoff=4,
+            theta_cutoff=THETA_CUTOFF,
             analytic_cutoff=3,
         )
         rel = abs(ratio_lattice - ratio_analytic) / abs(ratio_analytic)
         self.assertLess(rel, 1.0e-3)
 
     def test_genus3_theta_ratio_matches_analytic_period_matrix_sum(self):
+        case = _genus3_random_case()
         ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
-            g3.get_stored_genus3_graph(1),
-            [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44],
+            g3.get_stored_genus3_graph(case["topology"]),
+            case["edge_lengths"],
             1.2,
             1.6,
-            theta_cutoff=3,
-            analytic_cutoff=2,
+            theta_cutoff=THETA_CUTOFF,
+            analytic_cutoff=3,
         )
         rel = abs(ratio_lattice - ratio_analytic) / abs(ratio_analytic)
         self.assertLess(rel, 1.0e-3)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    print_reference_reports()
+    sys.stdout.flush()
+    unittest.main(
+        argv=[sys.argv[0]],
+        testRunner=unittest.TextTestRunner(stream=sys.stdout),
+    )
