@@ -335,6 +335,30 @@ $\infty$ & (Richardson) & 0.356\,623 \\
 \end{tabular}
 \end{center}
 
+This convergence now has a direct analytic target. In the positive-width outgoing convention $\alpha_3=\alpha_1+\alpha_2>0$, the standard continuum lightcone cubic vertex gives
+\begin{equation}
+\tau_0(\alpha_1,\alpha_2,\alpha_3)
+=
+\alpha_1\log \alpha_1+\alpha_2\log \alpha_2-\alpha_3\log \alpha_3,
+\qquad
+\gamma_T^{\mathrm{cont}}
+=
+-\frac{\alpha_1\alpha_2}{\alpha_3\,\tau_0}.
+\label{eq:companion-gamma-cont}
+\end{equation}
+The helper \texttt{continuum\_tachyon\_benchmark.py} compares the fixed-ratio Richardson extrapolations of the discrete Schur complement against this analytic continuum target on the families $1\!:\!3$, $1\!:\!2$, $3\!:\!5$, $2\!:\!3$, and $1\!:\!1$ with scales $8,16,32,64,128,256$. The observed agreement is
+\begin{equation}
+\max_{\lambda\in\{1/4,1/3,3/8,2/5,1/2\}}
+\bigl|\gamma_T^{(\infty)}(\lambda)-\gamma_T^{\mathrm{cont}}(\lambda)\bigr|
+=1.94\times 10^{-5},
+\qquad
+\max
+\frac{\bigl|\gamma_T^{(\infty)}-\gamma_T^{\mathrm{cont}}\bigr|}{\gamma_T^{\mathrm{cont}}}
+=5.37\times 10^{-5}.
+\label{eq:companion-gamma-cont-error}
+\end{equation}
+So the bosonic three-tachyon sector now matches the known continuum Schur-complement kinematics quantitatively, while the overall cubic normalization remains a separate question encoded in ${\cal C}_{\mathrm{tail}}$.
+
 \subsection{Two-tachyon / one-massless amplitude}
 
 With two incoming tachyons and one outgoing first-level massless state on leg~3, the boundary Fourier coefficient $X_m^{(3)} \equiv q_m^{(3)}/\sqrt{N_3}$ has exact single-leg vacuum covariance
@@ -834,10 +858,11 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (73/73 tests passing in the automated suite):
+\textbf{Validated} (76/76 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
+\item Continuum bosonic Schur benchmark: the Richardson-extrapolated fixed-ratio $\gamma_T$ values agree with the analytic continuum target~\eqref{eq:companion-gamma-cont} with maximum absolute error $1.94\times 10^{-5}$ and maximum relative error $5.37\times 10^{-5}$ on the sampled family set.
 \item $2T+1M$ tensor: $A_{\mathrm{tr}} \approx 0$, $B_{\mathrm{rel}} \to 1.920$ with continuum error bar $\pm 7 \times 10^{-4}$.
 \item Bosonic normalization structure: on the $4\le N_1,N_2\le 60$, $N_3\le 120$ grid the invariant three-leg tail gives ${\cal C}_{\mathrm{tail}}=-22.496054835$ with RMS residual $2.48\times 10^{-7}$, while the fixed incoming/outgoing nonlinear tails $(7,\pi,\pi^2/72)$ and $(-5,-\pi,\pi^2/72)$ leave only linear-plus-constant remainders with RMS residuals $1.61\times 10^{-12}$ and $2.91\times 10^{-11}$.
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
@@ -862,13 +887,13 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \textbf{Remaining:}
 \begin{enumerate}
 \item Derive the genuinely local finite-$N$ fermionic interaction-point variable and revisit the full superstring cubic calculation on that basis.
-\item Fix the overall cubic normalization by matching to the continuum three-graviton and three-tachyon couplings.
+\item Fix the overall cubic normalization by matching the remaining bosonic and superstring overall coefficients to the continuum three-tachyon and three-graviton couplings. The bosonic Schur-complement kinematics are now already matched, so the unresolved part is the overall normalization rather than the reduced Gaussian structure.
 \item Assemble the physical spin-structure/GSO and zero-mode factors on top of the single-cylinder prototype; the unsummed sector scan already shows that pre-GSO oscillator sectors do not cancel by themselves.
 \item Assemble the first loop integrand by adding the remaining zero-mode factor to the now-tested twisted propagator building blocks.
 \item Fix the coherent-state/Pfaffian normalization relative to the bosonic determinant for physical superstring loops.
 \item Spin-structure/GSO bookkeeping for physical superstring loops.
 \end{enumerate}
 
-The method reduces higher-loop superstring amplitudes to exact Gaussian sewing plus numerical moduli integration. The bosonic tree-level results already provide strong evidence that the scheme converges to the correct continuum amplitudes. On the superstring side, the current tree-level results should be read more cautiously: they provide strong evidence that one reduced $\Lambda$ ansatz has the correct benchmark channel structure, but the genuinely local finite-$N$ fermionic interaction-point operator still needs to be derived before the superstring cubic vertex can be regarded as established.
+The method reduces higher-loop superstring amplitudes to exact Gaussian sewing plus numerical moduli integration. On the bosonic tree side, the current evidence is now stronger than a qualitative convergence claim: the factorization test, the critical-dimension signal, the direct continuum Schur-complement match, and the $2T+1M$ tensor check all point in the same direction, leaving the overall cubic normalization as the main open bosonic amplitude-level task. On the superstring side, the current tree-level results should still be read more cautiously: they provide strong evidence that one reduced $\Lambda$ ansatz has the correct benchmark channel structure, but the genuinely local finite-$N$ fermionic interaction-point operator still needs to be derived before the superstring cubic vertex can be regarded as established.
 
 \end{document}

@@ -32,6 +32,7 @@ if str(HERE) not in sys.path:
 import low_point_validation as lpv
 import test_bose_fermi_cancellation_scan as tbfcs
 import test_bosonic_normalization_structure as tbns
+import test_continuum_tachyon_benchmark as tctb
 import test_fermionic_channel_responses as tfcr
 import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
@@ -101,6 +102,18 @@ def run_bosonic_normalization_structure_tests() -> dict[str, Any]:
         "invariant_tail_constant": tbns.test_invariant_tail_constant(),
         "factorized_tail_coefficients_match_expected": tbns.test_factorized_tail_coefficients_match_expected(),
         "fixed_tail_residuals_are_tiny": tbns.test_fixed_tail_residuals_are_tiny(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_continuum_tachyon_benchmark_tests() -> dict[str, Any]:
+    results = {
+        "continuum_targets_are_scale_invariant": tctb.test_continuum_targets_are_scale_invariant(),
+        "fixed_ratio_gamma_matches_continuum_target": tctb.test_fixed_ratio_gamma_matches_continuum_target(),
+        "family_errors_decrease_with_scale": tctb.test_family_errors_decrease_with_scale(),
     }
     return {
         "summary": summarize_passes(results),
@@ -343,6 +356,7 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     bosonic_tail = report["tests"]["bosonic_normalization_structure"]["results"]
     local_catalog = report["tests"]["local_channel_catalog"]["results"]
     bose_fermi = report["tests"]["bose_fermi_cancellation"]["results"]
+    continuum_tachyon = report["tests"]["continuum_tachyon_benchmark"]["results"]
     critical_scan = tachyon["d_perp_scan"]
     best_d = min(critical_scan, key=lambda row: row["rmse"])
     return {
@@ -394,6 +408,8 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "bosonic_invariant_tail_rmse": bosonic_tail["invariant_tail_constant"]["rmse"],
         "bosonic_incoming_tail_rmse": bosonic_tail["fixed_tail_residuals_are_tiny"]["incoming_rmse"],
         "bosonic_outgoing_tail_rmse": bosonic_tail["fixed_tail_residuals_are_tiny"]["outgoing_rmse"],
+        "continuum_gamma_max_abs_error": continuum_tachyon["fixed_ratio_gamma_matches_continuum_target"]["max_abs_error"],
+        "continuum_gamma_max_rel_error": continuum_tachyon["fixed_ratio_gamma_matches_continuum_target"]["max_rel_error"],
         "local_qq_catalog_counts": local_catalog["qq_catalog_class_counts"]["counts"],
         "local_delta_catalog_counts": local_catalog["delta_catalog_vanishes"]["counts"],
         "pre_gso_closest_distance_to_one": bose_fermi["pre_gso_scan_does_not_cancel"]["closest"]["distance_to_one"],
@@ -417,6 +433,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
     tests = {
         "tachyon_amplitude": run_tachyon_tests(),
         "bosonic_normalization_structure": run_bosonic_normalization_structure_tests(),
+        "continuum_tachyon_benchmark": run_continuum_tachyon_benchmark_tests(),
         "neumann_extraction": run_neumann_tests(),
         "graviton_prefactor": run_graviton_prefactor_tests(),
         "graviton_assembly": run_graviton_assembly_tests(),
@@ -477,6 +494,7 @@ def markdown_report(report: dict[str, Any]) -> str:
     benchmarks = report["key_benchmarks"]
     tachyon_module = report["tests"]["tachyon_amplitude"]["summary"]
     bosonic_tail_module = report["tests"]["bosonic_normalization_structure"]["summary"]
+    continuum_tachyon_module = report["tests"]["continuum_tachyon_benchmark"]["summary"]
     neumann_module = report["tests"]["neumann_extraction"]["summary"]
     prefactor_module = report["tests"]["graviton_prefactor"]["summary"]
     graviton_module = report["tests"]["graviton_assembly"]["summary"]
@@ -562,6 +580,11 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`incoming/outgoing fixed-tail rmse = {benchmarks['bosonic_incoming_tail_rmse']:.3e} / {benchmarks['bosonic_outgoing_tail_rmse']:.3e}`"
         ),
         (
+            "- Continuum tachyon Schur benchmark: "
+            f"`max |gamma_inf - gamma_cont| = {benchmarks['continuum_gamma_max_abs_error']:.3e}`, "
+            f"`max relative error = {benchmarks['continuum_gamma_max_rel_error']:.3e}`"
+        ),
+        (
             "- Local channel catalog (trace-dropped): "
             f"`qq counts = {benchmarks['local_qq_catalog_counts']}`, "
             f"`delta counts = {benchmarks['local_delta_catalog_counts']}`"
@@ -576,6 +599,7 @@ def markdown_report(report: dict[str, Any]) -> str:
         "",
         f"- `tachyon_amplitude`: `{tachyon_module['passed']}/{tachyon_module['total']}` passed",
         f"- `bosonic_normalization_structure`: `{bosonic_tail_module['passed']}/{bosonic_tail_module['total']}` passed",
+        f"- `continuum_tachyon_benchmark`: `{continuum_tachyon_module['passed']}/{continuum_tachyon_module['total']}` passed",
         f"- `neumann_extraction`: `{neumann_module['passed']}/{neumann_module['total']}` passed",
         f"- `graviton_prefactor`: `{prefactor_module['passed']}/{prefactor_module['total']}` passed",
         f"- `graviton_assembly`: `{graviton_module['passed']}/{graviton_module['total']}` passed",
@@ -680,6 +704,11 @@ def print_console_summary(report: dict[str, Any]) -> None:
         f"invariant rmse {benchmarks['bosonic_invariant_tail_rmse']:.3e}, "
         f"in/out fixed-tail rmse {benchmarks['bosonic_incoming_tail_rmse']:.3e} / "
         f"{benchmarks['bosonic_outgoing_tail_rmse']:.3e}"
+    )
+    print(
+        "  Continuum gamma benchmark    = "
+        f"max abs err {benchmarks['continuum_gamma_max_abs_error']:.3e}, "
+        f"max rel err {benchmarks['continuum_gamma_max_rel_error']:.3e}"
     )
     print(
         "  Local channel catalog        = "
