@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="820" viewBox="0 0 1100 820">
+<rect x="0" y="0" width="1100" height="820" fill="#ffffff"/>
+<style>
+text { font-family: "Helvetica", "Arial", sans-serif; fill: #111; }
+.title { font-size: 28px; font-weight: 700; }
+.subtitle { font-size: 16px; fill: #444; }
+.axis-label { font-size: 18px; font-weight: 600; }
+.tick { font-size: 14px; fill: #444; }
+.legend { font-size: 15px; }
+.panel-title { font-size: 20px; font-weight: 600; }
+</style>
+<text class="title" x="550.0" y="40" text-anchor="middle">Compact Classical Correction on Disk</text>
+<text class="subtitle" x="550.0" y="66" text-anchor="middle">setL = 310, R = 0.8, x-axis k with l1 = l2 = k and l3 = L/2 - 2k</text>
+<text class="panel-title" x="110" y="72.0">Real Part</text>
+<rect x="110" y="90.0" width="950.0" height="285.0" fill="none" stroke="#222222" stroke-width="1.5"/>
+<line x1="110.00" y1="90.00" x2="110.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="110.00" y="399.00" text-anchor="middle">1</text>
+<line x1="335.00" y1="90.00" x2="335.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="335.00" y="399.00" text-anchor="middle">19</text>
+<line x1="585.00" y1="90.00" x2="585.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="585.00" y="399.00" text-anchor="middle">39</text>
+<line x1="835.00" y1="90.00" x2="835.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="835.00" y="399.00" text-anchor="middle">59</text>
+<line x1="1060.00" y1="90.00" x2="1060.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="1060.00" y="399.00" text-anchor="middle">77</text>
+<line x1="110.00" y1="375.00" x2="1060.00" y2="375.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="380.00" text-anchor="end">-0.02565</text>
+<line x1="110.00" y1="303.75" x2="1060.00" y2="303.75" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="308.75" text-anchor="end">0.04023</text>
+<line x1="110.00" y1="232.50" x2="1060.00" y2="232.50" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="237.50" text-anchor="end">0.10612</text>
+<line x1="110.00" y1="161.25" x2="1060.00" y2="161.25" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="166.25" text-anchor="end">0.17201</text>
+<line x1="110.00" y1="90.00" x2="1060.00" y2="90.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="95.00" text-anchor="end">0.23789</text>
+<path d="M 110.00,153.16 L 135.00,119.11 L 160.00,109.66 L 185.00,110.53 L 210.00,117.96 L 235.00,130.00 L 260.00,145.37 L 285.00,163.09 L 310.00,182.33 L 335.00,202.39 L 360.00,222.64 L 385.00,242.56 L 410.00,261.65 L 435.00,279.53 L 460.00,295.87 L 485.00,310.41 L 510.00,322.97 L 535.00,333.42 L 560.00,341.73 L 585.00,347.92 L 610.00,352.06 L 635.00,354.29 L 660.00,354.81 L 685.00,353.83 L 710.00,351.62 L 735.00,348.47 L 760.00,344.67 L 785.00,340.54 L 810.00,336.39 L 835.00,332.50 L 860.00,329.15 L 885.00,326.59 L 910.00,325.03 L 935.00,324.65 L 960.00,325.59 L 985.00,327.94 L 1010.00,331.79 L 1035.00,337.26 L 1060.00,345.05" fill="none" stroke="#1768ac" stroke-width="3"/>
+<path d="M 110.00,159.86 L 135.00,123.60 L 160.00,113.61 L 185.00,114.37 L 210.00,121.81 L 235.00,133.90 L 260.00,149.31 L 285.00,167.03 L 310.00,186.24 L 335.00,206.22 L 360.00,226.34 L 385.00,246.09 L 410.00,264.97 L 435.00,282.61 L 460.00,298.68 L 485.00,312.93 L 510.00,325.18 L 535.00,335.33 L 560.00,343.33 L 585.00,349.22 L 610.00,353.08 L 635.00,355.06 L 660.00,355.34 L 685.00,354.17 L 710.00,351.79 L 735.00,348.50 L 760.00,344.61 L 785.00,340.41 L 810.00,336.23 L 835.00,332.33 L 860.00,329.00 L 885.00,326.48 L 910.00,324.97 L 935.00,324.65 L 960.00,325.64 L 985.00,328.03 L 1010.00,331.90 L 1035.00,337.32 L 1060.00,344.70" fill="none" stroke="#c44536" stroke-width="3" stroke-dasharray="10 7"/>
+<text class="panel-title" x="110" y="437.0">Imaginary Part</text>
+<rect x="110" y="455.0" width="950.0" height="285.0" fill="none" stroke="#222222" stroke-width="1.5"/>
+<line x1="110.00" y1="455.00" x2="110.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="110.00" y="764.00" text-anchor="middle">1</text>
+<line x1="335.00" y1="455.00" x2="335.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="335.00" y="764.00" text-anchor="middle">19</text>
+<line x1="585.00" y1="455.00" x2="585.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="585.00" y="764.00" text-anchor="middle">39</text>
+<line x1="835.00" y1="455.00" x2="835.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="835.00" y="764.00" text-anchor="middle">59</text>
+<line x1="1060.00" y1="455.00" x2="1060.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="1060.00" y="764.00" text-anchor="middle">77</text>
+<line x1="110.00" y1="740.00" x2="1060.00" y2="740.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="745.00" text-anchor="end">-0.14464</text>
+<line x1="110.00" y1="668.75" x2="1060.00" y2="668.75" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="673.75" text-anchor="end">-0.10225</text>
+<line x1="110.00" y1="597.50" x2="1060.00" y2="597.50" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="602.50" text-anchor="end">-0.05986</text>
+<line x1="110.00" y1="526.25" x2="1060.00" y2="526.25" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="531.25" text-anchor="end">-0.01746</text>
+<line x1="110.00" y1="455.00" x2="1060.00" y2="455.00" stroke="#d0d7de" stroke-width="1"/>
+<text class="tick" x="98.00" y="460.00" text-anchor="end">0.02493</text>
+<path d="M 110.00,509.13 L 135.00,540.23 L 160.00,572.79 L 185.00,604.19 L 210.00,633.01 L 235.00,658.31 L 260.00,679.47 L 285.00,696.12 L 310.00,708.08 L 335.00,715.31 L 360.00,717.93 L 385.00,716.16 L 410.00,710.35 L 435.00,700.91 L 460.00,688.32 L 485.00,673.14 L 510.00,655.92 L 535.00,637.27 L 560.00,617.76 L 585.00,597.98 L 610.00,578.47 L 635.00,559.73 L 660.00,542.21 L 685.00,526.29 L 710.00,512.26 L 735.00,500.36 L 760.00,490.73 L 785.00,483.42 L 810.00,478.39 L 835.00,475.53 L 860.00,474.66 L 885.00,475.49 L 910.00,477.73 L 935.00,480.97 L 960.00,484.81 L 985.00,488.80 L 1010.00,492.46 L 1035.00,495.32 L 1060.00,496.83" fill="none" stroke="#1768ac" stroke-width="3"/>
+<path d="M 110.00,514.63 L 135.00,546.55 L 160.00,579.23 L 185.00,610.46 L 210.00,638.92 L 235.00,663.74 L 260.00,684.35 L 285.00,700.40 L 310.00,711.73 L 335.00,718.34 L 360.00,720.34 L 385.00,718.00 L 410.00,711.65 L 435.00,701.73 L 460.00,688.73 L 485.00,673.19 L 510.00,655.69 L 535.00,636.83 L 560.00,617.18 L 585.00,597.33 L 610.00,577.81 L 635.00,559.11 L 660.00,541.69 L 685.00,525.89 L 710.00,512.03 L 735.00,500.30 L 760.00,490.85 L 785.00,483.72 L 810.00,478.86 L 835.00,476.15 L 860.00,475.39 L 885.00,476.31 L 910.00,478.58 L 935.00,481.82 L 960.00,485.60 L 985.00,489.48 L 1010.00,492.99 L 1035.00,495.64 L 1060.00,496.90" fill="none" stroke="#c44536" stroke-width="3" stroke-dasharray="10 7"/>
+<line x1="790" y1="46" x2="845" y2="46" stroke="#1768ac" stroke-width="4"/>
+<text class="legend" x="858" y="51">Analytic classical</text>
+<line x1="790" y1="74" x2="845" y2="74" stroke="#c44536" stroke-width="4" stroke-dasharray="10 7"/>
+<text class="legend" x="858" y="79">Numerical classical</text>
+<text class="axis-label" x="550.0" y="798.0" text-anchor="middle">k = l1 = l2</text>
+<text class="axis-label" x="28" y="410.0" transform="rotate(-90 28 410.0)" text-anchor="middle">Disk classical correction</text>
+</svg>

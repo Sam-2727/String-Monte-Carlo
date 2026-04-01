@@ -324,8 +324,9 @@ def mat_t_prime(T: np.ndarray) -> np.ndarray:
       T'[1,0] = T[1,0] + T[2,0] - T[1,2] - T[2,2]
       T'[1,1] = T[1,1] + T[2,1] + T[1,2] + T[2,2]
     """
-    sgn = np.array([-1.0, 1.0])
-    Tp = np.empty((2, 2))
+    dtype = np.result_type(T.dtype, np.float64)
+    sgn = np.array([-1.0, 1.0], dtype=dtype)
+    Tp = np.empty((2, 2), dtype=dtype)
     for i in range(2):
         for j in range(2):
             Tp[i, j] = (T[i, j]

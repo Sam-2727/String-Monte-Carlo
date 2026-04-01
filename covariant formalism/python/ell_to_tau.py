@@ -1284,9 +1284,9 @@ def periods_improved(L: int, l1: int, l2: int, f=None):
 def periods(L: int,
                          l1: int,
                          l2: int,
-                         m1: int | None = None,
-                         m2: int | None = None,
-                         m3: int | None = None):
+                         m1: float | None = None,
+                         m2: float | None = None,
+                         m3: float | None = None):
     """
     PeriodsFastGivenF with signature (L, l1, l2, f, m1=None, m2=None, m3=None).
 
@@ -1334,9 +1334,9 @@ def periods(L: int,
             acc = acc * w + a
         return w * acc
 
-    k1 = int(m1)
-    k2 = int(l1 + m2)
-    k3 = int(l1 + l2 + m3)
+    k1 = float(m1)
+    k2 = float(l1 + m2)
+    k3 = float(l1 + l2 + m3)
 
     def exp_angle(s: float) -> np.complex128:
         return np.complex128(np.exp(2j * np.pi * (s / L)))
@@ -1358,9 +1358,9 @@ def periods_given_f(L: int,
                          l1: int,
                          l2: int,
                          f,
-                         m1: int | None = None,
-                         m2: int | None = None,
-                         m3: int | None = None):
+                         m1: float | None = None,
+                         m2: float | None = None,
+                         m3: float | None = None):
     """
     PeriodsFastGivenF with signature (L, l1, l2, f, m1=None, m2=None, m3=None).
 
@@ -1408,9 +1408,9 @@ def periods_given_f(L: int,
             acc = acc * w + a
         return w * acc
 
-    k1 = int(m1)
-    k2 = int(l1 + m2)
-    k3 = int(l1 + l2 + m3)
+    k1 = float(m1)
+    k2 = float(l1 + m2)
+    k3 = float(l1 + l2 + m3)
 
     def exp_angle(s: float) -> np.complex128:
         return np.complex128(np.exp(2j * np.pi * (s / L)))
