@@ -381,7 +381,7 @@ R\Theta(4i R^2 T')= R^{-1}\Theta(4i R^{-2} T')
 \fe
 and this has been checked numerically. We also checked numerically that the ratio between partition functions at different $R$ and the same moduli matches with the analytical value:
 \ie
-\frac{Z(l_i; R_1)}{Z(l_i;R_2)}=\frac{Z_\text{comp}(\tau(l_i),R_1)}{Z_\text{comp}(\tau(l_i),R_1)},\quad Z_\text{comp}(\tau, R)=\frac{1}{\sqrt{\tau_2}|\eta(\tau)|^2}\sum_{m,n}e^{-\frac{\pi R^2}{\tau_2}|m\tau-n|^2}
+\frac{Z(l_i; R_1)}{Z(l_i;R_2)}=\frac{Z_\text{comp}(\tau(l_i),R_1)}{Z_\text{comp}(\tau(l_i),R_2)},\quad Z_\text{comp}(\tau, R)=\frac{1}{\sqrt{\tau_2}|\eta(\tau)|^2}\sum_{m,n}e^{-\frac{\pi R^2}{\tau_2}|m\tau-n|^2}
 \fe
 
 \subsection{Compact boson: one point function on the disc in the discretized scheme}
@@ -912,6 +912,16 @@ where the additional factor $R^{2-2g}$ comes from the dilaton shift in the Busch
 R^g \Theta(4 i R^2 T')= R^{-g} \Theta(4 i R^{-2} T')
 \fe
 which has been tested numerically for all 4 topologies of genus 2 and all 818 topologies of genus 3. For genus 4, enumerating and storing all ribbon graph data becomes a problem, but T-duality has been checked for a single topology.
+
+For genus $g$, the compact boson partition function $Z^{(g)}(\Omega, R)$ can be expressed in a lattice sum involving the period matrix $\Omega$:
+\ie
+Z_\text{comp}^{(g)}(\Omega, R)=2\pi R Z_\text{bos}^{(g)}(\Omega)\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)
+\fe
+where the free boson partition function $Z_\text{bos}(\Omega)$ does not depend on the radius $R$. In term of $T'$,
+\ie
+\frac{\Theta(4 i R^2_1 T')}{\Theta(4 i R^2_2 T')}=\frac{\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2_1(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)}{\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2_2(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)}
+\fe
+and this has been checked for genus 2 using codes in \texttt{compact\_partition.py} and \texttt{ell\_to\_tau.py}.
 
 \section{Analytic construction}
 
