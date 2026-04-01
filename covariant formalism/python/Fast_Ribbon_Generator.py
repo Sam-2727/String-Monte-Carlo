@@ -584,6 +584,63 @@ def generate_ribbon_graphs_fixed_genus(genus, n_faces=1, verbose=False, workers=
 # Disc boundary output
 # ============================================================
 
+def get_face_boundary_data(rg):
+    """Get boundary/gluing data for every face of a ribbon graph.
+
+    Returns dict with:
+        'face_boundaries': list of face boundaries as (from, to, edge_label) triples
+        'face_edge_sequences': list of edge-label sequences around each face
+        'face_vertex_sequences': list of vertex sequences around each face
+        'gluing': dict mapping edge_label -> ((face1, pos1), (face2, pos2))
+        'gluing_pairs': list of (edge_label, face1, pos1, face2, pos2)
+    All indices in the returned payload are 1-indexed.
+    """
+    edges, verts, rotation = rg
+    raw_faces = _get_all_face_boundaries(edges, verts, rotation)
+
+    face_boundaries = []
+    face_edge_sequences = []
+    face_vertex_sequences = []
+    edge_positions = defaultdict(list)
+
+    for face_idx, face in enumerate(raw_faces, start=1):
+        labeled_face = []
+        edge_seq = []
+        vert_seq = []
+        for pos_idx, (frm, to, eidx) in enumerate(face, start=1):
+            edge_label = eidx + 1
+            labeled_face.append((frm, to, edge_label))
+            edge_seq.append(edge_label)
+            vert_seq.append(frm)
+            edge_positions[edge_label].append((face_idx, pos_idx))
+
+        face_boundaries.append(tuple(labeled_face))
+        face_edge_sequences.append(tuple(edge_seq))
+        face_vertex_sequences.append(tuple(vert_seq))
+
+    gluing = {}
+    for edge_label, positions in edge_positions.items():
+        if len(positions) != 2:
+            raise ValueError(
+                f"Expected edge {edge_label} to appear twice across face boundaries, "
+                f"got {len(positions)} times"
+            )
+        gluing[edge_label] = tuple(positions)
+
+    gluing_pairs = [
+        (edge_label, pos1[0], pos1[1], pos2[0], pos2[1])
+        for edge_label, (pos1, pos2) in sorted(gluing.items())
+    ]
+
+    return {
+        "face_boundaries": tuple(face_boundaries),
+        "face_edge_sequences": tuple(face_edge_sequences),
+        "face_vertex_sequences": tuple(face_vertex_sequences),
+        "gluing": gluing,
+        "gluing_pairs": tuple(gluing_pairs),
+    }
+
+
 def get_disc_boundary(rg):
     """Get disc boundary data for an F=1 ribbon graph.
 
@@ -593,17 +650,24 @@ def get_disc_boundary(rg):
         'vertex_sequence': list of vertex labels around disc
         'sewing': dict mapping edge_label -> (pos1, pos2) (1-indexed positions)
     """
-    edges, verts, rotation = rg
-    boundary = _trace_boundary(edges, verts, rotation)
+    face_data = get_face_boundary_data(rg)
+    if len(face_data["face_boundaries"]) != 1:
+        raise ValueError("get_disc_boundary is only defined for one-face ribbon graphs")
 
-    edge_seq = [e + 1 for _, _, e in boundary]
-    vert_seq = [f for f, _, _ in boundary]
-
-    edge_pos = defaultdict(list)
-    for i, (_, _, e) in enumerate(boundary):
-        edge_pos[e].append(i + 1)  # 1-indexed
-
-    sewing = {e + 1: tuple(positions) for e, positions in edge_pos.items()}
+    boundary = tuple(
+        (frm, to, edge_label - 1)
+        for frm, to, edge_label in face_data["face_boundaries"][0]
+    )
+    edge_seq = list(face_data["face_edge_sequences"][0])
+    vert_seq = list(face_data["face_vertex_sequences"][0])
+    sewing = {}
+    for edge_label, positions in sorted(face_data["gluing"].items()):
+        (face1, pos1), (face2, pos2) = positions
+        if face1 != 1 or face2 != 1:
+            raise ValueError(
+                "One-face ribbon graph should glue boundary segments within face 1 only"
+            )
+        sewing[edge_label] = (pos1, pos2)
 
     return {
         'boundary': boundary,
@@ -613,12 +677,18 @@ def get_disc_boundary(rg):
     }
 
 
-def get_graph_and_sewing_data(rg):
-    """Return essential output data: labeled edges and sewing pairs (for F=1)."""
+def get_graph_and_boundary_data(rg):
+    """Return essential output data for arbitrary face count."""
     edges, verts, rotation = rg
     nf = _count_faces(edges, verts, rotation)
+    face_data = get_face_boundary_data(rg)
     data = {
         "edges": [(i + 1, a, b) for i, (a, b) in enumerate(edges)],
+        "n_faces": nf,
+        "face_boundaries": face_data["face_boundaries"],
+        "face_edge_sequences": face_data["face_edge_sequences"],
+        "face_vertex_sequences": face_data["face_vertex_sequences"],
+        "gluing_pairs": face_data["gluing_pairs"],
         "sewing_pairs": None,
     }
     if nf == 1:
@@ -627,12 +697,17 @@ def get_graph_and_sewing_data(rg):
     return data
 
 
+def get_graph_and_sewing_data(rg):
+    """Backward-compatible alias for the generalized essential-output helper."""
+    return get_graph_and_boundary_data(rg)
+
+
 def generate_essential_data_fixed_genus(genus, n_faces=1, verbose=False, workers=None):
-    """Generate essential output data only (edges + sewing pairs)."""
+    """Generate essential output data for arbitrary face count."""
     rgs = generate_ribbon_graphs_fixed_genus(
         genus, n_faces=n_faces, verbose=verbose, workers=workers
     )
-    return [get_graph_and_sewing_data(rg) for rg in rgs]
+    return [get_graph_and_boundary_data(rg) for rg in rgs]
 
 
 def get_ribbon_graph_report(rg):

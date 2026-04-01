@@ -157,6 +157,72 @@ class TestRibbonGraphGenerator(unittest.TestCase):
                         self.assertTrue(1 <= p2 <= 2 * ne)
         self._pass_test("test_disc_boundary_invariants_for_f1_graphs")
 
+    def test_face_boundary_invariants_for_multi_face_graphs(self):
+        # Content: generalized face-boundary payload for F>1 graphs.
+        # Expected/cross-check: total boundary length is 2E and each edge appears twice globally.
+        # Pass condition: all generalized face/gluing invariants hold.
+        self._start_test(
+            "test_face_boundary_invariants_for_multi_face_graphs",
+            "Validate generalized face-boundary/gluing payload for multi-face ribbon graphs.",
+            "Across all faces, the total segment count is 2E and every edge appears exactly twice.",
+        )
+        cases = [(1, 2), (1, 3), (2, 2)]
+        for genus, n_faces in cases:
+            with self.subTest(genus=genus, n_faces=n_faces):
+                self._label(
+                    "PRODUCTION",
+                    f"Checking generalized face-boundary invariants for (g={genus}, F={n_faces}).",
+                )
+                rgs = rgg.generate_ribbon_graphs_fixed_genus(genus, n_faces=n_faces)
+                for rg in rgs[:5]:
+                    data = rgg.get_face_boundary_data(rg)
+                    ne = len(rg[0])
+                    self.assertEqual(len(data["face_boundaries"]), n_faces)
+                    self.assertEqual(sum(len(face) for face in data["face_boundaries"]), 2 * ne)
+                    self.assertEqual(len(data["face_edge_sequences"]), n_faces)
+                    self.assertEqual(len(data["face_vertex_sequences"]), n_faces)
+                    self.assertEqual(len(data["gluing"]), ne)
+                    self.assertEqual(len(data["gluing_pairs"]), ne)
+
+                    for edge_label, positions in data["gluing"].items():
+                        self.assertTrue(1 <= edge_label <= ne)
+                        self.assertEqual(len(positions), 2)
+                        for face_idx, pos_idx in positions:
+                            self.assertTrue(1 <= face_idx <= n_faces)
+                            self.assertTrue(1 <= pos_idx <= len(data["face_boundaries"][face_idx - 1]))
+
+                    for face, edge_seq, vert_seq in zip(
+                        data["face_boundaries"],
+                        data["face_edge_sequences"],
+                        data["face_vertex_sequences"],
+                    ):
+                        self.assertEqual(len(face), len(edge_seq))
+                        self.assertEqual(len(face), len(vert_seq))
+                        self.assertEqual(
+                            tuple(edge for _, _, edge in face),
+                            edge_seq,
+                        )
+                        self.assertEqual(
+                            tuple(frm for frm, _, _ in face),
+                            vert_seq,
+                        )
+        self._pass_test("test_face_boundary_invariants_for_multi_face_graphs")
+
+    def test_get_disc_boundary_rejects_non_f1_graphs(self):
+        # Content: disc-boundary helper should reject multi-face inputs.
+        # Expected/cross-check: ValueError is raised for F>1 ribbon graphs.
+        # Pass condition: exception is raised.
+        self._start_test(
+            "test_get_disc_boundary_rejects_non_f1_graphs",
+            "Call get_disc_boundary on a multi-face ribbon graph.",
+            "Cross-check the helper raises ValueError instead of silently returning one face.",
+        )
+        self._label("PRODUCTION", "Checking get_disc_boundary rejects non-F=1 inputs.")
+        rg = rgg.generate_ribbon_graphs_fixed_genus(1, n_faces=2)[0]
+        with self.assertRaises(ValueError):
+            rgg.get_disc_boundary(rg)
+        self._pass_test("test_get_disc_boundary_rejects_non_f1_graphs")
+
     def test_no_base_graphs_for_unsupported_size(self):
         # Content: unsupported (F,E) should return no graphs.
         # Expected/cross-check: generation returns empty list.
@@ -338,6 +404,38 @@ class TestRibbonGraphGenerator(unittest.TestCase):
         generated = rgg.generate_ribbon_graphs(4, 6)
         self.assertEqual(len(independent_unique), len(generated))
         self._pass_test("test_independent_enumeration_matches_generator_k4_planar")
+
+    def test_generalized_essential_data_for_multi_face_fixed_genus(self):
+        # Content: essential fixed-genus payload should stay useful for F>1.
+        # Expected/cross-check: generalized face-boundary keys are populated and sewing_pairs stays None.
+        # Pass condition: schema and small invariants hold on sampled outputs.
+        self._start_test(
+            "test_generalized_essential_data_for_multi_face_fixed_genus",
+            "Generate essential payloads for fixed genus with multiple faces.",
+            "Cross-check generalized face-boundary keys are present and internally consistent.",
+        )
+        self._label(
+            "PRODUCTION",
+            "Checking generalized essential payloads for (g=1, F=2).",
+        )
+        data_all = rgg.generate_essential_data_fixed_genus(1, n_faces=2)
+        self.assertGreater(len(data_all), 0)
+        for data in data_all[:5]:
+            self.assertIn("edges", data)
+            self.assertIn("n_faces", data)
+            self.assertIn("face_boundaries", data)
+            self.assertIn("face_edge_sequences", data)
+            self.assertIn("face_vertex_sequences", data)
+            self.assertIn("gluing_pairs", data)
+            self.assertIn("sewing_pairs", data)
+            self.assertEqual(data["n_faces"], 2)
+            self.assertIsNone(data["sewing_pairs"])
+            self.assertEqual(len(data["gluing_pairs"]), len(data["edges"]))
+            self.assertEqual(
+                sum(len(face) for face in data["face_boundaries"]),
+                2 * len(data["edges"]),
+            )
+        self._pass_test("test_generalized_essential_data_for_multi_face_fixed_genus")
 
 
 if __name__ == "__main__":
