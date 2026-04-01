@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1775000817 "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" "string MC.pdf" "string MC" 1775000818
-  "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" 1775000817 53631 8067b0bf3c106ba8da8fa17d4b18f5c2 ""
+["pdflatex"] 1775053385 "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" "string MC.pdf" "string MC" 1775053386
+  "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" 1775053385 61487 75b3a0612a06fa225726f37709b14d7f ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -45,6 +45,7 @@
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb" 1248133631 32626 4f5c1b83753b1dd3a97d1b399a005b4b ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb" 1248133631 32442 c975af247b6702f7ca0c299af3616b80 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb" 1248133631 24252 1e4e051947e12dfb50fee0b7f4e26e3a ""
+  "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb" 1248133631 30273 87a352d78b6810ae5cfdc68d2fb827b2 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1248133631 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
   "/usr/local/texlive/2022/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1461363279 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/local/texlive/2022/texmf-dist/tex/generic/atbegshi/atbegshi.sty" 1575674566 24708 5584a51a7101caf7e6bbf1fc27d8f7b1 ""
@@ -133,9 +134,9 @@
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
   "draft.sty" 1774887426 3101 b2101cd70e599fb000b7a44dbb94ae90 ""
   "figures/mapping_diagram.pdf" 1774887426 85536 242efa15f291a79f8e4b50714b22907c ""
-  "string MC.aux" 1775000818 5376 7691bdfaa4a7fc101b0fd6c4f8d2a79f "pdflatex"
-  "string MC.out" 1775000818 3861 55413d074b678f8caef6a2edb4e0416d "pdflatex"
-  "string MC.tex" 1775000817 53631 8067b0bf3c106ba8da8fa17d4b18f5c2 ""
+  "string MC.aux" 1775053385 5682 4c9932888af4cf4e8904beef61b8ca4f "pdflatex"
+  "string MC.out" 1775053385 4307 6ee340807058d85e67f5d9ede8a8ce40 "pdflatex"
+  "string MC.tex" 1775053385 61487 75b3a0612a06fa225726f37709b14d7f ""
   (generated)
   "string MC.aux"
   "string MC.log"
