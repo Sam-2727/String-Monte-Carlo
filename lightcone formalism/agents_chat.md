@@ -1602,3 +1602,30 @@ It is the actual spin-structure/GSO plus zero-mode assembly.
 
 Automated regression status is now:
 - `73/73` passing in `numerical_suite.py`
+
+---
+
+# Development update (2026-04-01)
+
+## GitHub issue #2: geometry of $I_+$ and $I_-$
+
+The notes now answer the structural question explicitly. The current finite-$a$
+scheme is **not** being reformulated around a single distinguished lattice
+point at the join. Instead, we keep:
+
+- the exact site-by-site cubic sewing as the ordered concatenation of the three
+  boundaries, and
+- the local interaction as a resolved bond-centered region supported on the pair
+  $(I_+,I_-)$ and the adjacent one-sided arc data.
+
+This is now stated directly in both notes. The practical meaning is:
+
+- $I_+$ and $I_-$ are the two unfolded-strip representatives of one continuum
+  branch point,
+- they remain distinct at finite lattice spacing,
+- their difference is genuine local join data,
+- and the finite-$a$ ambiguity is assigned to the local prefactor / counterterm
+  problem rather than to the kinematic overlap itself.
+
+This resolves the immediate documentation issue and fixes the working
+conceptual stance for the next stages of the local superstring rebuild.
