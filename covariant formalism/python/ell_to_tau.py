@@ -4,6 +4,7 @@ import numpy as np
 import partition_function as pf
 import sympy as sp
 from typing import Callable, Iterable, Sequence, Tuple
+from itertools import combinations, product
 
 import mpmath as mp
 from scipy.integrate import quad
@@ -1133,7 +1134,7 @@ def period_matrix(*, forms=None, ribbon_graph=None, ell_list=None,
     1. Higher genus / general case:
          period_matrix(forms=[omega_1, ..., omega_g], ribbon_graph=rg, ell_list=[...])
        If ribbon_graph/ell_list are omitted, the first form must carry the
-       higher-genus metadata attached by make_cyl_eqn_improved_higher_genus.
+       higher-genus metadata attached by imimproved_higher_genus.
 
     2. Genus-1 convenience case:
          period_matrix(L=L, l1=l1, l2=l2)
@@ -1228,6 +1229,853 @@ def period_matrix(*, forms=None, ribbon_graph=None, ell_list=None,
     if Omega.shape == (1, 1):
         return np.complex128(Omega[0, 0])
     return Omega
+
+
+def _theta_graph_ribbon():
+    """Canonical theta-graph ribbon data used throughout the genus-1 helpers."""
+    return (
+        [(1, 2), (1, 2), (1, 2)],
+        [1, 2],
+        {1: [0, 1, 2], 2: [0, 1, 2]},
+    )
+
+
+def _theta_graph_lengths(L: int, l1: int, l2: int) -> tuple[int, int, int]:
+    """Return (m, l1, l2, l3) consistency data for the genus-1 theta graph."""
+    if L % 2 != 0:
+        raise ValueError("L must be even.")
+    m = L // 2
+    l3 = m - l1 - l2
+    if l3 < 0:
+        raise ValueError("Need l1 + l2 <= L/2.")
+    return m, int(l1), int(l2), int(l3)
+
+
+def _theta_graph_prevertex_data(L: int, l1: int, l2: int):
+    """
+    Singular-point data for make_cyl_eqn_improved on the theta graph.
+
+    This is the exact singular-point convention underlying calculate_b:
+    the generic case has 6 cubic prevertices, while the degenerate
+    l_i = 0 case has 4 square-root singularities.
+    """
+    m, l1, l2, l3 = _theta_graph_lengths(L, l1, l2)
+
+    if l1 == 0 or l2 == 0 or l3 == 0:
+        pts = np.array(
+            [
+                1.0,
+                np.exp(2j * np.pi * l1 / L),
+                -1.0,
+                -np.exp(2j * np.pi * l1 / L),
+            ],
+            dtype=np.complex128,
+        )
+        return {
+            "singular_points": pts,
+            "regularization_power": 1 / 2,
+            "boundary": None,
+            "starts": None,
+            "groups": None,
+            "ell_list": [int(l1), int(l2), int(l3)],
+        }
+
+    ribbon_graph = _theta_graph_ribbon()
+    ell_list = [int(l1), int(l2), int(l3)]
+    boundary, _, _ = _boundary_edge_chord_data(ribbon_graph)
+    starts = tuple(_build_starts_from_boundary(boundary, ell_list))
+    singular_points = np.exp(2j * np.pi * np.asarray(starts, dtype=np.float64) / L).astype(
+        np.complex128, copy=False
+    )
+    groups = _surface_vertex_groups_from_boundary(boundary)
+    return {
+        "singular_points": singular_points,
+        "regularization_power": 1 / 3,
+        "boundary": boundary,
+        "starts": starts,
+        "groups": groups,
+        "ell_list": ell_list,
+    }
+
+
+def _ensure_form_list(forms):
+    """Normalize a single callable or iterable of callables into a list."""
+    if callable(forms):
+        return [forms]
+    return list(forms)
+
+
+def _surface_vertex_groups_from_boundary(boundary):
+    """Group singular boundary start-points by their surface vertex label."""
+    groups = {}
+    for idx, (frm, _, _) in enumerate(boundary):
+        groups.setdefault(int(frm), []).append(int(idx))
+    return {int(vid): tuple(int(i) for i in idxs) for vid, idxs in groups.items()}
+
+
+def _make_prevertex_singular_form(
+    coeffs,
+    singular_points,
+    *,
+    regularization_power: float,
+    chop_tol: float = 1e-12,
+    metadata: dict | None = None,
+):
+    """
+    Build a callable of the usual improved-form shape
+        f(z) -> (singular_factor, regular_polynomial)
+    from explicit singular points and polynomial coefficients.
+    """
+    coeffs = np.asarray(coeffs, dtype=np.complex128).copy()
+    points = np.asarray(singular_points, dtype=np.complex128).copy()
+    meta = {} if metadata is None else dict(metadata)
+
+    def f(z):
+        z = np.complex128(z)
+        singular = np.prod((1.0 - z / points) ** (-regularization_power))
+        acc = np.complex128(0.0)
+        for c in coeffs[::-1]:
+            acc = acc * z + c
+        re = 0.0 if abs(acc.real) < chop_tol else acc.real
+        im = 0.0 if abs(acc.imag) < chop_tol else acc.imag
+        poly = np.complex128(re + 1j * im)
+
+        s_re = 0.0 if abs(singular.real) < chop_tol else singular.real
+        s_im = 0.0 if abs(singular.imag) < chop_tol else singular.imag
+        return np.complex128(s_re + 1j * s_im), poly
+
+    f.coeffs = coeffs
+    f.singular_points = points
+    f.regularization_power = float(regularization_power)
+    for key, value in meta.items():
+        setattr(f, key, value)
+    return f
+
+
+def _infer_prevertex_geometry_from_forms(forms, *, ribbon_graph=None, ell_list=None):
+    """
+    Infer singular-point / boundary metadata for improved forms.
+
+    Supported inputs:
+    - higher-genus forms from make_cyl_eqn_improved_higher_genus
+    - genus-1 forms from make_cyl_eqn_improved via their (L,l1,l2) metadata
+    """
+    forms = _ensure_form_list(forms)
+    if not forms:
+        raise ValueError("Need at least one form.")
+    ref = forms[0]
+
+    if ribbon_graph is not None:
+        if ell_list is None:
+            raise ValueError("If ribbon_graph is provided, ell_list is also required.")
+        boundary, _, chord_data = _boundary_edge_chord_data(ribbon_graph)
+        starts = tuple(_build_starts_from_boundary(boundary, ell_list))
+        singular_points = np.exp(
+            2j * np.pi * np.asarray(starts, dtype=np.float64) / (2 * sum(ell_list))
+        ).astype(np.complex128, copy=False)
+        return {
+            "boundary": boundary,
+            "starts": starts,
+            "groups": _surface_vertex_groups_from_boundary(boundary),
+            "singular_points": singular_points,
+            "regularization_power": float(getattr(ref, "regularization_power", 1 / 3)),
+            "ell_list": list(int(x) for x in ell_list),
+        }
+
+    singular_points = getattr(ref, "singular_points", None)
+    boundary = getattr(ref, "boundary", None)
+    starts = getattr(ref, "starts", None)
+    if singular_points is not None:
+        if boundary is not None:
+            groups = _surface_vertex_groups_from_boundary(boundary)
+        else:
+            groups = None
+        return {
+            "boundary": boundary,
+            "starts": tuple(starts) if starts is not None else None,
+            "groups": groups,
+            "singular_points": np.asarray(singular_points, dtype=np.complex128),
+            "regularization_power": float(getattr(ref, "regularization_power", 1 / 3)),
+            "ell_list": None,
+        }
+
+    L = getattr(ref, "L", None)
+    l1 = getattr(ref, "l1", None)
+    l2 = getattr(ref, "l2", None)
+    if L is None or l1 is None or l2 is None:
+        raise ValueError(
+            "Could not infer singular-point data from the supplied forms. "
+            "Pass ribbon_graph=... and ell_list=..., or use forms carrying "
+            "singular_points / (L,l1,l2) metadata."
+        )
+    return _theta_graph_prevertex_data(int(L), int(l1), int(l2))
+
+
+def normalize_holomorphic_forms(
+    forms,
+    *,
+    ribbon_graph=None,
+    ell_list=None,
+    basis_pairs=None,
+    custom_cycles=None,
+    return_data: bool = False,
+):
+    """
+    A-normalize a basis of holomorphic one-forms.
+
+    If the input forms carry polynomial/singular-point metadata, the returned
+    normalized forms are rebuilt as the same improved-form type so they can be
+    used by the local-nu extraction code. For a single genus-1 form, this is
+    simply division by its A-period.
+    """
+    forms = _ensure_form_list(forms)
+    pdata = period_matrix(
+        forms=forms,
+        ribbon_graph=ribbon_graph,
+        ell_list=ell_list,
+        basis_pairs=basis_pairs,
+        custom_cycles=custom_cycles,
+        return_data=True,
+    )
+    A = np.asarray(pdata["A_periods"], dtype=np.complex128)
+    transform = np.linalg.inv(A)
+    geom = _infer_prevertex_geometry_from_forms(forms, ribbon_graph=ribbon_graph, ell_list=ell_list)
+
+    normalized_forms = []
+    for i in range(transform.shape[0]):
+        weights = transform[i, :]
+        coeffs = None
+        if all(getattr(f, "coeffs", None) is not None for f in forms):
+            coeffs = np.zeros_like(np.asarray(forms[0].coeffs, dtype=np.complex128))
+            for weight, f in zip(weights, forms):
+                coeffs = coeffs + np.complex128(weight) * np.asarray(f.coeffs, dtype=np.complex128)
+
+        metadata = {
+            "normalized_by_A": True,
+            "normalization_weights": np.asarray(weights, dtype=np.complex128),
+            "boundary": geom["boundary"],
+            "starts": geom["starts"],
+            "genus": len(forms),
+        }
+        if geom["ell_list"] is not None:
+            metadata["ell_list"] = tuple(int(x) for x in geom["ell_list"])
+
+        if coeffs is not None:
+            normalized_forms.append(
+                _make_prevertex_singular_form(
+                    coeffs,
+                    geom["singular_points"],
+                    regularization_power=geom["regularization_power"],
+                    metadata=metadata,
+                )
+            )
+            continue
+
+        # Fallback path: preserve numerical action, but without coefficient metadata.
+        def _make_linear_form(weights_row):
+            def f(z):
+                total = np.complex128(0.0)
+                for w, base in zip(weights_row, forms):
+                    total += np.complex128(w) * _evaluate_pulled_back_one_form(base, z)
+                return total
+
+            for key, value in metadata.items():
+                setattr(f, key, value)
+            return f
+
+        normalized_forms.append(_make_linear_form(weights.copy()))
+
+    if return_data:
+        out = dict(pdata)
+        out["normalized_forms"] = normalized_forms
+        out["A_normalization_matrix"] = transform
+        return out
+    return normalized_forms
+
+
+def _raw_local_nu_from_coeffs(coeffs, singular_points, regularization_power):
+    """Exact regularized local coefficients from the singular-factor ansatz."""
+    coeffs = np.asarray(coeffs, dtype=np.complex128)
+    points = np.asarray(singular_points, dtype=np.complex128)
+    n_pts = points.size
+    out = np.zeros(n_pts, dtype=np.complex128)
+
+    for a, z in enumerate(points):
+        prefactor = np.complex128(1.0)
+        for b, w in enumerate(points):
+            if b == a:
+                continue
+            prefactor *= (1.0 - z / w) ** (-regularization_power)
+        out[a] = prefactor * _poly_eval(coeffs, z)
+    return out
+
+
+def calculate_nu(
+    *,
+    forms=None,
+    ribbon_graph=None,
+    ell_list=None,
+    L: int | None = None,
+    l1: int | None = None,
+    l2: int | None = None,
+    normalize_A: bool = False,
+    basis_pairs=None,
+    custom_cycles=None,
+    return_data: bool = False,
+):
+    """
+    Compute the regularized local coefficients nu.
+
+    Genus-1 theta-graph usage:
+        calculate_nu(L=L, l1=l1, l2=l2)
+    returns the exact same list as calculate_b.
+
+    Higher-genus usage:
+        calculate_nu(forms=[omega_1,...,omega_g], ribbon_graph=rg, ell_list=[...])
+    returns a matrix of shape (g, n_prevertices), where entry (I,a) is
+        nu_{I,a} = lim_{z->z_a} (1-z/z_a)^p \\hat f_I(z)
+    with p = 1/3 for the current cubic higher-genus construction.
+    """
+    if forms is None:
+        if L is None or l1 is None or l2 is None:
+            raise ValueError("Provide either forms=... or the genus-1 data (L, l1, l2).")
+        base_form = make_cyl_eqn_improved(int(L), int(l1), int(l2))
+        forms = [base_form]
+        geom = _theta_graph_prevertex_data(int(L), int(l1), int(l2))
+        if normalize_A:
+            norm_data = normalize_holomorphic_forms(
+                forms,
+                ribbon_graph=_theta_graph_ribbon() if geom["boundary"] is not None else None,
+                ell_list=geom["ell_list"] if geom["boundary"] is not None else None,
+                basis_pairs=basis_pairs,
+                custom_cycles=custom_cycles,
+                return_data=True,
+            )
+            forms = norm_data["normalized_forms"]
+            geom = _infer_prevertex_geometry_from_forms(forms)
+        matrix = np.asarray(
+            [
+                _raw_local_nu_from_coeffs(
+                    np.asarray(forms[0].coeffs, dtype=np.complex128),
+                    geom["singular_points"],
+                    geom["regularization_power"],
+                )
+            ],
+            dtype=np.complex128,
+        )
+        if return_data:
+            return {
+                "nu_matrix": matrix,
+                "singular_points": geom["singular_points"],
+                "regularization_power": geom["regularization_power"],
+                "groups": geom["groups"],
+                "forms": forms,
+            }
+        return list(matrix[0])
+
+    forms = _ensure_form_list(forms)
+    if normalize_A:
+        norm_data = normalize_holomorphic_forms(
+            forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=ell_list,
+            basis_pairs=basis_pairs,
+            custom_cycles=custom_cycles,
+            return_data=True,
+        )
+        forms = norm_data["normalized_forms"]
+    geom = _infer_prevertex_geometry_from_forms(forms, ribbon_graph=ribbon_graph, ell_list=ell_list)
+
+    matrix = []
+    for f in forms:
+        coeffs = getattr(f, "coeffs", None)
+        if coeffs is None:
+            raise ValueError("calculate_nu currently requires forms carrying .coeffs metadata.")
+        matrix.append(
+            _raw_local_nu_from_coeffs(coeffs, geom["singular_points"], geom["regularization_power"])
+        )
+    matrix = np.asarray(matrix, dtype=np.complex128)
+
+    if return_data:
+        return {
+            "nu_matrix": matrix,
+            "singular_points": geom["singular_points"],
+            "regularization_power": geom["regularization_power"],
+            "groups": geom["groups"],
+            "forms": forms,
+        }
+    return matrix
+
+
+def _align_group_by_overlap(columns: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Phase-align a set of nu-vectors by maximizing overlap with the first column.
+
+    This is a provisional higher-genus averaging rule. It is exact in the
+    trivial g=1 case up to the historical genus-1 phase convention, and for
+    g>1 it provides a stable numerical alignment when the three prevertex
+    vectors at a cubic vertex are already nearly proportional.
+    """
+    cols = np.asarray(columns, dtype=np.complex128)
+    if cols.ndim != 2:
+        raise ValueError("Expected a 2D array of shape (g, n_group).")
+    n_group = cols.shape[1]
+    aligned = np.zeros_like(cols)
+    phases = np.ones(n_group, dtype=np.complex128)
+    aligned[:, 0] = cols[:, 0]
+
+    ref = cols[:, 0]
+    ref_norm = np.linalg.norm(ref)
+    for j in range(1, n_group):
+        vec = cols[:, j]
+        if ref_norm <= 1e-15 or np.linalg.norm(vec) <= 1e-15:
+            phase = np.complex128(1.0)
+        else:
+            overlap = np.vdot(ref, vec)
+            phase = np.complex128(1.0) if abs(overlap) <= 1e-15 else np.exp(-1j * np.angle(overlap))
+        phases[j] = phase
+        aligned[:, j] = phase * vec
+    return aligned, phases
+
+
+def nu_group_proportionality_errors(nu_matrix, groups):
+    """
+    Measure how close the raw nu-vectors in each vertex-group are to
+    being scalar multiples of one another.
+
+    Exact holomorphic one-forms on the same surface vertex should make these
+    errors small. This is therefore a useful diagnostic when testing the
+    current higher-genus ansatz.
+    """
+    nu_matrix = np.asarray(nu_matrix, dtype=np.complex128)
+    out = {}
+    for key, idxs in groups.items():
+        cols = nu_matrix[:, list(idxs)]
+        ref = cols[:, 0]
+        ref_norm_sq = float(np.vdot(ref, ref).real)
+        errs = []
+        for j in range(1, cols.shape[1]):
+            vec = cols[:, j]
+            if ref_norm_sq <= 1e-30:
+                lam = np.complex128(0.0)
+            else:
+                lam = np.vdot(ref, vec) / ref_norm_sq
+            resid = vec - lam * ref
+            denom = max(np.linalg.norm(vec), np.linalg.norm(ref), 1e-30)
+            errs.append(float(np.linalg.norm(resid) / denom))
+        out[int(key)] = 0.0 if not errs else max(errs)
+    return out
+
+
+def average_nu(
+    *,
+    nus=None,
+    forms=None,
+    ribbon_graph=None,
+    ell_list=None,
+    L: int | None = None,
+    l1: int | None = None,
+    l2: int | None = None,
+    normalize_A: bool = False,
+    basis_pairs=None,
+    custom_cycles=None,
+    method: str = "auto",
+    return_data: bool = False,
+):
+    """
+    Average local nu-data.
+
+    Historical genus-1 theta-graph convention:
+        average_nu(L=..., l1=..., l2=...)
+    reproduces average_b(calculate_b(...)) exactly.
+
+    Higher genus:
+        average_nu(forms=[...], ribbon_graph=..., ell_list=..., method='overlap')
+    groups the raw nu-vectors by surface vertex and phase-aligns each triple
+    by overlap before averaging.
+    """
+    if nus is None:
+        if forms is None:
+            if L is None or l1 is None or l2 is None:
+                raise ValueError("Provide nus=..., forms=..., or the genus-1 data (L, l1, l2).")
+            raw = calculate_nu(L=L, l1=l1, l2=l2, normalize_A=normalize_A, return_data=True)
+            raw_matrix = np.asarray(raw["nu_matrix"], dtype=np.complex128)
+            if method == "auto":
+                method = "genus1_exact"
+            if method == "genus1_exact":
+                avg = np.asarray(
+                    average_b(int(L), int(l1), int(l2), list(raw_matrix[0])),
+                    dtype=np.complex128,
+                )
+                if return_data:
+                    return {
+                        "averaged_nu": avg,
+                        "raw_nu": raw_matrix,
+                        "method": "genus1_exact",
+                    }
+                return list(avg)
+            nus = raw
+        else:
+            nus = calculate_nu(
+                forms=forms,
+                ribbon_graph=ribbon_graph,
+                ell_list=ell_list,
+                normalize_A=normalize_A,
+                basis_pairs=basis_pairs,
+                custom_cycles=custom_cycles,
+                return_data=True,
+            )
+
+    if isinstance(nus, dict):
+        nu_matrix = np.asarray(nus["nu_matrix"], dtype=np.complex128)
+        groups = nus.get("groups")
+    else:
+        nu_matrix = np.asarray(nus, dtype=np.complex128)
+        groups = None
+
+    if method == "auto":
+        method = "overlap"
+    if method != "overlap":
+        raise ValueError(f"Unsupported higher-genus averaging method {method!r}.")
+    if groups is None:
+        raise ValueError("Higher-genus averaging needs explicit surface-vertex groups.")
+
+    averaged_cols = []
+    phase_data = {}
+    for key in sorted(groups):
+        idxs = tuple(int(i) for i in groups[key])
+        cols = nu_matrix[:, list(idxs)]
+        aligned, phases = _align_group_by_overlap(cols)
+        averaged_cols.append(np.mean(aligned, axis=1))
+        phase_data[int(key)] = phases
+    averaged = np.column_stack(averaged_cols) if averaged_cols else np.empty((nu_matrix.shape[0], 0))
+
+    if return_data:
+        return {
+            "averaged_nu": averaged,
+            "raw_nu": nu_matrix,
+            "groups": groups,
+            "group_errors": nu_group_proportionality_errors(nu_matrix, groups),
+            "phases": phase_data,
+            "method": method,
+        }
+    return averaged
+
+
+def quadratic_differential_nu_vectors(averaged_nu):
+    """
+    Build the genus-2 local quadratic-differential vectors
+        (nu_1^2, nu_1 nu_2, nu_2^2)
+    from averaged one-form coefficients.
+    """
+    averaged_nu = np.asarray(averaged_nu, dtype=np.complex128)
+    if averaged_nu.shape[0] != 2:
+        raise ValueError(
+            f"quadratic_differential_nu_vectors requires a genus-2 nu matrix. Got shape {averaged_nu.shape}."
+        )
+    nu1 = averaged_nu[0]
+    nu2 = averaged_nu[1]
+    return np.vstack([nu1**2, nu1 * nu2, nu2**2])
+
+
+def triple_determinants_from_nu(averaged_nu):
+    """
+    Compute all genus-2 triple determinants
+        Delta_{abc} = det(q_a, q_b, q_c)
+    from averaged local nu-vectors.
+    """
+    qvecs = quadratic_differential_nu_vectors(averaged_nu)
+    n_vertices = qvecs.shape[1]
+    out = {}
+    for triple in combinations(range(n_vertices), 3):
+        block = qvecs[:, list(triple)]
+        out[tuple(int(i) for i in triple)] = np.linalg.det(block)
+    return out
+
+
+def genus2_nu_factor_from_triples(
+    triple_dets,
+    *,
+    mode: str = "mean_abs_det2",
+    triple=None,
+):
+    """
+    Build a genus-2 local nu-factor from the triple determinants Delta_{abc}.
+
+    Parameters
+    ----------
+    triple_dets
+        Dictionary mapping triples (a,b,c) to Delta_{abc}.
+    mode
+        How to choose the local factor. Supported values are:
+        - 'mean_abs_det2' : arithmetic mean of |Delta|^2 over all triples
+        - 'max_abs_det'   : use the relabeling-invariant triple with largest |Delta|^2
+        - 'fixed_triple'  : use the explicitly supplied triple=(a,b,c)
+    triple
+        Explicit triple used when mode='fixed_triple'.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys:
+        - 'nu_factor'
+        - 'selected_triple'
+        - 'selected_value'
+        - 'mode'
+    """
+    if not triple_dets:
+        raise ValueError("Need at least one triple determinant to build a genus-2 nu-factor.")
+
+    abs_sq = {
+        tuple(int(i) for i in key): float(abs(val) ** 2)
+        for key, val in triple_dets.items()
+    }
+
+    if mode == "mean_abs_det2":
+        vals = np.asarray(list(abs_sq.values()), dtype=np.float64)
+        return {
+            "nu_factor": float(np.mean(vals)),
+            "selected_triple": None,
+            "selected_value": None,
+            "mode": mode,
+        }
+
+    if mode == "fixed_triple":
+        if triple is None:
+            raise ValueError("mode='fixed_triple' requires triple=(a,b,c).")
+        key = tuple(int(i) for i in triple)
+        if key not in abs_sq:
+            raise ValueError(
+                f"Requested triple {key} is not available. "
+                f"Available triples are {sorted(abs_sq)}."
+            )
+        return {
+            "nu_factor": abs_sq[key],
+            "selected_triple": key,
+            "selected_value": triple_dets[key],
+            "mode": mode,
+        }
+
+    if mode == "max_abs_det":
+        key = max(sorted(abs_sq), key=lambda k: abs_sq[k])
+        return {
+            "nu_factor": abs_sq[key],
+            "selected_triple": key,
+            "selected_value": triple_dets[key],
+            "mode": mode,
+        }
+
+    raise ValueError(f"Unsupported genus-2 nu-factor mode {mode!r}.")
+
+
+def symmetric_nu_triple_factor(averaged_nu):
+    """
+    Symmetric genus-2 candidate replacing the genus-1 |nu|^4 factor:
+    the average of |Delta_{abc}|^2 over all triples of cubic vertices.
+    """
+    triple_dets = triple_determinants_from_nu(averaged_nu)
+    if not triple_dets:
+        raise ValueError("Need at least three averaged cubic vertices to build triple determinants.")
+    vals = np.asarray([abs(v) ** 2 for v in triple_dets.values()], dtype=np.float64)
+    return float(np.mean(vals))
+
+
+def genus2_even_characteristics():
+    """Return the 10 even genus-2 theta characteristics in binary notation."""
+    chars = []
+    for a in product((0, 1), repeat=2):
+        for b in product((0, 1), repeat=2):
+            parity = (a[0] * b[0] + a[1] * b[1]) % 2
+            if parity == 0:
+                chars.append((tuple(int(x) for x in a), tuple(int(x) for x in b)))
+    return tuple(chars)
+
+
+def _theta_truncation_genus2(Omega, tol: float):
+    """
+    Choose a square lattice truncation for genus-2 theta constants from the
+    smallest eigenvalue of Im(Omega).
+    """
+    Omega = np.asarray(Omega, dtype=np.complex128)
+    im_omega = np.asarray(np.imag(Omega), dtype=np.float64)
+    evals = np.linalg.eigvalsh(im_omega)
+    lam_min = float(np.min(evals))
+    if lam_min <= 0:
+        raise ValueError("Need Im(Omega) positive definite to evaluate theta constants.")
+    tol = max(float(tol), 1e-16)
+    return max(4, int(np.ceil(np.sqrt(-np.log(tol) / (np.pi * lam_min)))) + 2)
+
+
+def riemann_theta_constant_genus2(
+    Omega,
+    characteristic,
+    *,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+):
+    """
+    Compute the genus-2 theta constant theta[delta](0|Omega) by direct lattice summation.
+
+    The characteristic is passed in binary notation:
+        characteristic = ((a1,a2), (b1,b2)),  ai,bi in {0,1}
+    corresponding to epsilon = a/2 and delta = b/2.
+    """
+    Omega = np.asarray(Omega, dtype=np.complex128)
+    if Omega.shape != (2, 2):
+        raise ValueError("riemann_theta_constant_genus2 requires a 2x2 period matrix.")
+    if nmax is None:
+        nmax = _theta_truncation_genus2(Omega, tol)
+
+    a_bits, b_bits = characteristic
+    eps = 0.5 * np.asarray(a_bits, dtype=np.float64)
+    delt = 0.5 * np.asarray(b_bits, dtype=np.float64)
+
+    rng = np.arange(-nmax, nmax + 1, dtype=np.float64)
+    n1, n2 = np.meshgrid(rng, rng, indexing="ij")
+    v1 = n1 + eps[0]
+    v2 = n2 + eps[1]
+
+    quad_form = (
+        Omega[0, 0] * v1 * v1
+        + 2.0 * Omega[0, 1] * v1 * v2
+        + Omega[1, 1] * v2 * v2
+    )
+    linear_part = 2.0 * (v1 * delt[0] + v2 * delt[1])
+    terms = np.exp(1j * np.pi * (quad_form + linear_part))
+    return np.complex128(np.sum(terms))
+
+
+def genus2_theta_constants(Omega, *, nmax: int | None = None, tol: float = 1e-12):
+    """Return the 10 even genus-2 theta constants as a dictionary."""
+    return {
+        char: riemann_theta_constant_genus2(Omega, char, nmax=nmax, tol=tol)
+        for char in genus2_even_characteristics()
+    }
+
+
+def igusa_chi10_genus2(
+    Omega,
+    *,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    normalization: str = "product",
+):
+    """
+    Compute a genus-2 Igusa-cusp-form candidate from even theta constants.
+
+    normalization='product' returns the explicit even-theta product
+        prod_even theta[delta](0|Omega)^2
+    which differs from the standard chi_10 by a fixed convention-dependent
+    constant. This avoids hiding that overall-normalization ambiguity.
+
+    For convenience, two common literature normalizations are also exposed:
+        'igusa_2^-12' :  -2^{-12} * product
+        'igusa_2^-14' :  -2^{-14} * product
+    """
+    thetas = genus2_theta_constants(Omega, nmax=nmax, tol=tol)
+    product_form = np.complex128(1.0)
+    for val in thetas.values():
+        product_form *= np.complex128(val) ** 2
+
+    if normalization == "product":
+        return product_form
+    if normalization == "igusa_2^-12":
+        return np.complex128(-(2.0 ** -12) * product_form)
+    if normalization == "igusa_2^-14":
+        return np.complex128(-(2.0 ** -14) * product_form)
+    raise ValueError(f"Unsupported chi_10 normalization {normalization!r}.")
+
+
+def genus2_matter_bc_candidate(
+    forms,
+    *,
+    ribbon_graph,
+    ell_list,
+    basis_pairs=None,
+    custom_cycles=None,
+    averaging_method: str = "overlap",
+    chi10_normalization: str = "product",
+    theta_nmax: int | None = None,
+    theta_tol: float = 1e-12,
+    nu_factor_mode: str = "mean_abs_det2",
+    nu_factor_triple=None,
+):
+    """
+    Package the current genus-2 matter+bc candidate comparison ingredients.
+
+    Returns a dictionary containing:
+    - A-normalized forms and period matrix data
+    - raw prevertex nu-data
+    - averaged surface-vertex nu-data
+    - quadratic-differential triple determinants
+    - chi_10(Omega) from even theta constants
+    - the modular factor (det Im Omega)^(-13) |chi_10|^{-2}
+    - the candidate local nu-factor based on averaged triple determinants
+
+    By default, the current code uses the original symmetric genus-2 guess
+    \mathcal N_\nu = mean_{a<b<c} |Delta_{abc}|^2.
+    """
+    forms = _ensure_form_list(forms)
+    if len(forms) != 2:
+        raise ValueError("genus2_matter_bc_candidate currently expects exactly two one-forms.")
+
+    norm_data = normalize_holomorphic_forms(
+        forms,
+        ribbon_graph=ribbon_graph,
+        ell_list=ell_list,
+        basis_pairs=basis_pairs,
+        custom_cycles=custom_cycles,
+        return_data=True,
+    )
+    norm_forms = norm_data["normalized_forms"]
+    Omega = np.asarray(norm_data["Omega"], dtype=np.complex128)
+
+    raw = calculate_nu(forms=norm_forms, ribbon_graph=ribbon_graph, ell_list=ell_list, return_data=True)
+    avg = average_nu(nus=raw, method=averaging_method, return_data=True)
+    averaged_nu = np.asarray(avg["averaged_nu"], dtype=np.complex128)
+    triple_dets = triple_determinants_from_nu(averaged_nu)
+    nu_factor_data = genus2_nu_factor_from_triples(
+        triple_dets,
+        mode=nu_factor_mode,
+        triple=nu_factor_triple,
+    )
+    nu_factor = float(nu_factor_data["nu_factor"])
+    im_omega = np.asarray(np.imag(Omega), dtype=np.float64)
+    im_evals = np.linalg.eigvalsh(im_omega)
+    if float(np.min(im_evals)) <= 0.0:
+        raise ValueError(
+            "Current period matrix is not in the genus-2 Siegel upper half plane; "
+            f"Im(Omega) eigenvalues are {im_evals}."
+        )
+    chi10 = igusa_chi10_genus2(
+        Omega,
+        nmax=theta_nmax,
+        tol=theta_tol,
+        normalization=chi10_normalization,
+    )
+    det_im_omega = float(np.linalg.det(im_omega))
+    modular_factor = (det_im_omega ** (-13.0)) * (abs(chi10) ** (-2.0))
+
+    out = dict(norm_data)
+    out.update(
+        {
+            "raw_nu": raw["nu_matrix"],
+            "nu_groups": raw["groups"],
+            "group_errors": avg["group_errors"],
+            "averaged_nu": averaged_nu,
+            "quadratic_nu_vectors": quadratic_differential_nu_vectors(averaged_nu),
+            "triple_determinants": triple_dets,
+            "nu_factor": nu_factor,
+            "nu_factor_mode": nu_factor_data["mode"],
+            "selected_triple": nu_factor_data["selected_triple"],
+            "selected_triple_value": nu_factor_data["selected_value"],
+            "chi10": chi10,
+            "det_im_omega": det_im_omega,
+            "modular_factor": modular_factor,
+            "candidate_factor": modular_factor * nu_factor,
+        }
+    )
+    return out
 
 
 def periods_improved(L: int, l1: int, l2: int, f=None):

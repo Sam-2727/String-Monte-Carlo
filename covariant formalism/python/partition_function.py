@@ -26,6 +26,235 @@ def direct_mat_n_fast(L: int) -> np.ndarray:
     return kernel[idx]
 
 
+def _theta_graph_ribbon():
+    """Canonical genus-1 theta graph used by the legacy determinant routines."""
+    return (
+        [(1, 2), (1, 2), (1, 2)],
+        [1, 2],
+        {1: [0, 1, 2], 2: [0, 1, 2]},
+    )
+
+
+def _f1_boundary_site_pairs(ribbon_graph, ell_list):
+    """
+    Enumerate the reduced boundary sites and their sewn partners for an F=1 ribbon graph.
+
+    The reduced variables are chosen from the first occurrence of each edge along the
+    traced disc boundary. If an edge of length ell_e appears on boundary segments
+    p_first < p_second, then local site t=1,...,ell_e on the first copy is paired with
+    site ell_e+1-t on the second copy.
+    """
+    from ribbon_graph_generator import _trace_boundary, _get_all_face_boundaries
+
+    edges_graph, verts, rotation = ribbon_graph
+    n_edges = len(edges_graph)
+    if len(ell_list) != n_edges:
+        raise ValueError(
+            f"Need one length per edge: got {len(ell_list)} lengths for {n_edges} edges."
+        )
+
+    ell_arr = np.asarray(ell_list, dtype=int)
+    if np.any(ell_arr <= 0):
+        raise ValueError("All edge lengths must be positive integers for the determinant lattice.")
+
+    all_faces = _get_all_face_boundaries(edges_graph, verts, rotation)
+    if len(all_faces) != 1:
+        raise ValueError(f"Requires an F=1 ribbon graph, got F={len(all_faces)}.")
+
+    boundary = tuple(_trace_boundary(edges_graph, verts, rotation))
+    n_segments = len(boundary)
+    edge_word = [step[2] for step in boundary]
+
+    edge_positions: dict[int, list[int]] = {}
+    for seg_idx, edge_idx in enumerate(edge_word):
+        edge_positions.setdefault(edge_idx, []).append(seg_idx)
+
+    bad_edges = [edge_idx for edge_idx, occ in edge_positions.items() if len(occ) != 2]
+    if bad_edges:
+        raise ValueError(
+            "Each edge must occur exactly twice on the traced boundary; "
+            f"bad edges={bad_edges}"
+        )
+
+    starts = np.zeros(n_segments + 1, dtype=int)
+    for seg_idx, edge_idx in enumerate(edge_word):
+        starts[seg_idx + 1] = starts[seg_idx] + int(ell_arr[edge_idx])
+
+    L = int(starts[-1])
+    if L % 2 != 0:
+        raise ValueError(f"Total boundary lattice length must be even, got L={L}.")
+
+    first_occurrence = {edge_idx: min(pos) for edge_idx, pos in edge_positions.items()}
+
+    rep_sites: list[int] = []
+    partner_sites: list[int] = []
+    rep_meta: list[tuple[int, int, int, int]] = []
+    for seg_idx, edge_idx in enumerate(edge_word):
+        if seg_idx != first_occurrence[edge_idx]:
+            continue
+        occ1, occ2 = edge_positions[edge_idx]
+        edge_len = int(ell_arr[edge_idx])
+        start1 = int(starts[occ1])
+        start2 = int(starts[occ2])
+        for local_idx in range(edge_len):
+            rep_site = start1 + local_idx
+            partner_site = start2 + (edge_len - 1 - local_idx)
+            rep_sites.append(rep_site)
+            partner_sites.append(partner_site)
+            rep_meta.append((int(edge_idx), int(local_idx + 1), int(occ1), int(occ2)))
+
+    rep_sites_arr = np.asarray(rep_sites, dtype=int)
+    partner_sites_arr = np.asarray(partner_sites, dtype=int)
+    if rep_sites_arr.size * 2 != L:
+        raise ValueError(
+            "Unexpected reduced-site count: "
+            f"{rep_sites_arr.size} reduced sites but total boundary length L={L}."
+        )
+
+    return {
+        "boundary": boundary,
+        "edge_word": tuple(edge_word),
+        "edge_positions": {edge_idx: tuple(pos) for edge_idx, pos in edge_positions.items()},
+        "starts": starts,
+        "L": L,
+        "n_reduced": rep_sites_arr.size,
+        "rep_sites": rep_sites_arr,
+        "partner_sites": partner_sites_arr,
+        "rep_site_metadata": tuple(rep_meta),
+    }
+
+
+def traced_bmat_f1(ribbon_graph, ell_list, dtype=np.complex128) -> np.ndarray:
+    """
+    Generic F=1 bc-ghost matrix from the sewn boundary lattice.
+
+    Rows are reduced boundary sites, columns are positive Fourier modes.
+    The sign convention matches the legacy genus-1 B matrix:
+        exp(2π i m r / L) - exp(2π i m r_partner / L).
+    """
+    data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
+    L = data["L"]
+    n_red = data["n_reduced"]
+    modes = np.arange(1, n_red + 1, dtype=np.float64)
+    rep = data["rep_sites"].astype(np.float64) + 1.0
+    partner = data["partner_sites"].astype(np.float64) + 1.0
+    twopi_i_over_L = 2j * np.pi / L
+    rows = []
+    for rep_pos, partner_pos in zip(rep, partner):
+        phase_rep = np.exp(twopi_i_over_L * (modes * float(rep_pos)))
+        phase_partner = np.exp(twopi_i_over_L * (modes * float(partner_pos)))
+        rows.append(phase_rep - phase_partner)
+    return np.vstack(rows).astype(dtype, copy=False)
+
+
+def _constant_mode_elimination_matrix(n_reduced: int) -> np.ndarray:
+    """Matrix C implementing x_last = -sum_{i<last} x_i on the reduced lattice."""
+    if n_reduced < 2:
+        raise ValueError("Need at least two reduced sites to eliminate the constant mode.")
+    C = np.zeros((n_reduced, n_reduced - 1), dtype=np.float64)
+    C[: n_reduced - 1, :] = np.eye(n_reduced - 1, dtype=np.float64)
+    C[n_reduced - 1, :] = -1.0
+    return C
+
+
+def traced_matter_full_matrix_f1(ribbon_graph, ell_list, *, kernel: np.ndarray | None = None) -> np.ndarray:
+    """
+    Generic sewn matter matrix before removing the constant zero mode.
+
+    If x_red labels the independent boundary values and x_full = M x_red implements the
+    sewing constraints x(partner)=x(rep), then this returns M^T A_full M without removing
+    the constant zero mode.
+    """
+    data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
+    L = data["L"]
+    rep = data["rep_sites"]
+    partner = data["partner_sites"]
+
+    if kernel is None:
+        pi = math.pi
+        c0 = math.cos(pi / L)
+        s0 = math.sin(pi / L)
+        d = np.arange(L, dtype=np.float64)
+        kernel = -s0 / (L * (c0 - np.cos(2 * pi * d / L)))
+    else:
+        kernel = np.asarray(kernel, dtype=np.float64)
+        if kernel.shape != (L,):
+            raise ValueError(f"Kernel must have shape ({L},), got {kernel.shape}.")
+
+    rr = kernel[(rep[:, None] - rep[None, :]) % L]
+    rp = kernel[(rep[:, None] - partner[None, :]) % L]
+    pr = kernel[(partner[:, None] - rep[None, :]) % L]
+    pp = kernel[(partner[:, None] - partner[None, :]) % L]
+    return rr + rp + pr + pp
+
+
+def traced_matter_matrix_f1(ribbon_graph, ell_list, *, kernel: np.ndarray | None = None) -> np.ndarray:
+    """
+    Generic A' matrix for an F=1 ribbon graph, matching direct_red_traced_mat in genus 1.
+
+    Starting from the sewn matrix on the L/2 independent boundary values, we project onto
+    the codimension-one subspace orthogonal to the constant mode using the same linear
+    elimination convention as the legacy genus-1 code.
+    """
+    A_sewn = traced_matter_full_matrix_f1(ribbon_graph, ell_list, kernel=kernel)
+    C = _constant_mode_elimination_matrix(A_sewn.shape[0])
+    return C.T @ A_sewn @ C
+
+
+def traced_bdet_log_f1(ribbon_graph, ell_list) -> mp.mpf:
+    """
+    Generic log(Bdet) for an F=1 ribbon graph, in the same normalization as bdet_log.
+
+    Bdet = |det(B)|^2 / 64^L
+    """
+    data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
+    B = traced_bmat_f1(ribbon_graph, ell_list)
+    _, logabsdet = np.linalg.slogdet(B)
+    return mp.mpf(2.0 * logabsdet) - mp.mpf(data["L"]) * _LOG64_MP
+
+
+def traced_prime_det_log_f1(ribbon_graph, ell_list) -> mp.mpf:
+    """
+    Generic log(primeDet) for an F=1 ribbon graph, matching prime_det_log in genus 1.
+
+    primeDet = det(A_minor) / n_red, where A_minor removes one representative of the
+    constant zero mode from the reduced sewn matter matrix.
+    """
+    data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
+    A_prime = traced_matter_matrix_f1(ribbon_graph, ell_list)
+    A_prime = 0.5 * (A_prime + A_prime.T)
+    logdet = logdet_cholesky(A_prime)
+    n_red = data["n_reduced"]
+    return mp.mpf(logdet) - mp.log(mp.mpf(n_red))
+
+
+def traced_combined_det_log_f1(ribbon_graph, ell_list, *, matter_power: int = -13) -> tuple[mp.mpf, mp.mpf]:
+    """
+    Generic F=1 analogue of combined_det2_log for an arbitrary one-face ribbon graph.
+
+    Returns
+    -------
+    (log_bdet, matter_power * log_prime_det)
+    """
+    log_bdet = traced_bdet_log_f1(ribbon_graph, ell_list)
+    log_prime = traced_prime_det_log_f1(ribbon_graph, ell_list)
+    return log_bdet, mp.mpf(matter_power) * log_prime
+
+
+def traced_matter_bc_log_f1(ribbon_graph, ell_list, *, matter_power: int = -13) -> mp.mpf:
+    """
+    Log of the higher-genus numerical analogue of bdet * prime_det^{matter_power}.
+
+    For the current matter+bc application, the default is matter_power = -13, so this
+    returns
+        log(Bdet) - 13 log(primeDet).
+    """
+    log_bdet, weighted_log_prime = traced_combined_det_log_f1(
+        ribbon_graph, ell_list, matter_power=matter_power
+    )
+    return log_bdet + weighted_log_prime
+
+
 
 def direct_red_traced_mat(L: int, l1: int, l2: int, Mat: np.ndarray) -> np.ndarray:
     """
