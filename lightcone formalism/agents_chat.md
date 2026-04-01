@@ -2285,3 +2285,491 @@ However, for the three-point vacuum problem this doesn't matter: the local-to-re
 ## Updated test count: 87/87
 
 Both notes compile: companion 17pp, main 67pp. No issues found.
+
+---
+
+# Development update (2026-04-01, bosonic prefactor remainder packaging)
+
+## New bosonic result: the unresolved three-tachyon scalar factor is now isolated explicitly
+
+New helper:
+- `tachyon_prefactor_remainder.py`
+
+New tests:
+- `test_tachyon_prefactor_remainder.py` (3/3 PASS)
+
+### Definition
+
+After the earlier checks established that
+\[
+\log \mu(\alpha_1,\alpha_2,\alpha_3)^2
+=
+\frac{q_{\rm rel}^2}{2\gamma_T^{\rm cont}}
+\]
+and that the discrete Richardson limit matches the same on-shell exponential,
+the remaining bosonic normalization problem can be written as
+\[
+R_{\rm pref}(N_1,N_2)
+\equiv
+\log C_{\rm req}^{(B)}(N_1,N_2)-\log\mu(\alpha_1,\alpha_2,\alpha_3)^2.
+\]
+
+Along a fixed-ratio family $(N_1,N_2)=(as,bs)$, the new helper subtracts the
+universal scale tail
+\[
+9\log s
++\pi\Bigl(\frac1{as}+\frac1{bs}-\frac1{(a+b)s}\Bigr)
++\frac{\pi^2}{72}
+\Bigl(\frac1{a^2s^2}+\frac1{b^2s^2}+\frac1{(a+b)^2s^2}\Bigr)
+\]
+and compares the extrapolated remainder to the explicit family target
+\[
+R_{\rm target}(a,b)
+=
+{\cal C}_{\rm tail}
++7\log a+7\log b-5\log(a+b)
+-\log\mu(a,b,a+b)^2.
+\]
+
+### Numerical result
+
+On the standard family set $1\!:\!3$, $1\!:\!2$, $3\!:\!5$, $2\!:\!3$, $1\!:\!1$
+with scales $8,16,32,64,128,256$:
+- max family-extrapolation absolute error: `6.36e-08`
+- max family-extrapolation relative error: `3.48e-09`
+- max largest-scale-row absolute error: `6.36e-08`
+
+### Interpretation
+
+This still does **not** match the final Mandelstam/HIKKO coupling constant.
+What it does do is package the remaining bosonic normalization problem into an
+explicit machine-readable scalar target. The exponential part is no longer the
+open issue; the remaining task is now to connect this scalar prefactor target to
+the standard continuum external-state / coupling convention.
+
+---
+
+# Claude review of commit `a570508` (2026-04-01)
+
+## Verified: 93/93 tests pass
+
+## Endpoint phase scan — independently verified
+
+I ran the phase scan at $(N_1, N_2) = (16, 24)$ and confirmed:
+- $\phi = \pi$: CM = 0, $C_\Xi = 9.1$ (minimum)
+- $\phi = \pm\pi/2$: CM = 6.08, $C_\Xi = 17.5$
+- $\phi = 0$: CM = 31.0, $C_\Xi = 227.5$
+
+The canonical endpoint difference is uniquely selected by two independent criteria (zero CM, minimum $C_\Xi$). The DM-inspired $\pm i$ phase is ruled out as a direct lattice candidate.
+
+## Physics: why the continuum $i$ doesn't become a lattice $i$
+
+DM's $\sqrt{z/2}\theta(z) + i\sqrt{\bar z/2}\tilde\theta(\bar z)$ involves holomorphic and antiholomorphic fields evaluated at the **same** branch point but approaching from different sheets. On the unfolded strip, $\theta(z)$ near $I_+$ and $\tilde\theta(\bar z)$ near $I_-$ are **different worldsheet fields** (left-movers vs right-movers), not the same field at different sites. The relative $i$ in DM encodes the holomorphic/antiholomorphic phase, which on the lattice translates to the **arc structure** (forward vs backward differences), not to a phase between endpoint values. This is consistent with the arc-admixture parameterization already in the code.
+
+## Convention bridge — algebraic identity confirmed
+
+I independently derived: $\log\mu^2 = -2\tau_0(\alpha_1^2 + \alpha_1\alpha_2 + \alpha_2^2)/(\alpha_1\alpha_2\alpha_3) = q_{\rm rel}^2/(2\gamma_T^{\rm cont})$ using $\alpha_2\alpha_3 + \alpha_1\alpha_3 - \alpha_1\alpha_2 = \alpha_1^2 + \alpha_1\alpha_2 + \alpha_2^2$. And the DM/PS rescaling $\Lambda_{\rm DM} = \sqrt{2/\alpha}\Lambda_{\rm GSB}$ makes the PS coefficients $\alpha$-independent to $10^{-16}$.
+
+## No issues found. Both notes compile cleanly.
+
+---
+
+# Claude review: tachyon prefactor remainder + comprehensive next-stage plan
+
+## New result: bosonic normalization problem fully isolated
+
+New file `tachyon_prefactor_remainder.py` (3/3 pass) defines:
+
+$$R_{\rm pref}(N_1, N_2) = \log\mathcal{C}_{\rm req}^{(B)} - \log\mu(\alpha_1, \alpha_2, \alpha_3)^2$$
+
+After removing the universal scale tail ($9\log s + \pi/N + \pi^2/(72N^2)$ terms), the extrapolated remainder matches the explicit family target
+
+$$R_{\rm target}(a,b) = \mathcal{C}_{\rm tail} + 7\log a + 7\log b - 5\log(a+b) - \log\mu^2(a,b)$$
+
+with max absolute error $6.4 \times 10^{-8}$ and max relative error $3.5 \times 10^{-9}$.
+
+**What this means**: The three-tachyon amplitude is now decomposed as:
+1. **Kinematic exponential** $e^{-q_{\rm rel}^2/(2\gamma_T)}$: matches continuum $\mu^2$ to $10^{-6}$ (**done**)
+2. **Vacuum determinant** $\kappa_{1d}^{D_\perp}$: encodes the $\log N$ tails ($7, -5$, etc.) (**fitted**)
+3. **Residual scalar** $R_{\rm pref}$: a ratio-dependent function with no hidden kinematics (**isolated to $10^{-8}$**)
+
+The only remaining bosonic normalization task is matching $R_{\rm target}(a,b)$ — a known function of the ratio family — to the standard Mandelstam/HIKKO cubic coupling convention.
+
+## Both notes compile: companion 18pp, main 68pp. No issues found.
+
+---
+
+# Comprehensive Next-Stage Development Plan (2026-04-01, final version)
+
+## Current scoreboard
+
+| Category | Status | Tests |
+|---|---|---|
+| Overlap algebra | Done | $10^{-15}$ |
+| Critical dimension $D=26$ | Done | $10^5$ separation |
+| $\gamma_T$ continuum match | Done | $5 \times 10^{-5}$ rel |
+| On-shell exponential $\mu^2$ match | Done | $10^{-6}$ rel |
+| Prefactor remainder isolation | Done | $10^{-8}$ abs |
+| TTM tensor structure | Done | $A_{\rm tr}\to 0$, $B_{\rm rel}\to 1.92$ |
+| Superstring channel selection rules | Done | exact zeros |
+| $\Xi_{\rm loc}$ vacuum reduction | Done | all 125 channels collapse |
+| Arc-admixture invariance | Done | exact invariance |
+| Endpoint phase uniqueness | Done | $\phi=\pi$ is unique CM-free |
+| DM/PS convention bridge | Done | $\alpha$-independent to $10^{-16}$ |
+| Twisted cylinder + single-cylinder trace | Done | $10^{-13}$ rel |
+| Overall bosonic cubic normalization | **Open** | $R_{\rm target}$ not matched |
+| Lattice branch-point normalization | **Open** | DM-to-lattice not derived |
+| GSO spin-structure sum | **Open** | Individual sectors don't cancel |
+| Four-point tree | **Open** | Not started |
+
+Total tests: ~96 passing.
+
+## Three parallel tracks
+
+### Track A: Complete the bosonic normalization (1-2 weeks)
+
+**A.1 Match $R_{\rm target}$ to the HIKKO/Mandelstam cubic coupling**
+
+$R_{\rm target}(a,b) = \mathcal{C}_{\rm tail} + 7\log a + 7\log b - 5\log(a+b) - \log\mu^2(a,b)$ is now a known numerical function. The continuum cubic coupling in the standard Mandelstam normalization is (schematically):
+
+$$g_c \propto \prod_r |\alpha_r|^{-1} \cdot |\text{Mandelstam map Jacobian}|^{-D_\perp/2}$$
+
+The $|\alpha_r|$ powers should match the $7\log a + 7\log b - 5\log(a+b)$ piece. The Jacobian contributes the interaction-point normal-ordering part. The external-state normalization contributes the conventional vacuum wavefunction factors.
+
+**Concrete task**: Look up the explicit formula for the Mandelstam cubic vertex normalization (GSW Chapter 11, or HIKKO), express it in terms of $\alpha_1, \alpha_2, \alpha_3$ and $\alpha'$, compute it numerically for the five family ratios, and compare to $R_{\rm target}$.
+
+**A.2 Derive the $\log N$ coefficients analytically**
+
+The coefficients $7$ (incoming) and $-5$ (outgoing) in the $\log N$ tails should follow from the zero-point energy and the finite-$N$ determinant asymptotics. An Euler-Maclaurin expansion of $\log\det G_T$ and $\log\gamma_T$ would give these.
+
+**A.3 Match $B_{\rm rel}^{(M)} \to 1.920$ for TTM**
+
+Independent normalization cross-check from the two-tachyon/one-massless channel.
+
+### Track B: One-loop GSO sum (1-2 weeks, parallel to A)
+
+**B.1 Implement the spin-structure sum**
+
+Four sectors $(\nu_L, \nu_R) \in \{(+,+),(+,-),(-,+),(-,-)\}$ with GSO signs. The building blocks (single-cylinder trace factors for each spin sign) are already tested. The task is:
+
+```python
+Z_GSO = (1/4) * sum over (s_L, s_R) of eta(s_L)*eta(s_R) * Z_F(s_L)^8 * Z_F(s_R)^8
+```
+
+where $\eta(\pm) = \pm 1$ (or the appropriate GSO projection signs for type IIA/IIB).
+
+**B.2 Measure the cancellation**
+
+The Jacobi abstruse identity says $Z_{\rm GSO} = Z_B^8$ in the continuum, so the one-loop cosmological constant vanishes. At finite $N$:
+
+$$\Delta(N, T, \varphi) \equiv Z_{\rm GSO}(N,T,\varphi) - Z_B(N,T,\varphi)^8$$
+
+Measure $\Delta$ as a function of $N$ at fixed $(T, \varphi)$ and extract the convergence rate.
+
+**B.3 Zero-mode factor and moduli integration**
+
+Add $(2\pi/T)^{D_\perp/2}$ from the center-of-mass integral. Integrate over the fundamental domain of $(T, \varphi)$ with appropriate UV/IR cutoffs.
+
+### Track C: Superstring local vertex completion (longer term)
+
+**C.1 Derive the DM-to-lattice branch-point map**
+
+The Mandelstam map near the branch point gives $\rho - \rho_I = \frac{1}{2}\rho''w^2$. One lattice step $\Delta\rho = a$ corresponds to $|w| \sim \sqrt{2a/|\rho''|}$. DM's $\sqrt{z/2} = w/\sqrt{2\rho''}$ gives the regulator. On the lattice, the regulated endpoint value is the site fermion $\theta_{I_\pm}$ itself (already finite, no UV divergence). The question is: what discrete linear combination of $(\theta_{I_+}, \theta_{I_-}, \nabla_+\theta, \nabla_-\theta, \ldots)$ reproduces DM's $\Lambda$ in the continuum limit?
+
+The phase scan shows $\phi = \pi$ (canonical difference) is the unique CM-free endpoint-linear candidate. The arc admixtures don't affect the three-point vacuum answer. So the next constraint must come from either:
+- Excited external states (e.g., three gravitons with nonzero oscillator excitations)
+- The four-point function (where two vertices are connected by a propagator)
+- The branch-point geometry directly
+
+**C.2 Four-point bosonic tree**
+
+This is implementable now: two cubic overlaps + one internal propagator $K_B(T)$, integrated over $T$. Compare to the Virasoro-Shapiro amplitude. This would be the first multi-vertex amplitude and doesn't require the superstring local fermion.
+
+**C.3 Four-point superstring tree (after C.1)**
+
+Requires the local fermion at each vertex. The internal fermionic propagator transports nonzero modes between the two joins. This is where the DM formulation becomes essential.
+
+## Execution priority
+
+1. **Track A.1** (immediate): match $R_{\rm target}$ to HIKKO — single most impactful result
+2. **Track B.1-B.2** (this week): implement GSO sum — self-contained, uses existing code
+3. **Track A.2** (next week): derive $\log N$ coefficients analytically
+4. **Track C.2** (next 2 weeks): bosonic four-point tree — first multi-vertex test
+5. **Track C.1** (parallel): DM-to-lattice derivation — conceptual but essential
+6. **Track B.3** (after B.2): complete one-loop integrand
+7. **Track C.3** (after C.1+C.2): superstring four-point tree
+
+## What NOT to pursue
+
+- More three-point internal-consistency tests (the current ~96 are comprehensive)
+- Operator-level Lorentz algebra (standard background, not the project goal)
+- Supercharge closure (secondary to amplitude validation)
+- Alternative stencil families (second-order is the working choice)
+
+---
+
+# Development update (2026-04-01, oscillator spin structures and GSO sign scan)
+
+The loop-side superstring building blocks are now one step less schematic.
+
+## 1. Explicit periodic and antiperiodic fermion sectors
+
+The new helper `fermionic_spin_structure_cylinder.py` upgrades the one-cylinder
+fermionic oscillator trace from the old two-sign family
+
+\[
+\det(1 \pm U_{\rm periodic})
+\]
+
+to the full quartet of oscillator spin structures
+
+\[
+(\NS,\widetilde{\NS},R,\widetilde R)
+\]
+
+at finite \(N\), by introducing the spatial mode shift
+\[
+\nu = 0 \quad (\text{periodic}), \qquad \nu = \tfrac12 \quad (\text{antiperiodic}).
+\]
+
+For the periodic sector, the new implementation reproduces the older
+`single_cylinder_integrand.py` factors to \(2.45\times 10^{-15}\).
+For the antiperiodic sector, direct site-basis determinants match the shifted
+closed mode products to \(2.56\times 10^{-15}\).
+
+This is the first explicit finite-\(N\) realization of distinct spatial spin
+structures in the loop-side code.
+
+## 2. Sign choices alone do not restore cancellation
+
+The new helper `gso_spin_structure_scan.py` then scans the eight inequivalent
+chiral sign patterns with `NS` fixed positive:
+
+\[
+\sum_{\alpha \in \{\NS,\widetilde{\NS},R,\widetilde R\}} c_\alpha\, Z_\alpha^{\,8},
+\qquad c_\alpha=\pm 1.
+\]
+
+It compares the resulting closed-string oscillator sum against the bosonic
+single-cylinder factor \(Z_B^8\).
+
+**Result:** even after promoting the loop fermions to the full
+\((\NS,\widetilde{\NS},R,\widetilde R)\) oscillator quartet, **no sign choice
+alone** produces anything close to the expected Bose-Fermi cancellation on the
+sampled grid.
+
+- Best pattern by worst-case distance:
+  `NS:+1, NS_tilde:+1, R:-1, R_tilde:+1`
+- Best-pattern closest sampled distance to target ratio \(1\):
+  `0.304799`
+- Best-pattern worst sampled distance:
+  `6.84e+02`
+- The standard `NS - NS_tilde - R + R_tilde` pattern is no better on this grid.
+
+So the remaining loop-side gap is now sharper than before:
+
+- it is **not** just “choose the right GSO signs,”
+- it really is the **zero-mode sector and normalization/phase assembly** on top
+  of the now-explicit oscillator spin structures.
+
+## 3. Strategic consequence
+
+This is good progress for the superstring-loop program because it separates the
+open pieces more cleanly:
+
+1. Oscillator spin structures: now explicit.
+2. Sign-choice scan: done, and not sufficient.
+3. Remaining work: zero-mode factors, physical GSO assembly, and overall
+   normalization/phases.
+
+That means the next loop-side step should not be another sign scan; it should
+be either:
+
+- adding the missing zero-mode sector to the one-cylinder spin-structure sum, or
+- deriving the physical type-II chiral combination/phase conventions in a way
+  that can be implemented on top of these explicit sectors.
+
+---
+
+# Development update (2026-04-01, note-clarity pass and full-suite checkpoint)
+
+I did an end-to-end note pass to make the loop-side spin-structure discussion
+less implicit.
+
+## What changed in the notes
+
+1. The notes now distinguish explicitly between:
+
+   - the **physical closed-string oscillator-sector sum**
+     \[
+     Z_{\mathrm{closed}}^{\mathrm{osc}}(T,\varphi;c^{(L)},c^{(R)})
+     =
+     \sum_{\alpha_L,\alpha_R}
+     c^{(L)}_{\alpha_L}c^{(R)}_{\alpha_R}
+     [Z^{(1)}_{F,\alpha_L}]^8 [Z^{(1)}_{F,\alpha_R}]^8,
+     \]
+     which still needs zero-mode factors and overall Pfaffian/coherent-state
+     normalization, and
+
+   - the **restricted trial ratio**
+     \[
+     {\cal R}_{\mathrm{trial}}^{\mathrm{osc}}
+     =
+     \frac{(\sum_\alpha c_\alpha [Z^{(1)}_{F,\alpha}]^8)^2}{(Z_B^{(1)})^8},
+     \]
+     which assumes the same chiral coefficients on the left and right and omits
+     zero modes.
+
+2. This matters because the negative result from the new sign scan is only a
+   negative result for the restricted trial ratio above. It does **not** yet
+   rule out the fully assembled physical type-II loop integrand.
+
+3. The stale suite-count wording in the notes was updated to the current
+   aggregated checkpoint.
+
+## Current checkpoint
+
+The full aggregated suite now reports:
+
+- `108/108` passing in `numerical_suite.py`
+
+So the repo status is now:
+
+- bosonic tree-level Gaussian kinematics: numerically strong,
+- superstring three-point reduced/local candidate diagnostics: numerically strong
+  but still conditional on the local-fermion derivation,
+- loop oscillator spin-structure data: explicit,
+- sign-choice-only cancellation: ruled out,
+- remaining loop task: zero modes plus physical GSO assembly.
+
+---
+
+# Claude review (2026-04-01, final)
+
+## Scrutiny of the spin-structure calculation
+
+I verified independently:
+
+1. **NS spectrum**: kappas at (N=8) are {1/2, 3/2, 5/2, 7/2, -7/2, -5/2, -3/2, -1/2} — no zero mode. Correct.
+2. **R spectrum**: kappas {0, 1, 2, 3, -4, -3, -2, -1} — includes zero mode. Correct.
+3. **Frequency formula**: omega_{k+nu} = (2/a)sin(pi|k+nu|/N) is the correct antiperiodic lattice dispersion.
+4. **Sign convention**: e^{-2pi i kappa phi} (corrected minus sign) used consistently. Correct.
+5. **GSO scan failure**: Standard pattern gives distance 0.305 from cancellation. Physically expected — Jacobi identity requires zero-mode degeneracy factors (2^4 = 16 for each R sector) not yet included.
+
+## Answer: do we have a full local superstring vertex? NO.
+
+**Three-point vacuum vertex**: effectively complete (local corrections vanish, channel structure correct). But only at the three-point level with vacuum external states.
+
+**Missing for a full treatment**:
+1. Lattice branch-point normalization (Lambda_join vs Lambda_DM constant)
+2. Overall cubic coupling (C_tail not matched)
+3. Zero-mode degeneracy in the GSO sum
+4. Multi-vertex amplitudes (four-point, loops)
+5. Comparison to a known superstring amplitude number (not just channel ratios)
+
+---
+
+# Development update (2026-04-01, broader nearest-neighbor local family)
+
+The local-superstring three-point vacuum problem is now constrained more
+sharply than before.
+
+## 1. Broader join-local family
+
+I extended the old endpoint-plus-one-sided-arc family to the full sampled
+nearest-neighbor join-supported linear family
+\[
+\Lambda_{\rm nn}
+=
+\Lambda_{\rm join}
++c_{1,+}(\theta_1^{(1)}-\theta_0^{(1)})
++c_{1,-}(\theta_0^{(1)}-\theta_{N_1-1}^{(1)})
++c_{2,+}(\theta_1^{(2)}-\theta_0^{(2)})
++c_{2,-}(\theta_0^{(2)}-\theta_{N_2-1}^{(2)}),
+\]
+with the mixed constraints fixed to
+\[
+\Theta_{\rm cm}=0,\qquad \Lambda_{\rm lat}=1.
+\]
+
+The new helper `local_nearest_neighbor_family_scan.py` checks the sampled set
+\[
+(0,0,0,0),\left(\tfrac12,0,0,0\right),\left(0,\tfrac12,0,0\right),
+\left(0,0,\tfrac12,0\right),\left(0,0,0,\tfrac12\right),
+\left(\tfrac12,-\tfrac12,0,0\right),\left(0,0,\tfrac12,-\tfrac12\right),
+\left(\tfrac12,\tfrac12,-\tfrac12,-\tfrac12\right),(1,-1,1,-1).
+\]
+
+## 2. Result
+
+For this sampled nearest-neighbor family:
+
+- benchmark three-point channels remain unchanged,
+- the full sampled vacuum-contracted catalog remains unchanged,
+- and the mixed zero-mode constraints remain exact.
+
+Numerically:
+
+- single-point benchmark max analytic error: `5.55e-16`
+- single-point local-vs-reduced discrepancy: `0`
+- max `|Theta_cm|`: `0`
+- max `|Lambda_lat - 1|`: `0`
+- full sampled catalog max `qq` discrepancy: `0`
+- full sampled catalog max `delta` discrepancy: `0`
+
+## 3. Interpretation
+
+So the present three-point vacuum problem now fixes the endpoint-linear core
+uniquely, but it still does **not** determine the broader join-supported linear
+completion.
+
+This is also consistent with the earlier arc-family scan and the degree
+classification of the local catalog:
+
+- the sampled trace-dropped local catalog contains only Xi degrees `0,2,4`,
+- so after diagonal vacuum contraction every channel depends on the candidate
+  only through a polynomial of degree at most two in the scalar
+  `C_Xi = <Xi^a Xi^b> delta_ab`,
+- and the earlier arc-family scan already killed that polynomial at five
+  distinct `C_Xi` values.
+
+So the remaining superstring-local ambiguity is now even more tightly localized:
+
+1. the true DM branch-point normalization,
+2. more general local operators beyond the current linear nearest-neighbor
+   family,
+3. and/or amplitudes beyond the present three-point vacuum setting.
+
+---
+
+# Claude review of latest uncommitted edits (2026-04-01)
+
+## New content
+
+### 1. Four nearest-neighbor join differences
+
+The local candidate family is extended from endpoint + one-sided arc to include all four nearest-neighbor differences:
+
+Lambda_nn = Lambda_join + c_{1,+}(theta_1^(1) - theta_0^(1)) + c_{1,-}(theta_0^(1) - theta_{N1-1}^(1)) + c_{2,+}(theta_1^(2) - theta_0^(2)) + c_{2,-}(theta_0^(2) - theta_{N2-1}^(2))
+
+These are the four one-sided differences at the join on both incoming legs (forward and backward on each). They all have zero leg average, so they only modify Xi_loc.
+
+Result: the full nearest-neighbor family is also invisible to the three-point vacuum catalog — all amplitudes agree with the reduced ansatz to machine precision. This extends the arc-admixture invariance to the broadest natural local family.
+
+### 2. Spin-structure formalism in Section 7
+
+Sections 6-7 now explicitly define the four chiral oscillator spin structures (NS, NS_tilde, R, R_tilde) with the shifted Fourier basis, the closed-string oscillator-sector sum, and the provisional trial ratio. A new TikZ figure summarizes the loop bookkeeping.
+
+### 3. Tachyon prefactor remainder
+
+(Already reviewed.) R_pref = log C_req - log mu^2 isolated to 6.4e-8.
+
+## Tests: 9/9 for local fermion (up from 7), plus all previous. Both notes compile (companion 20pp, main 71pp).
+
+## Key physics conclusion
+
+The three-point vacuum problem cannot distinguish any local candidate within the full nearest-neighbor join-supported family. The endpoint-linear piece is fixed (unique CM-free + unit-Lambda_lat), but the four nearest-neighbor arc coefficients are all flat directions. This means the three-point vacuum matrix element with vacuum external states is MAXIMALLY insensitive to the local structure of the interaction-point fermion beyond its zero-mode content.
+
+The next constraint MUST come from outside the three-point vacuum setting — either excited external states, four-point amplitudes, or a direct branch-point geometry derivation.
+
+## No issues found.

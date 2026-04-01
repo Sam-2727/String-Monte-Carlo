@@ -64,6 +64,14 @@ class JoinLocalFermionData:
     nabla_minus_selector: np.ndarray
     nabla_plus_oscillator_row: np.ndarray
     nabla_minus_oscillator_row: np.ndarray
+    leg1_forward_selector: np.ndarray
+    leg1_backward_selector: np.ndarray
+    leg2_forward_selector: np.ndarray
+    leg2_backward_selector: np.ndarray
+    leg1_forward_oscillator_row: np.ndarray
+    leg1_backward_oscillator_row: np.ndarray
+    leg2_forward_oscillator_row: np.ndarray
+    leg2_backward_oscillator_row: np.ndarray
     reduced_lambda_average_weights: tuple[float, float]
 
 
@@ -89,6 +97,10 @@ class MixedLinearFermionDecomposition:
     lambda_lat_coefficient: complex
     oscillator_row_leg1: np.ndarray
     oscillator_row_leg2: np.ndarray
+    coeff_leg1_forward: complex = 0.0j
+    coeff_leg1_backward: complex = 0.0j
+    coeff_leg2_forward: complex = 0.0j
+    coeff_leg2_backward: complex = 0.0j
 
 
 def average_selector(n_sites: int) -> np.ndarray:
@@ -228,6 +240,10 @@ def decompose_join_linear_combination(
         coeff_i_minus=complex(coeff_i_minus),
         coeff_nabla_plus=0.0j,
         coeff_nabla_minus=0.0j,
+        coeff_leg1_forward=0.0j,
+        coeff_leg1_backward=0.0j,
+        coeff_leg2_forward=0.0j,
+        coeff_leg2_backward=0.0j,
         theta_cm_coefficient=complex(theta_cm_coefficient),
         lambda_lat_coefficient=complex(lambda_lat_coefficient),
         oscillator_row_leg1=np.asarray(
@@ -281,6 +297,64 @@ def decompose_local_candidate(
         oscillator_row_leg2=np.asarray(
             endpoint.oscillator_row_leg2
             + coeff_nabla_minus * data.nabla_minus_oscillator_row,
+            dtype=complex,
+        ),
+    )
+
+
+def decompose_nearest_neighbor_local_candidate(
+    n1: int,
+    n2: int,
+    *,
+    coeff_i_plus: complex,
+    coeff_i_minus: complex,
+    coeff_leg1_forward: complex = 0.0,
+    coeff_leg1_backward: complex = 0.0,
+    coeff_leg2_forward: complex = 0.0,
+    coeff_leg2_backward: complex = 0.0,
+) -> MixedLinearFermionDecomposition:
+    """
+    Decompose the full nearest-neighbor join-supported local candidate.
+
+    This keeps the endpoint values explicit and adds the four zero-average
+    nearest-neighbor join rows:
+
+      leg 1: theta_1 - theta_0,   theta_0 - theta_{N_1-1}
+      leg 2: theta_1 - theta_0,   theta_0 - theta_{N_2-1}
+
+    The extra rows modify only the explicit nonzero-mode correction sector.
+    """
+    data = join_local_fermion_data(n1, n2)
+    endpoint = decompose_join_linear_combination(
+        n1,
+        n2,
+        coeff_i_plus,
+        coeff_i_minus,
+    )
+    return MixedLinearFermionDecomposition(
+        n1=n1,
+        n2=n2,
+        n3=n1 + n2,
+        coeff_i_plus=complex(coeff_i_plus),
+        coeff_i_minus=complex(coeff_i_minus),
+        coeff_nabla_plus=0.0j,
+        coeff_nabla_minus=0.0j,
+        coeff_leg1_forward=complex(coeff_leg1_forward),
+        coeff_leg1_backward=complex(coeff_leg1_backward),
+        coeff_leg2_forward=complex(coeff_leg2_forward),
+        coeff_leg2_backward=complex(coeff_leg2_backward),
+        theta_cm_coefficient=endpoint.theta_cm_coefficient,
+        lambda_lat_coefficient=endpoint.lambda_lat_coefficient,
+        oscillator_row_leg1=np.asarray(
+            endpoint.oscillator_row_leg1
+            + coeff_leg1_forward * data.leg1_forward_oscillator_row
+            + coeff_leg1_backward * data.leg1_backward_oscillator_row,
+            dtype=complex,
+        ),
+        oscillator_row_leg2=np.asarray(
+            endpoint.oscillator_row_leg2
+            + coeff_leg2_forward * data.leg2_forward_oscillator_row
+            + coeff_leg2_backward * data.leg2_backward_oscillator_row,
             dtype=complex,
         ),
     )
@@ -387,6 +461,38 @@ def canonical_local_candidate_with_arc_admixtures(
     )
 
 
+def canonical_nearest_neighbor_local_candidate(
+    n1: int,
+    n2: int,
+    *,
+    coeff_leg1_forward: complex = 0.0,
+    coeff_leg1_backward: complex = 0.0,
+    coeff_leg2_forward: complex = 0.0,
+    coeff_leg2_backward: complex = 0.0,
+) -> MixedLinearFermionDecomposition:
+    """
+    Canonical endpoint difference with the full nearest-neighbor local family.
+
+    The mixed zero-mode coefficients remain fixed at
+
+      Theta_cm = 0,   Lambda_lat = 1,
+
+    while the four local nearest-neighbor zero-average rows span the explicit
+    UV correction sector inside the resolved interaction region.
+    """
+    coeff_i_plus, coeff_i_minus = canonical_endpoint_difference_coefficients(n1, n2)
+    return decompose_nearest_neighbor_local_candidate(
+        n1,
+        n2,
+        coeff_i_plus=coeff_i_plus,
+        coeff_i_minus=coeff_i_minus,
+        coeff_leg1_forward=coeff_leg1_forward,
+        coeff_leg1_backward=coeff_leg1_backward,
+        coeff_leg2_forward=coeff_leg2_forward,
+        coeff_leg2_backward=coeff_leg2_backward,
+    )
+
+
 def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
     """
     Exact finite-N local fermionic data at the unfolded cubic join.
@@ -400,6 +506,10 @@ def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
 
     nabla_plus_selector = forward_arc_difference_selector(n1)
     nabla_minus_selector = backward_arc_difference_selector(n2)
+    leg1_forward_selector = forward_arc_difference_selector(n1)
+    leg1_backward_selector = backward_arc_difference_selector(n1)
+    leg2_forward_selector = forward_arc_difference_selector(n2)
+    leg2_backward_selector = backward_arc_difference_selector(n2)
 
     return JoinLocalFermionData(
         n1=n1,
@@ -411,6 +521,14 @@ def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
         nabla_minus_selector=nabla_minus_selector,
         nabla_plus_oscillator_row=oscillator_projection_row(n1, nabla_plus_selector),
         nabla_minus_oscillator_row=oscillator_projection_row(n2, nabla_minus_selector),
+        leg1_forward_selector=leg1_forward_selector,
+        leg1_backward_selector=leg1_backward_selector,
+        leg2_forward_selector=leg2_forward_selector,
+        leg2_backward_selector=leg2_backward_selector,
+        leg1_forward_oscillator_row=oscillator_projection_row(n1, leg1_forward_selector),
+        leg1_backward_oscillator_row=oscillator_projection_row(n1, leg1_backward_selector),
+        leg2_forward_oscillator_row=oscillator_projection_row(n2, leg2_forward_selector),
+        leg2_backward_oscillator_row=oscillator_projection_row(n2, leg2_backward_selector),
         reduced_lambda_average_weights=reduced_lambda_average_weights(n1, n2),
     )
 
@@ -464,6 +582,22 @@ def local_join_summary(n1: int, n2: int) -> dict[str, object]:
             "nabla_minus": {
                 "real": float(canonical.coeff_nabla_minus.real),
                 "imag": float(canonical.coeff_nabla_minus.imag),
+            },
+            "leg1_forward": {
+                "real": float(canonical.coeff_leg1_forward.real),
+                "imag": float(canonical.coeff_leg1_forward.imag),
+            },
+            "leg1_backward": {
+                "real": float(canonical.coeff_leg1_backward.real),
+                "imag": float(canonical.coeff_leg1_backward.imag),
+            },
+            "leg2_forward": {
+                "real": float(canonical.coeff_leg2_forward.real),
+                "imag": float(canonical.coeff_leg2_forward.imag),
+            },
+            "leg2_backward": {
+                "real": float(canonical.coeff_leg2_backward.real),
+                "imag": float(canonical.coeff_leg2_backward.imag),
             },
         },
         "canonical_leg1_oscillator_norm": float(

@@ -30,6 +30,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import low_point_validation as lpv
+import test_fermionic_spin_structure_cylinder as tfssc
 import test_bose_fermi_cancellation_scan as tbfcs
 import test_bosonic_normalization_structure as tbns
 import test_continuum_tachyon_benchmark as tctb
@@ -39,6 +40,7 @@ import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
+import test_gso_spin_structure_scan as tgsss
 import test_lambda_convention_bridge as tlcb
 import test_local_arc_catalog_scan as tlaccs
 import test_local_arc_candidate_scan as tlacs
@@ -46,6 +48,7 @@ import test_local_channel_catalog as tlcc
 import test_local_channel_response as tlcr
 import test_local_endpoint_phase_scan as tleps
 import test_local_interaction_point_fermion as tlipf
+import test_local_nearest_neighbor_family_scan as tlnnfs
 import test_local_prefactor_expansion as tlpe
 import test_local_superstring_tree_benchmark as tlstb
 import test_local_vacuum_reduction as tlvr
@@ -56,6 +59,7 @@ import test_superstring_decisive_test as tsdt
 import test_superstring_continuum_benchmark as tscb
 import test_superstring_normalization_factorization as tsnf
 import test_tachyon_amplitude as tta
+import test_tachyon_prefactor_remainder as ttpr
 import test_twisted_cylinder as ttc
 import test_weyl_vector_formula as twvf
 
@@ -140,6 +144,18 @@ def run_continuum_tachyon_factor_split_tests() -> dict[str, Any]:
     }
 
 
+def run_tachyon_prefactor_remainder_tests() -> dict[str, Any]:
+    results = {
+        "family_prefactor_targets_match_extrapolations": ttpr.test_family_prefactor_targets_match_extrapolations(),
+        "largest_scale_rows_are_close_to_targets": ttpr.test_largest_scale_rows_are_close_to_targets(),
+        "targets_reduce_to_tail_constant_plus_family_piece": ttpr.test_targets_reduce_to_tail_constant_plus_family_piece(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def run_neumann_tests() -> dict[str, Any]:
     results = {
         "symplectic_obstruction": tne.test_symplectic_obstruction(),
@@ -216,11 +232,13 @@ def run_local_interaction_point_fermion_tests() -> dict[str, Any]:
     results = {
         "site_decomposition_identity": tlipf.test_site_decomposition_identity(),
         "join_arc_difference_rows": tlipf.test_join_arc_difference_rows(),
+        "nearest_neighbor_rows_are_zero_average_and_exact": tlipf.test_nearest_neighbor_rows_are_zero_average_and_exact(),
         "local_sites_are_not_leg_averages": tlipf.test_local_sites_are_not_leg_averages(),
         "average_to_mixed_zero_mode_map": tlipf.test_average_to_mixed_zero_mode_map(),
         "canonical_local_difference_isolates_reduced_lambda": tlipf.test_canonical_local_difference_isolates_reduced_lambda(),
         "endpoint_constraint_solution_matches_canonical": tlipf.test_endpoint_constraint_solution_matches_canonical(),
         "general_endpoint_linear_decomposition_constraints": tlipf.test_general_endpoint_linear_decomposition_constraints(),
+        "canonical_nearest_neighbor_candidate_preserves_mixed_constraints": tlipf.test_canonical_nearest_neighbor_candidate_preserves_mixed_constraints(),
     }
     return {
         "summary": summarize_passes(results),
@@ -281,6 +299,18 @@ def run_local_arc_catalog_scan_tests() -> dict[str, Any]:
         "arc_family_preserves_vacuum_catalog_values": tlaccs.test_arc_family_preserves_vacuum_catalog_values(),
         "arc_family_preserves_vacuum_catalog_counts_qq": tlaccs.test_arc_family_preserves_vacuum_catalog_counts_qq(),
         "arc_family_preserves_vacuum_catalog_counts_delta": tlaccs.test_arc_family_preserves_vacuum_catalog_counts_delta(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_local_nearest_neighbor_family_scan_tests() -> dict[str, Any]:
+    results = {
+        "nearest_neighbor_family_is_benchmark_invariant": tlnnfs.test_nearest_neighbor_family_is_benchmark_invariant(),
+        "nearest_neighbor_family_preserves_mixed_constraints": tlnnfs.test_nearest_neighbor_family_preserves_mixed_constraints(),
+        "nearest_neighbor_family_preserves_vacuum_catalog": tlnnfs.test_nearest_neighbor_family_preserves_vacuum_catalog(),
     }
     return {
         "summary": summarize_passes(results),
@@ -407,11 +437,35 @@ def run_single_cylinder_integrand_tests() -> dict[str, Any]:
     }
 
 
+def run_fermionic_spin_structure_cylinder_tests() -> dict[str, Any]:
+    results = {
+        "periodic_sector_matches_existing_integrand": tfssc.test_periodic_sector_matches_existing_integrand(),
+        "antiperiodic_sector_closed_form": tfssc.test_antiperiodic_sector_closed_form(),
+        "antiperiodic_sector_has_no_zero_mode": tfssc.test_antiperiodic_sector_has_no_zero_mode(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def run_bose_fermi_cancellation_tests() -> dict[str, Any]:
     results = {
         "log_polar_matches_safe_direct_ratio": tbfcs.test_log_polar_matches_safe_direct_ratio(),
         "pre_gso_scan_does_not_cancel": tbfcs.test_pre_gso_scan_does_not_cancel(),
         "large_ratio_log_remains_finite": tbfcs.test_large_ratio_log_remains_finite(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_gso_spin_structure_scan_tests() -> dict[str, Any]:
+    results = {
+        "log_polar_sum_matches_safe_direct_sample": tgsss.test_log_polar_sum_matches_safe_direct_sample(),
+        "best_sign_pattern_still_fails_to_cancel": tgsss.test_best_sign_pattern_still_fails_to_cancel(),
+        "standard_pattern_is_not_an_accidental_cancellation": tgsss.test_standard_pattern_is_not_an_accidental_cancellation(),
     }
     return {
         "summary": summarize_passes(results),
@@ -450,12 +504,16 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     local_catalog = report["tests"]["local_channel_catalog"]["results"]
     local_arc = report["tests"]["local_arc_candidate_scan"]["results"]
     local_arc_catalog = report["tests"]["local_arc_catalog_scan"]["results"]
+    local_nearest_neighbor = report["tests"]["local_nearest_neighbor_family_scan"]["results"]
     local_endpoint_phase = report["tests"]["local_endpoint_phase_scan"]["results"]
     local_vacuum = report["tests"]["local_vacuum_reduction"]["results"]
     local_tree = report["tests"]["local_superstring_tree_benchmark"]["results"]
     bose_fermi = report["tests"]["bose_fermi_cancellation"]["results"]
+    fermionic_spin = report["tests"]["fermionic_spin_structure_cylinder"]["results"]
+    gso_spin = report["tests"]["gso_spin_structure_scan"]["results"]
     continuum_tachyon = report["tests"]["continuum_tachyon_benchmark"]["results"]
     continuum_split = report["tests"]["continuum_tachyon_factor_split"]["results"]
+    prefactor_remainder = report["tests"]["tachyon_prefactor_remainder"]["results"]
     critical_scan = tachyon["d_perp_scan"]
     best_d = min(critical_scan, key=lambda row: row["rmse"])
     return {
@@ -512,6 +570,9 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "continuum_mu_identity_max_error": continuum_split["continuum_identity_is_exact"]["max_abs_error"],
         "continuum_mu_discrete_max_abs_error": continuum_split["discrete_exponent_matches_log_mu_squared"]["max_abs_error"],
         "continuum_mu_discrete_max_rel_error": continuum_split["discrete_exponent_matches_log_mu_squared"]["max_rel_error"],
+        "tachyon_prefactor_remainder_max_abs_error": prefactor_remainder["family_prefactor_targets_match_extrapolations"]["max_abs_error"],
+        "tachyon_prefactor_remainder_max_rel_error": prefactor_remainder["family_prefactor_targets_match_extrapolations"]["max_rel_error"],
+        "tachyon_prefactor_remainder_max_final_row_error": prefactor_remainder["largest_scale_rows_are_close_to_targets"]["max_abs_error"],
         "local_qq_catalog_counts": local_catalog["qq_catalog_class_counts"]["counts"],
         "local_delta_catalog_counts": local_catalog["delta_catalog_vanishes"]["counts"],
         "local_arc_single_point_error": local_arc["single_point_arc_family_is_benchmark_invariant"]["max_abs_error"],
@@ -520,6 +581,10 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "local_arc_family_reduced_error": local_arc["family_arc_scan_is_benchmark_invariant"]["max_local_reduced_error"],
         "local_arc_catalog_qq_error": local_arc_catalog["arc_family_preserves_vacuum_catalog_values"]["qq_max_abs_error"],
         "local_arc_catalog_delta_error": local_arc_catalog["arc_family_preserves_vacuum_catalog_values"]["delta_max_abs_error"],
+        "local_nearest_neighbor_single_point_error": local_nearest_neighbor["nearest_neighbor_family_is_benchmark_invariant"]["max_abs_error"],
+        "local_nearest_neighbor_single_point_reduced_error": local_nearest_neighbor["nearest_neighbor_family_is_benchmark_invariant"]["max_local_reduced_error"],
+        "local_nearest_neighbor_catalog_qq_error": local_nearest_neighbor["nearest_neighbor_family_preserves_vacuum_catalog"]["max_qq_catalog_error"],
+        "local_nearest_neighbor_catalog_delta_error": local_nearest_neighbor["nearest_neighbor_family_preserves_vacuum_catalog"]["max_delta_catalog_error"],
         "local_endpoint_phase_dm_theta_cm_abs": local_endpoint_phase["dm_phase_has_large_cm_contamination"]["theta_cm_abs"],
         "local_endpoint_phase_dm_two_point_scalar": local_endpoint_phase["dm_phase_has_large_cm_contamination"]["two_point_scalar"],
         "local_endpoint_phase_best_cm_phase_error": local_endpoint_phase["phase_family_selects_canonical_antiphase"]["max_best_cm_phase_error"],
@@ -531,8 +596,15 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "local_tree_single_point_reduced_error": local_tree["local_single_point_matches_reduced_assembly"]["max_local_reduced_error"],
         "local_tree_scan_error": local_tree["local_family_scan_matches_analytic_target"]["max_abs_error"],
         "local_tree_scan_reduced_error": local_tree["local_family_scan_matches_analytic_target"]["max_local_reduced_error"],
+        "fermionic_spin_structure_max_rel_error": fermionic_spin["antiperiodic_sector_closed_form"]["max_rel_error"],
+        "fermionic_spin_structure_periodic_compatibility_error": fermionic_spin["periodic_sector_matches_existing_integrand"]["max_rel_error"],
+        "fermionic_spin_structure_min_antiperiodic_frequency": fermionic_spin["antiperiodic_sector_has_no_zero_mode"]["min_frequency"],
         "pre_gso_closest_distance_to_one": bose_fermi["pre_gso_scan_does_not_cancel"]["closest"]["distance_to_one"],
         "pre_gso_closest_log_abs_ratio": bose_fermi["pre_gso_scan_does_not_cancel"]["closest"]["log_abs_ratio"],
+        "gso_best_pattern_max_distance": gso_spin["best_sign_pattern_still_fails_to_cancel"]["max_distance_to_one"],
+        "gso_best_pattern_closest_distance": gso_spin["best_sign_pattern_still_fails_to_cancel"]["closest_distance_to_one"],
+        "gso_standard_pattern_max_distance": gso_spin["standard_pattern_is_not_an_accidental_cancellation"]["max_distance_to_one"],
+        "gso_standard_pattern_closest_distance": gso_spin["standard_pattern_is_not_an_accidental_cancellation"]["closest_distance_to_one"],
     }
 
 
@@ -554,6 +626,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "bosonic_normalization_structure": run_bosonic_normalization_structure_tests(),
         "continuum_tachyon_benchmark": run_continuum_tachyon_benchmark_tests(),
         "continuum_tachyon_factor_split": run_continuum_tachyon_factor_split_tests(),
+        "tachyon_prefactor_remainder": run_tachyon_prefactor_remainder_tests(),
         "neumann_extraction": run_neumann_tests(),
         "graviton_prefactor": run_graviton_prefactor_tests(),
         "graviton_assembly": run_graviton_assembly_tests(),
@@ -565,6 +638,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "local_channel_catalog": run_local_channel_catalog_tests(),
         "local_arc_candidate_scan": run_local_arc_candidate_scan_tests(),
         "local_arc_catalog_scan": run_local_arc_catalog_scan_tests(),
+        "local_nearest_neighbor_family_scan": run_local_nearest_neighbor_family_scan_tests(),
         "local_endpoint_phase_scan": run_local_endpoint_phase_scan_tests(),
         "local_vacuum_reduction": run_local_vacuum_reduction_tests(),
         "local_superstring_tree_benchmark": run_local_superstring_tree_benchmark_tests(),
@@ -575,7 +649,9 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "superstring_normalization": run_superstring_normalization_tests(),
         "twisted_cylinder": run_twisted_cylinder_tests(),
         "single_cylinder_integrand": run_single_cylinder_integrand_tests(),
+        "fermionic_spin_structure_cylinder": run_fermionic_spin_structure_cylinder_tests(),
         "bose_fermi_cancellation": run_bose_fermi_cancellation_tests(),
+        "gso_spin_structure_scan": run_gso_spin_structure_scan_tests(),
     }
 
     module_summaries = {
@@ -622,6 +698,7 @@ def markdown_report(report: dict[str, Any]) -> str:
     bosonic_tail_module = report["tests"]["bosonic_normalization_structure"]["summary"]
     continuum_tachyon_module = report["tests"]["continuum_tachyon_benchmark"]["summary"]
     continuum_split_module = report["tests"]["continuum_tachyon_factor_split"]["summary"]
+    prefactor_remainder_module = report["tests"]["tachyon_prefactor_remainder"]["summary"]
     neumann_module = report["tests"]["neumann_extraction"]["summary"]
     prefactor_module = report["tests"]["graviton_prefactor"]["summary"]
     graviton_module = report["tests"]["graviton_assembly"]["summary"]
@@ -630,6 +707,7 @@ def markdown_report(report: dict[str, Any]) -> str:
     local_catalog_module = report["tests"]["local_channel_catalog"]["summary"]
     local_arc_module = report["tests"]["local_arc_candidate_scan"]["summary"]
     local_arc_catalog_module = report["tests"]["local_arc_catalog_scan"]["summary"]
+    local_nearest_neighbor_module = report["tests"]["local_nearest_neighbor_family_scan"]["summary"]
     local_endpoint_phase_module = report["tests"]["local_endpoint_phase_scan"]["summary"]
     local_vacuum_module = report["tests"]["local_vacuum_reduction"]["summary"]
     local_tree_module = report["tests"]["local_superstring_tree_benchmark"]["summary"]
@@ -638,7 +716,9 @@ def markdown_report(report: dict[str, Any]) -> str:
     normalization_module = report["tests"]["superstring_normalization"]["summary"]
     twisted_module = report["tests"]["twisted_cylinder"]["summary"]
     cylinder_module = report["tests"]["single_cylinder_integrand"]["summary"]
+    fermionic_spin_module = report["tests"]["fermionic_spin_structure_cylinder"]["summary"]
     bose_fermi_module = report["tests"]["bose_fermi_cancellation"]["summary"]
+    gso_spin_module = report["tests"]["gso_spin_structure_scan"]["summary"]
 
     lines = [
         "# Numerical Suite Report",
@@ -707,6 +787,12 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`fermionic closed-form rel error = {benchmarks['single_cylinder_fermionic_rel_error']:.3e}`"
         ),
         (
+            "- Fermionic oscillator spin structures: "
+            f"`max rel error = {benchmarks['fermionic_spin_structure_max_rel_error']:.3e}`, "
+            f"`periodic compatibility error = {benchmarks['fermionic_spin_structure_periodic_compatibility_error']:.3e}`, "
+            f"`min antiperiodic frequency = {benchmarks['fermionic_spin_structure_min_antiperiodic_frequency']:.3e}`"
+        ),
+        (
             "- Bosonic normalization structure: "
             f"`C_tail = {benchmarks['bosonic_invariant_tail_constant']:.9f}`, "
             f"`invariant-tail rmse = {benchmarks['bosonic_invariant_tail_rmse']:.3e}`, "
@@ -722,6 +808,12 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`max |q_rel^2/(2 gamma_cont) - log mu^2| = {benchmarks['continuum_mu_identity_max_error']:.3e}`, "
             f"`max |exp_inf - log mu^2| = {benchmarks['continuum_mu_discrete_max_abs_error']:.3e}`, "
             f"`max relative error = {benchmarks['continuum_mu_discrete_max_rel_error']:.3e}`"
+        ),
+        (
+            "- Tachyon prefactor remainder after removing `mu(alpha)^2`: "
+            f"`max family extrapolation error = {benchmarks['tachyon_prefactor_remainder_max_abs_error']:.3e}`, "
+            f"`max relative error = {benchmarks['tachyon_prefactor_remainder_max_rel_error']:.3e}`, "
+            f"`max largest-scale row error = {benchmarks['tachyon_prefactor_remainder_max_final_row_error']:.3e}`"
         ),
         "- DM/PS Lambda convention bridge: degree-rescaled prefactor tensors are alpha-independent and match the expected DM-normalized coefficients to numerical precision.",
         (
@@ -740,6 +832,13 @@ def markdown_report(report: dict[str, Any]) -> str:
             "- Local arc-admixture vacuum-catalog scan: "
             f"`qq catalog error = {benchmarks['local_arc_catalog_qq_error']:.3e}`, "
             f"`delta catalog error = {benchmarks['local_arc_catalog_delta_error']:.3e}`"
+        ),
+        (
+            "- Local nearest-neighbor family scan: "
+            f"`single-point analytic error = {benchmarks['local_nearest_neighbor_single_point_error']:.3e}`, "
+            f"`single-point local-reduced error = {benchmarks['local_nearest_neighbor_single_point_reduced_error']:.3e}`, "
+            f"`qq catalog error = {benchmarks['local_nearest_neighbor_catalog_qq_error']:.3e}`, "
+            f"`delta catalog error = {benchmarks['local_nearest_neighbor_catalog_delta_error']:.3e}`"
         ),
         (
             "- Local endpoint-phase scan: "
@@ -768,6 +867,13 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`closest distance to 1 = {benchmarks['pre_gso_closest_distance_to_one']:.6f}`, "
             f"`closest log|R| = {benchmarks['pre_gso_closest_log_abs_ratio']:.6f}`"
         ),
+        (
+            "- Oscillator spin-structure sign scan: "
+            f"`best-pattern max distance = {benchmarks['gso_best_pattern_max_distance']:.6f}`, "
+            f"`best-pattern closest distance = {benchmarks['gso_best_pattern_closest_distance']:.6f}`, "
+            f"`standard-pattern max distance = {benchmarks['gso_standard_pattern_max_distance']:.6f}`, "
+            f"`standard-pattern closest distance = {benchmarks['gso_standard_pattern_closest_distance']:.6f}`"
+        ),
         "",
         "## Module Status",
         "",
@@ -775,6 +881,7 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `bosonic_normalization_structure`: `{bosonic_tail_module['passed']}/{bosonic_tail_module['total']}` passed",
         f"- `continuum_tachyon_benchmark`: `{continuum_tachyon_module['passed']}/{continuum_tachyon_module['total']}` passed",
         f"- `continuum_tachyon_factor_split`: `{continuum_split_module['passed']}/{continuum_split_module['total']}` passed",
+        f"- `tachyon_prefactor_remainder`: `{prefactor_remainder_module['passed']}/{prefactor_remainder_module['total']}` passed",
         f"- `neumann_extraction`: `{neumann_module['passed']}/{neumann_module['total']}` passed",
         f"- `graviton_prefactor`: `{prefactor_module['passed']}/{prefactor_module['total']}` passed",
         f"- `graviton_assembly`: `{graviton_module['passed']}/{graviton_module['total']}` passed",
@@ -783,6 +890,7 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `local_channel_catalog`: `{local_catalog_module['passed']}/{local_catalog_module['total']}` passed",
         f"- `local_arc_candidate_scan`: `{local_arc_module['passed']}/{local_arc_module['total']}` passed",
         f"- `local_arc_catalog_scan`: `{local_arc_catalog_module['passed']}/{local_arc_catalog_module['total']}` passed",
+        f"- `local_nearest_neighbor_family_scan`: `{local_nearest_neighbor_module['passed']}/{local_nearest_neighbor_module['total']}` passed",
         f"- `local_endpoint_phase_scan`: `{local_endpoint_phase_module['passed']}/{local_endpoint_phase_module['total']}` passed",
         f"- `local_vacuum_reduction`: `{local_vacuum_module['passed']}/{local_vacuum_module['total']}` passed",
         f"- `local_superstring_tree_benchmark`: `{local_tree_module['passed']}/{local_tree_module['total']}` passed",
@@ -791,7 +899,9 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `superstring_normalization`: `{normalization_module['passed']}/{normalization_module['total']}` passed",
         f"- `twisted_cylinder`: `{twisted_module['passed']}/{twisted_module['total']}` passed",
         f"- `single_cylinder_integrand`: `{cylinder_module['passed']}/{cylinder_module['total']}` passed",
+        f"- `fermionic_spin_structure_cylinder`: `{fermionic_spin_module['passed']}/{fermionic_spin_module['total']}` passed",
         f"- `bose_fermi_cancellation`: `{bose_fermi_module['passed']}/{bose_fermi_module['total']}` passed",
+        f"- `gso_spin_structure_scan`: `{gso_spin_module['passed']}/{gso_spin_module['total']}` passed",
         "",
         "## Notes",
         "",
@@ -905,6 +1015,12 @@ def print_console_summary(report: dict[str, Any]) -> None:
         f"fermionic rel err {benchmarks['single_cylinder_fermionic_rel_error']:.3e}"
     )
     print(
+        "  Fermion spin structures      = "
+        f"max rel err {benchmarks['fermionic_spin_structure_max_rel_error']:.3e}, "
+        f"periodic compat err {benchmarks['fermionic_spin_structure_periodic_compatibility_error']:.3e}, "
+        f"min anti-periodic freq {benchmarks['fermionic_spin_structure_min_antiperiodic_frequency']:.3e}"
+    )
+    print(
         "  Bosonic normalization tail   = "
         f"C_tail {benchmarks['bosonic_invariant_tail_constant']:.9f}, "
         f"invariant rmse {benchmarks['bosonic_invariant_tail_rmse']:.3e}, "
@@ -923,6 +1039,12 @@ def print_console_summary(report: dict[str, Any]) -> None:
         f"max rel err {benchmarks['continuum_mu_discrete_max_rel_error']:.3e}"
     )
     print(
+        "  Tachyon prefactor remainder  = "
+        f"max family err {benchmarks['tachyon_prefactor_remainder_max_abs_error']:.3e}, "
+        f"max rel err {benchmarks['tachyon_prefactor_remainder_max_rel_error']:.3e}, "
+        f"max largest-scale row err {benchmarks['tachyon_prefactor_remainder_max_final_row_error']:.3e}"
+    )
+    print(
         "  Local channel catalog        = "
         f"qq {benchmarks['local_qq_catalog_counts']}, "
         f"delta {benchmarks['local_delta_catalog_counts']}"
@@ -931,6 +1053,13 @@ def print_console_summary(report: dict[str, Any]) -> None:
         "  Pre-GSO BF ratio scan        = "
         f"closest distance {benchmarks['pre_gso_closest_distance_to_one']:.6f}, "
         f"closest log|R| {benchmarks['pre_gso_closest_log_abs_ratio']:.6f}"
+    )
+    print(
+        "  GSO sign-pattern scan        = "
+        f"best max dist {benchmarks['gso_best_pattern_max_distance']:.6f}, "
+        f"best closest dist {benchmarks['gso_best_pattern_closest_distance']:.6f}, "
+        f"std max dist {benchmarks['gso_standard_pattern_max_distance']:.6f}, "
+        f"std closest dist {benchmarks['gso_standard_pattern_closest_distance']:.6f}"
     )
     print()
     print("Per-module summary:")

@@ -60,6 +60,33 @@ def test_join_arc_difference_rows() -> dict[str, object]:
     }
 
 
+def test_nearest_neighbor_rows_are_zero_average_and_exact() -> dict[str, object]:
+    report = lif.join_local_fermion_data(6, 7)
+    basis1, _ = tc.real_zero_sum_basis(report.n1)
+    basis2, _ = tc.real_zero_sum_basis(report.n2)
+
+    checks = (
+        (report.leg1_forward_selector, report.leg1_forward_oscillator_row, basis1),
+        (report.leg1_backward_selector, report.leg1_backward_oscillator_row, basis1),
+        (report.leg2_forward_selector, report.leg2_forward_oscillator_row, basis2),
+        (report.leg2_backward_selector, report.leg2_backward_oscillator_row, basis2),
+    )
+
+    max_error = 0.0
+    max_average_sum = 0.0
+    for selector, row, basis in checks:
+        reconstructed = basis @ row
+        max_error = max(max_error, float(np.linalg.norm(reconstructed - selector, ord=np.inf)))
+        max_average_sum = max(max_average_sum, float(abs(np.sum(selector))))
+
+    return {
+        "test": "nearest_neighbor_rows_are_zero_average_and_exact",
+        "max_error": max_error,
+        "max_average_sum": max_average_sum,
+        "pass": max_error < 1.0e-12 and max_average_sum < 1.0e-12,
+    }
+
+
 def test_local_sites_are_not_leg_averages() -> dict[str, object]:
     report = lif.join_local_fermion_data(5, 8)
     average1 = lif.average_selector(report.n1)
@@ -170,15 +197,36 @@ def test_general_endpoint_linear_decomposition_constraints() -> dict[str, object
     }
 
 
+def test_canonical_nearest_neighbor_candidate_preserves_mixed_constraints() -> dict[str, object]:
+    decomposition = lif.canonical_nearest_neighbor_local_candidate(
+        7,
+        11,
+        coeff_leg1_forward=0.5,
+        coeff_leg1_backward=-0.25,
+        coeff_leg2_forward=0.75,
+        coeff_leg2_backward=-0.5,
+    )
+    theta_cm_error = float(abs(decomposition.theta_cm_coefficient))
+    lambda_error = float(abs(decomposition.lambda_lat_coefficient - 1.0))
+    return {
+        "test": "canonical_nearest_neighbor_candidate_preserves_mixed_constraints",
+        "theta_cm_error": theta_cm_error,
+        "lambda_error": lambda_error,
+        "pass": theta_cm_error < 1.0e-12 and lambda_error < 1.0e-12,
+    }
+
+
 def run_all_tests() -> dict[str, object]:
     results = {
         "site_decomposition_identity": test_site_decomposition_identity(),
         "join_arc_difference_rows": test_join_arc_difference_rows(),
+        "nearest_neighbor_rows_are_zero_average_and_exact": test_nearest_neighbor_rows_are_zero_average_and_exact(),
         "local_sites_are_not_leg_averages": test_local_sites_are_not_leg_averages(),
         "average_to_mixed_zero_mode_map": test_average_to_mixed_zero_mode_map(),
         "canonical_local_difference_isolates_reduced_lambda": test_canonical_local_difference_isolates_reduced_lambda(),
         "endpoint_constraint_solution_matches_canonical": test_endpoint_constraint_solution_matches_canonical(),
         "general_endpoint_linear_decomposition_constraints": test_general_endpoint_linear_decomposition_constraints(),
+        "canonical_nearest_neighbor_candidate_preserves_mixed_constraints": test_canonical_nearest_neighbor_candidate_preserves_mixed_constraints(),
     }
     passed = sum(1 for item in results.values() if item.get("pass"))
     total = len(results)

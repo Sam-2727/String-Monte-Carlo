@@ -165,6 +165,107 @@ K_{F,k}(\bar\eta_f, \eta_i; T) = \exp\!\left[\bar\eta_f\,e^{-\omega_k T}\,\eta_i
 \end{equation}
 The zero mode ($\omega_0 = 0$) propagates without damping: $K_{F,0} = \exp(\bar\eta_f\eta_i)$.
 
+For loop amplitudes one must distinguish two binary pieces of fermionic
+spin-structure data. The first is the spatial boundary condition around the
+$\sigma$-cycle,
+\[
+\nu\in\Bigl\{0,\frac12\Bigr\},
+\]
+with $\nu=0$ for periodic (Ramond-like) fermions and $\nu=\frac12$ for
+antiperiodic (Neveu--Schwarz-like) fermions. The second is the sign
+$s\in\{\pm1\}$ entering the coherent-state trace around the Euclidean time
+cycle. For fixed $(\nu,s)$, define the shifted finite-$N$ transport matrix
+\begin{equation}
+U_\nu(T,\varphi)
+=
+F_\nu^\dagger
+\mathrm{diag}\!\bigl(
+e^{-\omega_{k+\nu}T}e^{-2\pi\ii(k+\nu)\varphi}
+\bigr)
+F_\nu,
+\label{eq:ferm-spin-transport}
+\end{equation}
+where $(F_\nu)_{kn}=N^{-1/2}e^{2\pi\ii(k+\nu)n/N}$ and
+\[
+\omega_{k+\nu}=\frac{2}{a}\sin\!\Bigl(\frac{\pi|k+\nu|}{N}\Bigr).
+\]
+The corresponding oscillator-sector one-cylinder factor is
+\begin{equation}
+Z^{(1)}_{F,\nu,s}(T,\varphi)
+\equiv
+\det\!\bigl(\mathbf{1}+s\,U_{\nu,\mathrm{osc}}(T,\varphi)\bigr),
+\label{eq:ferm-spin-sector}
+\end{equation}
+where for $\nu=0$ the $k=0$ zero mode is removed from the determinant and
+treated separately, while for $\nu=\frac12$ there is no zero mode. In the
+notation used later,
+\[
+\Bigl(\nu,s\Bigr)=\Bigl(\frac12,+1\Bigr)\leftrightarrow \mathrm{NS},\quad
+\Bigl(\nu,s\Bigr)=\Bigl(\frac12,-1\Bigr)\leftrightarrow \widetilde{\mathrm{NS}},\quad
+\Bigl(\nu,s\Bigr)=\Bigl(0,+1\Bigr)\leftrightarrow \mathrm{R},\quad
+\Bigl(\nu,s\Bigr)=\Bigl(0,-1\Bigr)\leftrightarrow \widetilde{\mathrm{R}}.
+\]
+Thus the notation
+\[
+Z^{(1)}_{F,\alpha}(T,\varphi),
+\qquad
+\alpha\in\{\mathrm{NS},\widetilde{\mathrm{NS}},\mathrm{R},\widetilde{\mathrm{R}}\},
+\]
+is only shorthand for the four choices of $(\nu,s)$ above. A physical closed
+string loop amplitude would require \emph{two} independent chiral choices,
+say $\alpha_L$ and $\alpha_R$, together with their zero-mode factors and
+overall phases:
+\begin{equation}
+Z_{\mathrm{closed}}^{\mathrm{osc}}(T,\varphi;c^{(L)},c^{(R)})
+\equiv
+\sum_{\alpha_L,\alpha_R}
+c^{(L)}_{\alpha_L}\,c^{(R)}_{\alpha_R}\,
+\bigl[Z^{(1)}_{F,\alpha_L}(T,\varphi)\bigr]^8
+\bigl[Z^{(1)}_{F,\alpha_R}(T,\varphi)\bigr]^8.
+\label{eq:ferm-closed-osc}
+\end{equation}
+The present loop numerics do \emph{not} yet claim to evaluate this full
+quantity. What is currently implemented is the restricted trial ratio
+\begin{equation}
+{\cal R}_{\mathrm{trial}}^{\mathrm{osc}}(T,\varphi;c)
+\equiv
+\frac{\Bigl(\sum_{\alpha} c_\alpha\,[Z^{(1)}_{F,\alpha}(T,\varphi)]^8\Bigr)^2}
+{\bigl(Z_B^{(1)}(T,\varphi)\bigr)^8},
+\label{eq:ferm-trial-ratio}
+\end{equation}
+which assumes the same chiral coefficients on the left and right and omits
+the independent zero-mode factors as well as the final coherent-state/Pfaffian
+normalization relative to the bosonic determinant. This distinction matters:
+the current negative GSO-sign scan rules out ``sign choice only'' as a
+solution, but it does \emph{not} yet rule out the fully assembled physical
+type-II loop integrand.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={font=\small}]
+\node[draw,rounded corners,align=center,text width=4.0cm,inner sep=5pt] (quartet) at (-4.0,0.2)
+{\textbf{Explicit one-cylinder data}\\[2pt]
+$Z^{(1)}_{F,\alpha}(T,\varphi)$ for\\
+$\alpha\in\{\mathrm{NS},\widetilde{\mathrm{NS}},\mathrm{R},\widetilde{\mathrm{R}}\}$};
+
+\node[draw,rounded corners,align=center,text width=4.8cm,inner sep=5pt] (physical) at (2.5,1.45)
+{\textbf{Physical loop target}\\[2pt]
+$Z_{\mathrm{closed}}^{\mathrm{osc}}(T,\varphi;c^{(L)},c^{(R)})$\\
+plus zero modes and normalization/phases};
+
+\node[draw,rounded corners,align=center,text width=4.8cm,inner sep=5pt,fill=gray!10] (trial) at (2.5,-1.15)
+{\textbf{Current implemented scan}\\[2pt]
+${\cal R}_{\mathrm{trial}}^{\mathrm{osc}}(T,\varphi;c)$\\
+same chiral coefficients on both sides,\\
+zero modes omitted};
+
+\draw[->,thick] (-1.95,0.5) -- (0.0,1.05);
+\draw[->,thick] (-1.95,-0.05) -- (0.0,-0.7);
+\end{tikzpicture}
+\caption{Loop spin-structure bookkeeping in the companion note. The finite-$N$ cylinder now supplies the full oscillator quartet explicitly, but the current sign scan still probes only the restricted trial ratio~\eqref{eq:ferm-trial-ratio}, not the final physical type-II loop integrand.}
+\label{fig:companion-loop-bookkeeping}
+\end{figure}
+
 %% ======================================================================
 \section{Cubic overlap and Gaussian sewing}
 \label{sec:overlap}
@@ -374,6 +475,37 @@ so the continuum Mandelstam prefactor is controlled by the same Schur complement
 \label{eq:companion-mu-split-error}
 \end{equation}
 with maximum relative error $2.42\times 10^{-7}$ in the second comparison. So the bosonic three-tachyon sector now matches the known continuum Schur-complement kinematics and the full on-shell Mandelstam exponential quantitatively, while the overall cubic normalization remains a separate question encoded in ${\cal C}_{\mathrm{tail}}$.
+The remaining scalar prefactor can now also be written explicitly on the same
+fixed-ratio families. Defining
+\begin{equation}
+R_{\mathrm{pref}}(N_1,N_2)
+\equiv
+\log C_{\mathrm{req}}^{(B)}(N_1,N_2)-\log\mu(\alpha_1,\alpha_2,\alpha_3)^2,
+\label{eq:companion-pref-remainder}
+\end{equation}
+the helper \texttt{tachyon\_prefactor\_remainder.py} removes the universal
+fixed-family scale tail and compares the extrapolated remainder to
+\begin{equation}
+R_{\mathrm{target}}(a,b)
+=
+{\cal C}_{\mathrm{tail}}
+ + 7\log a + 7\log b - 5\log(a+b)
+ - \log\mu(a,b,a+b)^2.
+\label{eq:companion-pref-target}
+\end{equation}
+On the sampled five-family set the agreement is
+\begin{equation}
+\max\bigl|R_{\mathrm{pref}}^{(\infty)}-R_{\mathrm{target}}\bigr|
+=6.36\times 10^{-8},
+\qquad
+\max
+\frac{\bigl|R_{\mathrm{pref}}^{(\infty)}-R_{\mathrm{target}}\bigr|}{|R_{\mathrm{target}}|}
+=3.48\times 10^{-9}.
+\label{eq:companion-pref-target-error}
+\end{equation}
+So the remaining bosonic normalization problem is now isolated to an explicit
+scalar prefactor target, even though the final Mandelstam/HIKKO coupling match
+itself is still open.
 
 \subsection{Two-tachyon / one-massless amplitude}
 
@@ -706,6 +838,36 @@ So the present three-point vacuum problem fixes the endpoint-linear part of the
 local fermion but does not yet distinguish these simple pure-local arc
 admixtures; the remaining uncertainty lives in the deeper local completion and
 its branch-point normalization, not in the reduced zero-mode coordinate itself.
+The same conclusion extends to the larger sampled nearest-neighbor family once
+one combines this arc scan with the degree classification of the local catalog.
+On the sampled grid, the uncontracted trace-dropped catalog contains only
+$\Xi_{\mathrm{loc}}$ degrees $0,2,4$, so after the diagonal vacuum reduction
+\[
+\langle \Xi_{\mathrm{loc}}^a \Xi_{\mathrm{loc}}^b\rangle_{\mathrm{vac}}
+=
+C_\Xi\,\delta^{ab}
+\]
+every contracted channel is at most quadratic in the single scalar $C_\Xi$.
+The arc-family scan already samples five distinct values of $C_\Xi$ and gives
+zero discrepancy from the reduced catalog at all five. Therefore the contracted
+sampled catalog is identically independent of $C_\Xi$ for any linear local
+candidate with the same mixed zero-mode data $(\Theta_{\mathrm{cm}},
+\Lambda_{\mathrm{lat}})=(0,1)$ and a spinor-diagonal vacuum reduction. In
+particular, for the broader nearest-neighbor completion
+\[
+\Lambda_{\mathrm{nn}}
+=
+\Lambda_{\mathrm{join}}
++c_{1,+}(\theta_1^{(1)}-\theta_0^{(1)})
++c_{1,-}(\theta_0^{(1)}-\theta_{N_1-1}^{(1)})
++c_{2,+}(\theta_1^{(2)}-\theta_0^{(2)})
++c_{2,-}(\theta_0^{(2)}-\theta_{N_2-1}^{(2)}),
+\]
+the new helper \texttt{local\_nearest\_neighbor\_family\_scan.py} again finds
+zero benchmark and catalog discrepancy on a representative sampled coefficient
+set. So the present three-point vacuum problem fixes the endpoint-linear core
+uniquely but still does not determine the broader join-supported linear
+completion.
 
 \subsection{Bosonic prefactor: parity obstruction and stencil choice}
 
@@ -993,7 +1155,7 @@ with all corresponding ${\cal R}_\delta$ equal to zero and with the benchmark di
 \frac{\sigma_2}{\sigma_1} = 1.11 \times 10^{-4}.
 \label{eq:ferm-rank1}
 \end{equation}
-The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. In the automated test suite, all 64 tests pass.
+The relative Frobenius error of this rank-one fit is likewise $1.11\times 10^{-4}$, and the maximum normalized-profile deviation after calibration at $\lambda = 2/5$ is $6.97\times 10^{-4}$. So the explicit fermionic contraction, not merely the Weyl proxy, confirms a universal $\lambda$-profile across the unblocked stencil family with residual ambiguity only in the overall normalization. The current machine-readable regression checkpoint is the aggregated suite in \texttt{numerical\_suite.py}.
 
 %% ======================================================================
 \section{Neumann coefficients from Gaussian moments}
@@ -1029,12 +1191,13 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (87/87 tests passing in the automated suite):
+\textbf{Validated} (see the current aggregated checkpoint in \texttt{numerical\_suite.py}):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
 \item Continuum bosonic Schur benchmark: the Richardson-extrapolated fixed-ratio $\gamma_T$ values agree with the analytic continuum target~\eqref{eq:companion-gamma-cont} with maximum absolute error $1.94\times 10^{-5}$ and maximum relative error $5.37\times 10^{-5}$ on the sampled family set.
 \item Continuum bosonic factor split: the on-shell identity~\eqref{eq:companion-mu-split} holds to $8.88\times 10^{-16}$, and the discrete Richardson limit matches $\log\mu(\alpha)^2$ with maximum absolute error $1.01\times 10^{-6}$ and maximum relative error $2.42\times 10^{-7}$ on the sampled family set.
+\item Bosonic tachyon prefactor remainder: after removing the continuum $\mu(\alpha)^2$ exponential and the universal fixed-family scale tail, the extrapolated scalar remainder matches the explicit target~\eqref{eq:companion-pref-target} with maximum absolute error $6.36\times 10^{-8}$ and maximum relative error $3.48\times 10^{-9}$ on the sampled family set.
 \item $2T+1M$ tensor: $A_{\mathrm{tr}} \approx 0$, $B_{\mathrm{rel}} \to 1.920$ with continuum error bar $\pm 7 \times 10^{-4}$.
 \item Bosonic normalization structure: on the $4\le N_1,N_2\le 60$, $N_3\le 120$ grid the invariant three-leg tail gives ${\cal C}_{\mathrm{tail}}=-22.496054835$ with RMS residual $2.48\times 10^{-7}$, while the fixed incoming/outgoing nonlinear tails $(7,\pi,\pi^2/72)$ and $(-5,-\pi,\pi^2/72)$ leave only linear-plus-constant remainders with RMS residuals $1.61\times 10^{-12}$ and $2.91\times 10^{-11}$.
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
@@ -1049,6 +1212,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Full local channel catalog: on the sampled ratio grid the trace-dropped $qq$ response over the full $5^3$ polarization basis splits into 47 vanishing channels, 37 purely quadratic local channels, 16 pure reduced channels, 16 pure quartic local channels, and 9 mixed reduced-plus-quartic channels; the trace-dropped $\delta^{IJ}$ response vanishes for all 125 sampled channels.
 \item Explicit local nonzero-mode vacuum reduction for the same canonical endpoint-difference candidate: after contraction, the sampled trace-dropped local catalog collapses to 100 vanishing channels and 25 pure reduced channels, with the benchmark dilaton quartic sector vanishing as in \eqref{eq:theta-local-vacuum-collapse}.
 \item Local three-point benchmark assembled from the vacuum-contracted local responses: on the sampled family set, the current canonical local candidate reproduces the same benchmark graviton, dilaton, and antisymmetric-channel amplitudes as the reduced calculation, with exact local-vs-reduced agreement and maximum benchmark mismatch below $10^{-14}$ as in \eqref{eq:theta-local-tree-benchmark}.
+\item Broader nearest-neighbor local family: the full sampled three-point vacuum catalog stays unchanged even after extending the canonical endpoint difference by the four join-supported nearest-neighbor rows on the two incoming legs. So, within this larger linear family, the present three-point vacuum problem still fixes only the endpoint-linear core and not the full local completion.
 \item Interaction-region geometry: the current finite-$a$ scheme is kept as an exact pairwise sewing together with a resolved bond-centered local interaction region supported on $(I_+,I_-)$ and adjacent one-sided arc data, rather than being reformulated around a single distinguished lattice site.
 \item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
 \item Direct structural comparison to the known flat-space GS lightcone cubic benchmark $\,\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)\,$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error, but only within the same reduced $\Lambda$ ansatz and still up to the unfixed overall normalization.
@@ -1058,14 +1222,16 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Explicit fermionic Grassmann contraction~\eqref{eq:ferm-channels} in the fixed reduced $\Lambda$ ansatz: dilaton and $B$-field channels vanish exactly; graviton channels show the correct transverse-rotation ratios.
 \item Twisted-cylinder building block: exact lattice twists satisfy $R_N(m/N)=P_m$ to $4\times 10^{-15}$ and $B(T,m/N)=B(T,0)P_m$ to $7\times 10^{-16}$, while the oscillator-sector loop-trace quadratic form has strictly positive real part on the sampled $(N,T,\varphi)$ grid and its log-determinant matches the closed Fourier-mode formula to $7\times 10^{-13}$.
 \item Single-cylinder oscillator trace prototype built from those twisted kernels: the bosonic one-coordinate factor matches the closed mode-product formula with maximum relative error $2.40\times 10^{-13}$ on the sampled grid, while the fermionic coherent-state factor matches to $1.22\times 10^{-15}$. This is a pre-GSO oscillator-sector building block rather than a full physical loop amplitude, because the spin-structure sum, zero-mode factor, and coherent-state/Pfaffian normalization relative to the bosonic determinant are still deferred.
-\item Stable pre-GSO Bose--Fermi ratio scan: no unsummed single-cylinder sector is yet close to the target ratio $1$ on the sampled grid. The closest sampled sector has distance $0.34085$ from $1$, while the largest sampled log-magnitude is already $5.04\times 10^3$. This makes the missing spin-structure/GSO and zero-mode assembly explicit.
+\item Explicit fermionic oscillator spin structures on one cylinder: the new periodic/antiperiodic sector helper reproduces the older periodic factors to $2.45\times10^{-15}$, matches the antiperiodic direct determinants to their shifted closed mode products to $2.56\times10^{-15}$, and makes the antiperiodic mass gap explicit through a strictly positive minimum sampled oscillator frequency.
+\item Stable pre-GSO Bose--Fermi ratio scan: no unsummed single-cylinder sector is yet close to the target ratio $1$ on the sampled grid. The closest sampled sector has distance $0.34085$ from $1$, while the largest sampled log-magnitude is already $5.04\times 10^3$. This is an oscillator-sector statement only; it intentionally omits both the zero-mode factors and the final GSO/spin-structure combination.
+\item Oscillator spin-structure sign scan: after promoting the loop fermions to the full $(\mathrm{NS},\widetilde{\mathrm{NS}},\mathrm{R},\widetilde{\mathrm{R}})$ oscillator quartet, the trial closed-string ratio built from the same chiral sign pattern on the left- and right-moving sides is still far from $1$. Even the best sampled sign pattern has closest distance $0.304799$ and worst-case distance $6.84\times 10^2$; the standard $\mathrm{NS}-\widetilde{\mathrm{NS}}-\mathrm{R}+\widetilde{\mathrm{R}}$ pattern is no better. So the remaining loop problem is not just missing sign bookkeeping, but the zero-mode and normalization assembly.
 \end{itemize}
 
 \textbf{Remaining:}
 \begin{enumerate}
-\item Derive the genuinely local branch-point-normalized finite-$N$ fermionic interaction-point variable and check whether it reduces to the present canonical endpoint-difference candidate in the three-point vacuum problem.
+\item Derive the genuinely local branch-point-normalized finite-$N$ fermionic interaction-point variable and determine whether any local operators beyond the present linear nearest-neighbor family survive in the continuum three-point amplitude.
 \item Fix the overall cubic normalization by matching the remaining bosonic and superstring overall coefficients to the continuum three-tachyon and three-graviton couplings. The bosonic Schur-complement kinematics are now already matched, so the unresolved part is the overall normalization rather than the reduced Gaussian structure.
-\item Assemble the physical spin-structure/GSO and zero-mode factors on top of the single-cylinder prototype; the unsummed sector scan already shows that pre-GSO oscillator sectors do not cancel by themselves.
+\item Assemble the physical spin-structure/GSO and zero-mode factors on top of the single-cylinder prototype; the new oscillator spin-structure scan shows that even after adding periodic/antiperiodic sectors, sign choices alone do not produce the expected cancellation.
 \item Assemble the first loop integrand by adding the remaining zero-mode factor to the now-tested twisted propagator building blocks.
 \item Fix the coherent-state/Pfaffian normalization relative to the bosonic determinant for physical superstring loops.
 \item Spin-structure/GSO bookkeeping for physical superstring loops.
