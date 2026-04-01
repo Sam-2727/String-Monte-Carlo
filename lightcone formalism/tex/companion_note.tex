@@ -391,10 +391,10 @@ The superstring cubic vertex factorizes as
 \begin{equation}
 |V_{\mathrm{GS}}\rangle = \mathcal{P}_{I,\mathrm{loc}}\,|V_{\mathrm{kin}}\rangle,
 \qquad
-\mathcal{P}_{I,\mathrm{loc}} = K_{\mathrm{lat}}^I\,\widetilde K_{\mathrm{lat}}^J\,v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{lat}}),
+\mathcal{P}_{I,\mathrm{loc}} = K_{\mathrm{lat}}^I\,\widetilde K_{\mathrm{lat}}^J\,v_{IJ}^{\mathrm{lat}}(\Lambda_{\mathrm{join}}),
 \label{eq:vgs}
 \end{equation}
-where $|V_{\mathrm{kin}}\rangle$ is the exact bosonic-plus-fermionic kinematic overlap, and the superscripts $I, J = 1, \dots, \perpD$ are transverse SO$(\perpD)$ vector indices. The three factors are:
+where $|V_{\mathrm{kin}}\rangle$ is the exact bosonic-plus-fermionic kinematic overlap, and the superscripts $I, J = 1, \dots, \perpD$ are transverse SO$(\perpD)$ vector indices. Here $\Lambda_{\mathrm{join}}$ denotes the genuinely local interaction-point fermion variable. The reduced overlap-constrained coordinate $\Lambda_{\mathrm{lat}}$ introduced below is only the current three-point ansatz obtained after dropping the explicit local correction $\Xi_{\mathrm{loc}}$. The three factors are:
 
 \begin{itemize}
 \item $K_{\mathrm{lat}}^I$, $\widetilde K_{\mathrm{lat}}^J$: discretized interaction-point operators, which in the continuum are the finite parts of $\partial X^I$ and $\bar\partial X^J$ at the branch point of the Mandelstam map. They scale as $a^{-1/2}$ times a one-sided lattice difference.
@@ -509,7 +509,7 @@ with no residual $\Xi_{\mathrm{loc}}$ dependence. By contrast, the benchmark dil
 \bigl[\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc}}(\Xi_{\mathrm{loc}};\lambda)\bigr]_{\Xi_{\mathrm{loc}}^0}=0,
 \label{eq:theta-local-channel-dilaton}
 \end{equation}
-and the corresponding trace-dropped $\delta^{IJ}$ benchmark channel vanishes on the same grid. So, for this canonical endpoint-difference local candidate, the benchmark graviton channels already reduce exactly to the old reduced ansatz before any further nonzero-mode averaging, while the genuinely local correction sectors first appear in channels that are absent in the reduced benchmark.
+and the corresponding trace-dropped $\delta^{IJ}$ benchmark channel vanishes on the same grid. So, for this canonical endpoint-difference local candidate, the benchmark graviton channels already reduce exactly to the old reduced ansatz before any further nonzero-mode averaging, while the genuinely local correction sectors first appear in channels that are absent in the reduced benchmark. The helper \texttt{local\_channel\_catalog.py} extends this from the benchmark set to the full $5^3$ polarization catalog built from $\{\epsilon_\parallel,\epsilon_{23},\epsilon_{24},\epsilon_{\mathrm{dil}},B_{23}\}$. On the same sampled ratio grid and in the trace-dropped $qq$ response, the 125 channels split into only five exact classes: 47 vanish identically, 37 are purely quadratic in $\Xi_{\mathrm{loc}}$, 16 are pure reduced degree-$0$ responses, 16 are purely quartic, and 9 contain both reduced and quartic pieces. For the trace-dropped $\delta^{IJ}$ response, all 125 sampled channels vanish. This makes clear that the benchmark graviton collapse is part of a small exact finite-$N$ classification rather than an isolated special case.
 
 \subsection{Bosonic prefactor: parity obstruction and stencil choice}
 
@@ -833,17 +833,19 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (64/64 tests passing in the automated suite):
+\textbf{Validated} (73/73 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
 \item $2T+1M$ tensor: $A_{\mathrm{tr}} \approx 0$, $B_{\mathrm{rel}} \to 1.920$ with continuum error bar $\pm 7 \times 10^{-4}$.
+\item Bosonic normalization structure: on the $4\le N_1,N_2\le 60$, $N_3\le 120$ grid the invariant three-leg tail gives ${\cal C}_{\mathrm{tail}}=-22.496054835$ with RMS residual $2.48\times 10^{-7}$, while the fixed incoming/outgoing nonlinear tails $(7,\pi,\pi^2/72)$ and $(-5,-\pi,\pi^2/72)$ leave only linear-plus-constant remainders with RMS residuals $1.61\times 10^{-12}$ and $2.91\times 10^{-11}$.
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
 \item Finite-$N$ local interaction-point fermion scaffolding: the exact identities \eqref{eq:theta-site-split}, \eqref{eq:theta-mixed-avg}, and \eqref{eq:theta-local-bridge}, together with the corresponding one-sided local arc-difference rows, are implemented and regression-tested, making the distinction between join-local data and reduced zero-mode coordinates explicit.
 \item Exact mixed local prefactor expansion: the sparse-polynomial decomposition \eqref{eq:theta-local-prefactor-expand} is implemented and regression-tested, with the $\Xi_{\mathrm{loc}}$-degree-$0$ sector reducing exactly to the current reduced ansatz and the higher-degree correction sectors remaining explicitly nonzero.
 \item Exact local channel reduction at fixed benchmark polarizations: on the sampled ratio grid, the trace-dropped graviton $qq$ channels already collapse to the reduced responses \eqref{eq:theta-local-channel-collapse}, while the benchmark dilaton channel is purely quartic in $\Xi_{\mathrm{loc}}$ as in \eqref{eq:theta-local-channel-dilaton}.
+\item Full local channel catalog: on the sampled ratio grid the trace-dropped $qq$ response over the full $5^3$ polarization basis splits into 47 vanishing channels, 37 purely quadratic local channels, 16 pure reduced channels, 16 pure quartic local channels, and 9 mixed reduced-plus-quartic channels; the trace-dropped $\delta^{IJ}$ response vanishes for all 125 sampled channels.
 \item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
 \item Direct structural comparison to the known flat-space GS lightcone cubic benchmark $\,\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)\,$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error, but only within the same reduced $\Lambda$ ansatz and still up to the unfixed overall normalization.
 \item On-shell trace-dropped graviton channels: $\mathcal{A}_{\mathrm{vec},\parallel}/\mathcal{A}_{\mathrm{vec},\perp} = -7$ exact, $\mathcal{A}_{\mathrm{dilaton}} = 0$ to $10^{-13}$.
@@ -852,13 +854,14 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Explicit fermionic Grassmann contraction~\eqref{eq:ferm-channels} in the fixed reduced $\Lambda$ ansatz: dilaton and $B$-field channels vanish exactly; graviton channels show the correct transverse-rotation ratios.
 \item Twisted-cylinder building block: exact lattice twists satisfy $R_N(m/N)=P_m$ to $4\times 10^{-15}$ and $B(T,m/N)=B(T,0)P_m$ to $7\times 10^{-16}$, while the oscillator-sector loop-trace quadratic form has strictly positive real part on the sampled $(N,T,\varphi)$ grid and its log-determinant matches the closed Fourier-mode formula to $7\times 10^{-13}$.
 \item Single-cylinder oscillator trace prototype built from those twisted kernels: the bosonic one-coordinate factor matches the closed mode-product formula with maximum relative error $2.40\times 10^{-13}$ on the sampled grid, while the fermionic coherent-state factor matches to $1.22\times 10^{-15}$. This is a pre-GSO oscillator-sector building block rather than a full physical loop amplitude, because the spin-structure sum, zero-mode factor, and coherent-state/Pfaffian normalization relative to the bosonic determinant are still deferred.
+\item Stable pre-GSO Bose--Fermi ratio scan: no unsummed single-cylinder sector is yet close to the target ratio $1$ on the sampled grid. The closest sampled sector has distance $0.34085$ from $1$, while the largest sampled log-magnitude is already $5.04\times 10^3$. This makes the missing spin-structure/GSO and zero-mode assembly explicit.
 \end{itemize}
 
 \textbf{Remaining:}
 \begin{enumerate}
 \item Derive the genuinely local finite-$N$ fermionic interaction-point variable and revisit the full superstring cubic calculation on that basis.
 \item Fix the overall cubic normalization by matching to the continuum three-graviton and three-tachyon couplings.
-\item Use the single-cylinder prototype to test Bose--Fermi cancellation of the oscillator ratio as $N\to\infty$.
+\item Assemble the physical spin-structure/GSO and zero-mode factors on top of the single-cylinder prototype; the unsummed sector scan already shows that pre-GSO oscillator sectors do not cancel by themselves.
 \item Assemble the first loop integrand by adding the remaining zero-mode factor to the now-tested twisted propagator building blocks.
 \item Fix the coherent-state/Pfaffian normalization relative to the bosonic determinant for physical superstring loops.
 \item Spin-structure/GSO bookkeeping for physical superstring loops.

@@ -33,6 +33,11 @@ lightcone formalism/tex/companion_note.fls
 lightcone_discrete_sigma_note.pdf
 lightcone_discrete_sigma_note.fdb_latexmk
 lightcone_discrete_sigma_note.fls
+lightcone formalism/references/superstring_cubic_prefactor_bundle/*.pdf
+lightcone formalism/references/superstring_cubic_prefactor_bundle/*.eprint
+lightcone formalism/references/superstring_cubic_prefactor_bundle/0309238_source/*.pdf
+lightcone formalism/references/superstring_cubic_prefactor_bundle/0309238_source/*.fdb_latexmk
+lightcone formalism/references/superstring_cubic_prefactor_bundle/0309238_source/*.fls
 
 # Claude Code
 .claude/

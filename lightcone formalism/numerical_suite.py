@@ -30,11 +30,14 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import low_point_validation as lpv
+import test_bose_fermi_cancellation_scan as tbfcs
+import test_bosonic_normalization_structure as tbns
 import test_fermionic_channel_responses as tfcr
 import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
+import test_local_channel_catalog as tlcc
 import test_local_channel_response as tlcr
 import test_local_interaction_point_fermion as tlipf
 import test_local_prefactor_expansion as tlpe
@@ -87,6 +90,18 @@ def run_tachyon_tests() -> dict[str, Any]:
     results["critical_dimension"] = tta.test_critical_dimension()
     results["large_n_asymptotics"] = tta.test_large_n_asymptotics()
     results["ratio_independence"] = tta.test_amplitude_ratio_independence()
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_bosonic_normalization_structure_tests() -> dict[str, Any]:
+    results = {
+        "invariant_tail_constant": tbns.test_invariant_tail_constant(),
+        "factorized_tail_coefficients_match_expected": tbns.test_factorized_tail_coefficients_match_expected(),
+        "fixed_tail_residuals_are_tiny": tbns.test_fixed_tail_residuals_are_tiny(),
+    }
     return {
         "summary": summarize_passes(results),
         "results": results,
@@ -191,6 +206,18 @@ def run_local_channel_response_tests() -> dict[str, Any]:
     }
 
 
+def run_local_channel_catalog_tests() -> dict[str, Any]:
+    results = {
+        "qq_catalog_class_counts": tlcc.test_qq_catalog_class_counts(),
+        "delta_catalog_vanishes": tlcc.test_delta_catalog_vanishes(),
+        "benchmark_channels_land_in_expected_classes": tlcc.test_benchmark_channels_land_in_expected_classes(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def run_weyl_formula_tests() -> dict[str, Any]:
     results = {
         "weyl_vector_closed_form": twvf.test_closed_form_formula(),
@@ -274,6 +301,18 @@ def run_single_cylinder_integrand_tests() -> dict[str, Any]:
     }
 
 
+def run_bose_fermi_cancellation_tests() -> dict[str, Any]:
+    results = {
+        "log_polar_matches_safe_direct_ratio": tbfcs.test_log_polar_matches_safe_direct_ratio(),
+        "pre_gso_scan_does_not_cancel": tbfcs.test_pre_gso_scan_does_not_cancel(),
+        "large_ratio_log_remains_finite": tbfcs.test_large_ratio_log_remains_finite(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     low_point = report["low_point_validation"]
     tachyon = low_point["tachyon"]
@@ -301,6 +340,9 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     ]
     twisted = report["tests"]["twisted_cylinder"]["results"]
     cylinder = report["tests"]["single_cylinder_integrand"]["results"]
+    bosonic_tail = report["tests"]["bosonic_normalization_structure"]["results"]
+    local_catalog = report["tests"]["local_channel_catalog"]["results"]
+    bose_fermi = report["tests"]["bose_fermi_cancellation"]["results"]
     critical_scan = tachyon["d_perp_scan"]
     best_d = min(critical_scan, key=lambda row: row["rmse"])
     return {
@@ -348,6 +390,14 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "twisted_fermion_transport_error": twisted["fermionic_transport_spectrum"]["max_abs_error"],
         "single_cylinder_bosonic_rel_error": cylinder["bosonic_trace_factor_closed_form"]["max_rel_error"],
         "single_cylinder_fermionic_rel_error": cylinder["fermionic_trace_factor_closed_form"]["max_rel_error"],
+        "bosonic_invariant_tail_constant": bosonic_tail["invariant_tail_constant"]["constant"],
+        "bosonic_invariant_tail_rmse": bosonic_tail["invariant_tail_constant"]["rmse"],
+        "bosonic_incoming_tail_rmse": bosonic_tail["fixed_tail_residuals_are_tiny"]["incoming_rmse"],
+        "bosonic_outgoing_tail_rmse": bosonic_tail["fixed_tail_residuals_are_tiny"]["outgoing_rmse"],
+        "local_qq_catalog_counts": local_catalog["qq_catalog_class_counts"]["counts"],
+        "local_delta_catalog_counts": local_catalog["delta_catalog_vanishes"]["counts"],
+        "pre_gso_closest_distance_to_one": bose_fermi["pre_gso_scan_does_not_cancel"]["closest"]["distance_to_one"],
+        "pre_gso_closest_log_abs_ratio": bose_fermi["pre_gso_scan_does_not_cancel"]["closest"]["log_abs_ratio"],
     }
 
 
@@ -366,6 +416,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
 
     tests = {
         "tachyon_amplitude": run_tachyon_tests(),
+        "bosonic_normalization_structure": run_bosonic_normalization_structure_tests(),
         "neumann_extraction": run_neumann_tests(),
         "graviton_prefactor": run_graviton_prefactor_tests(),
         "graviton_assembly": run_graviton_assembly_tests(),
@@ -373,6 +424,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "local_interaction_point_fermion": run_local_interaction_point_fermion_tests(),
         "local_prefactor_expansion": run_local_prefactor_expansion_tests(),
         "local_channel_response": run_local_channel_response_tests(),
+        "local_channel_catalog": run_local_channel_catalog_tests(),
         "weyl_formula": run_weyl_formula_tests(),
         "projected_graviton_channels": run_projected_graviton_channel_tests(),
         "superstring_decisive": run_superstring_decisive_tests(),
@@ -380,6 +432,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "superstring_normalization": run_superstring_normalization_tests(),
         "twisted_cylinder": run_twisted_cylinder_tests(),
         "single_cylinder_integrand": run_single_cylinder_integrand_tests(),
+        "bose_fermi_cancellation": run_bose_fermi_cancellation_tests(),
     }
 
     module_summaries = {
@@ -423,15 +476,18 @@ def markdown_report(report: dict[str, Any]) -> str:
     summary = report["suite_summary"]
     benchmarks = report["key_benchmarks"]
     tachyon_module = report["tests"]["tachyon_amplitude"]["summary"]
+    bosonic_tail_module = report["tests"]["bosonic_normalization_structure"]["summary"]
     neumann_module = report["tests"]["neumann_extraction"]["summary"]
     prefactor_module = report["tests"]["graviton_prefactor"]["summary"]
     graviton_module = report["tests"]["graviton_assembly"]["summary"]
     local_fermion_module = report["tests"]["local_interaction_point_fermion"]["summary"]
+    local_catalog_module = report["tests"]["local_channel_catalog"]["summary"]
     projected_module = report["tests"]["projected_graviton_channels"]["summary"]
     decisive_module = report["tests"]["superstring_decisive"]["summary"]
     normalization_module = report["tests"]["superstring_normalization"]["summary"]
     twisted_module = report["tests"]["twisted_cylinder"]["summary"]
     cylinder_module = report["tests"]["single_cylinder_integrand"]["summary"]
+    bose_fermi_module = report["tests"]["bose_fermi_cancellation"]["summary"]
 
     lines = [
         "# Numerical Suite Report",
@@ -499,19 +555,38 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`bosonic closed-form rel error = {benchmarks['single_cylinder_bosonic_rel_error']:.3e}`, "
             f"`fermionic closed-form rel error = {benchmarks['single_cylinder_fermionic_rel_error']:.3e}`"
         ),
+        (
+            "- Bosonic normalization structure: "
+            f"`C_tail = {benchmarks['bosonic_invariant_tail_constant']:.9f}`, "
+            f"`invariant-tail rmse = {benchmarks['bosonic_invariant_tail_rmse']:.3e}`, "
+            f"`incoming/outgoing fixed-tail rmse = {benchmarks['bosonic_incoming_tail_rmse']:.3e} / {benchmarks['bosonic_outgoing_tail_rmse']:.3e}`"
+        ),
+        (
+            "- Local channel catalog (trace-dropped): "
+            f"`qq counts = {benchmarks['local_qq_catalog_counts']}`, "
+            f"`delta counts = {benchmarks['local_delta_catalog_counts']}`"
+        ),
+        (
+            "- Pre-GSO one-cylinder ratio scan: "
+            f"`closest distance to 1 = {benchmarks['pre_gso_closest_distance_to_one']:.6f}`, "
+            f"`closest log|R| = {benchmarks['pre_gso_closest_log_abs_ratio']:.6f}`"
+        ),
         "",
         "## Module Status",
         "",
         f"- `tachyon_amplitude`: `{tachyon_module['passed']}/{tachyon_module['total']}` passed",
+        f"- `bosonic_normalization_structure`: `{bosonic_tail_module['passed']}/{bosonic_tail_module['total']}` passed",
         f"- `neumann_extraction`: `{neumann_module['passed']}/{neumann_module['total']}` passed",
         f"- `graviton_prefactor`: `{prefactor_module['passed']}/{prefactor_module['total']}` passed",
         f"- `graviton_assembly`: `{graviton_module['passed']}/{graviton_module['total']}` passed",
         f"- `local_interaction_point_fermion`: `{local_fermion_module['passed']}/{local_fermion_module['total']}` passed",
+        f"- `local_channel_catalog`: `{local_catalog_module['passed']}/{local_catalog_module['total']}` passed",
         f"- `projected_graviton_channels`: `{projected_module['passed']}/{projected_module['total']}` passed",
         f"- `superstring_decisive`: `{decisive_module['passed']}/{decisive_module['total']}` passed",
         f"- `superstring_normalization`: `{normalization_module['passed']}/{normalization_module['total']}` passed",
         f"- `twisted_cylinder`: `{twisted_module['passed']}/{twisted_module['total']}` passed",
         f"- `single_cylinder_integrand`: `{cylinder_module['passed']}/{cylinder_module['total']}` passed",
+        f"- `bose_fermi_cancellation`: `{bose_fermi_module['passed']}/{bose_fermi_module['total']}` passed",
         "",
         "## Notes",
         "",
@@ -598,6 +673,23 @@ def print_console_summary(report: dict[str, Any]) -> None:
         "  Single-cylinder prototype    = "
         f"bosonic rel err {benchmarks['single_cylinder_bosonic_rel_error']:.3e}, "
         f"fermionic rel err {benchmarks['single_cylinder_fermionic_rel_error']:.3e}"
+    )
+    print(
+        "  Bosonic normalization tail   = "
+        f"C_tail {benchmarks['bosonic_invariant_tail_constant']:.9f}, "
+        f"invariant rmse {benchmarks['bosonic_invariant_tail_rmse']:.3e}, "
+        f"in/out fixed-tail rmse {benchmarks['bosonic_incoming_tail_rmse']:.3e} / "
+        f"{benchmarks['bosonic_outgoing_tail_rmse']:.3e}"
+    )
+    print(
+        "  Local channel catalog        = "
+        f"qq {benchmarks['local_qq_catalog_counts']}, "
+        f"delta {benchmarks['local_delta_catalog_counts']}"
+    )
+    print(
+        "  Pre-GSO BF ratio scan        = "
+        f"closest distance {benchmarks['pre_gso_closest_distance_to_one']:.6f}, "
+        f"closest log|R| {benchmarks['pre_gso_closest_log_abs_ratio']:.6f}"
     )
     print()
     print("Per-module summary:")

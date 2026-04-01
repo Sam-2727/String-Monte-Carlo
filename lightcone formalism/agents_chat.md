@@ -1332,8 +1332,273 @@ With the twisted cylinder building block now tested, assemble a one-loop vacuum 
 
 This requires two cubic vertices connected by an internal propagator. Each vertex carries its own local fermionic variable. This is the first test of the local formulation beyond three points.
 
+---
+
+# Review of Latest Codex Work: Local Prefactor Expansion and Channel Response
+
+## New files
+
+| File | Tests | Status |
+|---|---|---|
+| `local_prefactor_expansion.py` | 3/3 | PASS |
+| `local_channel_response.py` | 3/3 | PASS |
+
+Total suite: 64/64 (up from 58).
+
+## Key result: graviton $qq$-channels are $\Xi_{\rm loc}$-independent
+
+The computation introduces 8 abstract Grassmann variables $\Xi_{\rm loc}^a$ (indices 16-23) representing the nonzero-mode correction to the local interaction-point fermion:
+
+$$\Lambda_{\rm join}^a = \Lambda_{\rm lat}^a + \Xi_{\rm loc}^a$$
+
+After substituting $\Lambda_{\rm lat} \to -(1-\lambda)\lambda_1 + \lambda\lambda_2$ and integrating over the 16 reduced zero modes $\lambda_1, \lambda_2$ (while keeping $\Xi_{\rm loc}$ symbolic), the resulting polynomial in $\Xi_{\rm loc}$ is:
+
+| Channel | $\Xi_{\rm loc}$-degree profile | Degree-0 value |
+|---|---|---|
+| Graviton $qq$ (23,23,∥) | `{0: 1}` (pure constant) | $5.388$ (matches reduced ansatz) |
+| Graviton $qq$ (23,24,∥) | `{0: 1}` | $2.694$ (matches) |
+| Graviton $qq$ (∥,23,23) | `{0: 1}` | $33.67$ (matches) |
+| Dilaton $qq$ (23,23,dil) | `{4: 14}` (pure degree-4) | $0$ |
+| Dilaton $\delta$ (23,23,dil) | vanishes | $0$ |
+
+**This means the reduced $\Lambda$ ansatz is EXACT for the benchmark graviton channels.** The local nonzero-mode correction $\Xi_{\rm loc}$ drops out completely from these channels after the zero-mode integration. No fermionic nonzero-mode Gaussian contraction is needed for these specific channels.
+
+## Why this happens (physics)
+
+The graviton channels use symmetric-traceless polarizations. The polynomial $v_{IJ}(\Lambda_{\rm join})$ expanded in $\Xi_{\rm loc}$ gives corrections at even degrees (2, 4, 6, 8). But the Berezin integral over the 16 zero modes $\lambda_1, \lambda_2$ imposes a degree constraint: a term with $\Xi$-degree $p$ needs degree $16 - p$ from the $\lambda$-sector. For the graviton channels with specific polarizations, the SO(8) selection rules eliminate all $p > 0$ terms.
+
+For the dilaton, the degree-0 piece vanishes (as already known), but the degree-4 piece is nonzero — this is the local correction that would need to be integrated against the fermionic overlap. Whether this gives a nonzero dilaton coupling (which should vanish for the superstring) depends on the Grassmann contraction of the 4 $\Xi_{\rm loc}$ variables against the fermionic kinematic overlap.
+
+## Implications
+
+1. **Priority 2 from the recommendations (integrate out fermionic nonzero modes) is RESOLVED for the graviton channels.** The reduced ansatz is exact — no correction needed.
+
+2. **The current graviton numerics are fully validated** at the level of the local interaction-point fermion, not just the reduced ansatz. The $\Xi_{\rm loc}$-independence is an exact algebraic statement, not an approximation.
+
+3. **The dilaton channel remains open.** The degree-4 $\Xi_{\rm loc}$ polynomial needs to be contracted against the fermionic overlap. If it gives zero, the dilaton decoupling is exact. If nonzero, it's a genuine local correction.
+
+4. **The Priority 1 recommendation (match bosonic three-tachyon to continuum) is still the most important outstanding task**, as it is the only way to fix the overall normalization.
+
+## Scrutiny of the derivation
+
+The key computation in `local_channel_response.py` (line 44-68, `substitute_two_leg_plus_xi`):
+- Each $\Lambda^a$ in $v_{IJ}$ is replaced by $c_1\lambda_1^a + c_2\lambda_2^a + \xi^a$
+- This is a three-term substitution per Grassmann variable
+- The sparse polynomial multiplication handles the signs correctly (verified by the existing `merge_sign` infrastructure)
+- The top-form extraction (line 71-87, `integrate_lambda_16_keep_xi`) correctly picks out the degree-16 piece in $(\lambda_1, \lambda_2)$ and reads off the remaining $\Xi$ monomial
+
+**Potential concern**: line 85 assumes `xi_part = tuple(index - 16 for index in monomial if index >= 16)`. The sign from permuting $\Xi$-variables past the $\lambda$-variables to reach the canonical order $\lambda_1^1\cdots\lambda_1^8\lambda_2^1\cdots\lambda_2^8\Xi^1\cdots\Xi^p$ must be tracked. Since the monomial is stored in sorted order and indices 0-15 always precede 16-23, the permutation sign from the original `multiply_sparse` is already correct — no additional sign is needed at extraction. **Correct.**
+
+**Second concern**: the external state wavefunctions $\Psi_r(\lambda_r)$ do NOT contain $\Xi$ variables (they use only the zero-mode $\lambda_r$ on each external leg). The $\Xi$ enters only through the prefactor $v_{IJ}$. So the integral correctly separates the external states (in $\lambda$) from the local correction (in $\Xi$). **Correct.**
+
+## Updated priority list
+
+1. **Match bosonic three-tachyon to continuum** (unchanged, still the top priority)
+2. ~~Integrate out fermionic nonzero modes for graviton channels~~ **RESOLVED** — $\Xi_{\rm loc}$ drops out exactly
+3. **Integrate out fermionic nonzero modes for the dilaton channel** — check whether the degree-4 $\Xi_{\rm loc}$ polynomial gives zero after the Grassmann overlap contraction
+4. **Construct the full local interaction-point fermion** — determine the branch-point regulator and normalization
+5. **First loop integrand** — twisted cylinder building block is ready
+
+---
+
+# Detailed Next-Stage Development Plan
+
+## Stage A: Bosonic three-tachyon normalization matching
+
+**Goal**: Match $\mathcal{C}_{\rm tail} \approx -22.50$ to the known continuum cubic coupling.
+
+### A.1 Derive the continuum three-tachyon lightcone amplitude
+
+The continuum lightcone three-tachyon amplitude for the closed bosonic string is:
+
+$$\mathcal{A}_{TTT}^{\rm cont} = g_c \cdot \delta^{(D_\perp)}(\sum p_\perp) \cdot \delta(p_1^- + p_2^- - p_3^-)$$
+
+where $g_c$ is the cubic string coupling. In Mandelstam's normalization, $g_c$ is related to the string coupling $g_s$ and the Mandelstam-map Jacobian. The task is to:
+
+1. Look up the standard Mandelstam cubic coupling normalization (e.g., from Green-Schwarz-Witten Vol 1, or from Mandelstam's original papers)
+2. Express it in terms of $\alpha_1, \alpha_2, \alpha_3$ and $\alpha'$
+3. Compare the $\alpha_r$-dependent prefactor to the discrete result
+
+**Concrete deliverable**: A script `continuum_tachyon_normalization.py` that computes $g_c(\alpha_1, \alpha_2, \alpha')$ from the standard formula and compares to $\exp(\mathcal{C}_{\rm tail}) \cdot a^{-9}\alpha_1^7\alpha_2^7\alpha_3^{-5}$ from the discrete computation.
+
+### A.2 Match the Schur complement $\gamma_T$
+
+The continuum Schur complement can be computed analytically from the continuum Neumann coefficients (Gross-Jevicki). The discrete $\gamma_T \to 0.357$ should match this. A script that computes the continuum $\gamma_T$ from the analytic overlap formulas at $\alpha_1/\alpha_3 = 2/5$ and compares to the Richardson-extrapolated discrete value.
+
+### A.3 Match $B_{\rm rel}^{(M)}$ for the TTM amplitude
+
+Similarly, the continuum two-tachyon/one-massless amplitude has a known structure. The coefficient $B_{\rm rel} \to 1.920$ should match a computable continuum number.
+
+## Stage B: Dilaton channel local correction
+
+**Goal**: Determine whether the degree-4 $\Xi_{\rm loc}$ polynomial in the dilaton channel gives zero after contracting with the fermionic kinematic overlap.
+
+### B.1 Build the fermionic nonzero-mode overlap
+
+The fermionic kinematic overlap for the nonzero modes is the Grassmann analogue of the bosonic $G_T$ matrix. After imposing $\theta^{(3)} = P_1\theta^{(1)} + P_2\theta^{(2)}$ and eliminating leg 3, the nonzero fermionic modes on legs 1 and 2 have a Grassmann Gaussian measure determined by the overlap matrices $U_1, U_2$ and the fermionic mode metric (which is trivial in the GS formulation — no frequency weighting for first-order fermions).
+
+**Concrete deliverable**: A function `fermionic_nonzero_mode_overlap(n1, n2)` that returns the Grassmann quadratic form $\mathcal{M}_F$ for the fermionic nonzero modes, analogous to the bosonic $G_T$.
+
+### B.2 Contract $\Xi_{\rm loc}$ against the overlap
+
+The 14-monomial degree-4 polynomial in $\Xi_{\rm loc}$ from the dilaton channel must be contracted against the fermionic nonzero-mode overlap. Each $\Xi_{\rm loc}^a$ stands for $\sqrt{N_1 N_2/N_3}[(S_1)_{0m}\vartheta_m^{(1)a} - (S_2)_{0m}\vartheta_m^{(2)a}]$, which is a linear combination of the real nonzero-mode coordinates. The degree-4 Grassmann contraction is:
+
+$$\langle \Xi_{\rm loc}^{a_1}\Xi_{\rm loc}^{a_2}\Xi_{\rm loc}^{a_3}\Xi_{\rm loc}^{a_4}\rangle_{\rm overlap} = \text{Pfaffian of the 4×4 minor of the propagator}$$
+
+This is a finite computation: 14 monomials, each contributing a 4×4 Pfaffian.
+
+**Concrete deliverable**: A script that evaluates the dilaton channel after the $\Xi_{\rm loc}$ contraction. If the result is zero, the dilaton decoupling is exact. If nonzero but $O(a)$, it's a lattice artifact. If $O(1)$, it's a genuine correction to the reduced ansatz.
+
+### B.3 Implications
+
+- If zero: the reduced ansatz is exact for ALL benchmark channels (graviton + dilaton). This would be a strong validation.
+- If nonzero: the local vertex gives a dilaton coupling that the reduced ansatz misses. This would mean the full local computation is needed for channels beyond graviton.
+
+## Stage C: First loop integrand
+
+**Goal**: Assemble a one-loop vacuum amplitude from the now-tested building blocks.
+
+### C.1 One-loop vacuum diagram topology
+
+The simplest loop diagram is the torus: one internal propagator cylinder with both ends sewn together by the twist. The amplitude is:
+
+$$\mathcal{A}_{\rm 1-loop} = \int_0^\infty dT \int_0^1 d\varphi\; [\det\mathcal{M}_{B,\rm osc}(T,\varphi)]^{-D_\perp/2} \cdot \text{Pf}(\mathbb{A}_{F,\rm osc}(T,\varphi)) \cdot (\text{zero-mode factor})$$
+
+### C.2 Bosonic oscillator trace
+
+The single-cylinder trace prototype is already implemented and tested. For the torus, the boundary condition is $X_f(\sigma) = X_i(\sigma + \varphi|\alpha|)$, which gives:
+
+$$Z_B^{(1)}(T,\varphi) = [\det(I - e^{-\Omega T}R_N(\varphi))]^{-D_\perp/2}$$
+
+where $\Omega = \text{diag}(\omega_k)$ on the oscillator sector (zero mode removed). The `single_cylinder_integrand.py` already computes this for one transverse direction.
+
+### C.3 Fermionic oscillator trace
+
+Similarly, $Z_F^{(1)}(T,\varphi,s) = [\det(I + s\cdot U_{\rm osc}(T,\varphi))]^8$ for one chiral sector with spin sign $s$.
+
+### C.4 Bose-Fermi cancellation check
+
+For the type II superstring at $D=10$ ($D_\perp = 8$), the Jacobi abstruse identity implies that after summing over spin structures:
+
+$$\sum_{s_L, s_R} (\text{signs}) \cdot Z_F^{(1)}(T,\varphi,s_L) \cdot Z_F^{(1)}(T,\varphi,s_R) = [Z_B^{(1)}(T,\varphi)]^8$$
+
+so the one-loop cosmological constant vanishes. On the lattice this holds only approximately, with corrections vanishing as $N \to \infty$. Measuring the finite-$N$ violation and its convergence rate is a key test.
+
+**Concrete deliverable**: A script `bose_fermi_cancellation.py` that computes $Z_F/Z_B$ on a grid of $(N, T, \varphi)$ values and measures the deviation from 1 as a function of $N$.
+
+### C.5 Zero-mode factor
+
+The zero-mode sector contributes $\int d^{D_\perp}\ell\; e^{-\ell^T Q(T,\varphi)\ell/2}$ where $Q$ is the zero-mode quadratic form from the cylinder propagator. For the torus this is $(2\pi)^{D_\perp/2}/\sqrt{\det Q}$.
+
+### C.6 Assemble and integrate
+
+Combine all factors and integrate over $(T, \varphi)$ numerically. Compare to the known one-loop result (which vanishes for the superstring but is nonzero for the bosonic string, where it's related to the cosmological constant).
+
+## Stage D: Four-point tree amplitude (longer term)
+
+### D.1 Topology
+
+Two cubic vertices connected by one internal propagator. External legs: 4 strings with circumferences $\alpha_1, \alpha_2, \alpha_3, \alpha_4$. Internal propagator: circumference $\alpha_{12} = \alpha_1 + \alpha_2$, Schwinger length $T$.
+
+### D.2 Bosonic part
+
+The internal propagator sewing is a Gaussian integral over the internal boundary modes. After the sewing, the four-point amplitude is a function of $T$ (the remaining modulus) and the external momenta. The bosonic part is straightforward: two copies of the cubic overlap machinery connected by the propagator kernel $K_B(T)$.
+
+### D.3 Superstring part
+
+Each vertex carries its own local fermionic variable $\Lambda_{\rm join}^{(I)}$ at its branch point. The internal propagator transports the fermionic nonzero modes between the two vertices. The full computation requires:
+
+1. The fermionic kinematic overlap at each vertex
+2. The fermionic propagator on the internal cylinder
+3. The sewing of two vertices through the propagator
+
+This is where the local (DM) formulation is essential — the reduced (PS) zero-mode variable does not have a natural generalization to the internal vertex.
+
+### D.4 Comparison
+
+The continuum four-point tree amplitude is the Virasoro-Shapiro amplitude (bosonic) or its superstring analogue. It has a known dependence on the Mandelstam invariants $s, t$. The discrete computation should reproduce this in the continuum limit.
+
 ## What NOT to spend time on
 
-- Operator-level Lorentz checks: standard LC gauge background, not the goal of the project
-- Supercharge closure algebra: interesting but secondary to numerical amplitude validation
-- More internal-consistency tests of the reduced $\Lambda$ ansatz: the current 58 tests are sufficient; what's needed is comparison to known answers, not more self-consistency checks
+- Operator-level Lorentz checks
+- Supercharge closure algebra
+- More internal-consistency tests of the reduced $\Lambda$ ansatz beyond what already exists (64 tests)
+- Exotic polarization channels beyond the benchmark set
+- Arbitrary stencil family scans (the second-order stencil is established as the working choice)
+
+---
+
+# Development update (2026-03-31, later pass)
+
+## GitHub issue #1
+
+The issue about the fermionic insertion at the interaction vertex was real. The
+notes still had one visible place where the \emph{local} cubic prefactor was
+written as if it were defined directly by the reduced variable
+`v_{IJ}^{\rm lat}(\Lambda_{\rm lat})`. This has now been corrected:
+
+- local cubic prefactor definition: uses `\Lambda_{\rm join}`
+- reduced three-point ansatz: uses `\Lambda_{\rm lat}` only after the explicit
+  local correction `\Xi_{\rm loc}` is set aside
+
+So the current note is now consistent with the locality caveat.
+
+## New bosonic result: normalization structure packaged cleanly
+
+New helper:
+- `bosonic_normalization_structure.py`
+
+On the `4 <= N_1,N_2 <= 60`, `N_3 <= 120` grid:
+- `C_tail = -22.496054835`
+- invariant-tail RMS residual `= 2.48 x 10^-7`
+- fixed incoming/outgoing nonlinear tails
+  `(7, pi, pi^2/72)` and `(-5, -pi, pi^2/72)`
+  leave only linear-plus-constant remainders with RMS residuals
+  `1.61 x 10^-12` and `2.91 x 10^-11`
+
+This still does not match the continuum cubic coupling, but it makes the
+remaining normalization problem much sharper and completely machine-readable.
+
+## New superstring locality result: full local channel catalog
+
+New helper:
+- `local_channel_catalog.py`
+
+This extends the benchmark local-channel analysis to the full
+`{parallel, perp23, perp24, dilaton, b23}^3` basis. On the sampled ratio grid
+`lambda = 1/4, 2/5, 1/2`, in the trace-dropped `qq` response the 125 channels
+split into:
+- 47 vanishing
+- 37 pure quadratic local
+- 16 reduced only
+- 16 pure quartic local
+- 9 reduced plus quartic
+
+For the trace-dropped `delta^{IJ}` response:
+- all 125 sampled channels vanish
+
+So the benchmark graviton-channel collapse is not an isolated accident; it is
+part of a small exact finite-`N` classification of the unreduced local channel
+structure.
+
+## New loop result: pre-GSO sectors do not cancel
+
+New helper:
+- `bose_fermi_cancellation_scan.py`
+
+The raw one-cylinder ratio in `single_cylinder_integrand.py` overflows quickly,
+so the new scan uses stable log-polar data for the unsummed sector ratio
+`(Z_F,left)^8 (Z_F,right)^8 / (Z_B)^8`.
+
+On the default sampled grid:
+- no unsummed sector is close to the target ratio `1`
+- closest sampled sector distance to `1`: `0.340850`
+- largest sampled `|log R|`: `5039.63`
+
+This means the next loop-side target is \emph{not} another free-kernel identity.
+It is the actual spin-structure/GSO plus zero-mode assembly.
+
+## Updated suite status
+
+Automated regression status is now:
+- `73/73` passing in `numerical_suite.py`
