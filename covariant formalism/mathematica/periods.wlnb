@@ -1,0 +1,84 @@
+{
+  "cells": [
+    {
+      "kind": 1,
+      "value": "\\<\\\nThe improved version of CylEqnFastOptimized, returns a List of { improvement \\\nprefactor, power series numerator }\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "CylEqnImproved[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=100,shift,L,m,nList,improvement,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\n(*if all three lengths equal, there is no polynomial in the numerator*)If[l1==l2==l3,Return[{(1-z^2)^-1/3(1-z^2Exp[2*I*(-(2Pi l1/L))])^-1/3(1-z^2Exp[2*I*(-(2Pi l1/L+2Pi l2/L))])^-1/3,1},Module]];\nIf[l1==0||l2==0||l3==0,Return[{(1-z^2)^-(l1+l3)/L(1-z^2Exp[2*I*(-(2Pi l1/L))])^-(l1+l2)/L(1-z^2Exp[2*I*(-(2Pi l1/L+2Pi l2/L))])^-(l2+l3)/L,1},Module]];\nm=L/2;\nshift=Mod[l1,2]*Mod[l2,2]*Mod[l3,2]-Mod[l1+1,2]*Mod[l2+1,2]*Mod[l3+1,2];\n(*shift is 1 if all 3 are odd, -1 if all 3 are even, 0 otherwise*)\nnList=Range[m-shift];\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L-Pi/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L-Pi/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L-Pi/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L-Pi/L,{k,1,m}],wp];\nimprovement[angle_]=(1-Exp[2*I*(angle)])^-1/3(1-Exp[2*I*(angle-(2Pi l1/L))])^-1/3(1-Exp[2*I*(angle-(2Pi l1/L+2Pi l2/L))])^-1/3;\n\nB=Developer`ToPackedArray[DiagonalMatrix[N[improvement[#]&/@anglesL,wp]].Exp[I Outer[Times,anglesL,nList]]+DiagonalMatrix[N[improvement[#]&/@anglesR,wp]].Exp[I Outer[Times,Take[anglesR,Length[anglesL]],nList]],Complex];\n\ngram=Transpose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m-shift,1],Complex];\n\ncoeffs=LinearSolve[gram,rhsVec];\n{(1-z^2)^-1/3(1-z^2Exp[2*I*(-(2Pi l1/L))])^-1/3(1-z^2Exp[2*I*(-(2Pi l1/L+2Pi l2/L))])^-1/3,Chop@Sum[coeffs[[n]] z^(n-1),{n,1,m-shift}]}]\nOptions[RecCylEqnFastOptimized]={WorkingPrecision->100};",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nCalculate periods from CylEqnImproved. If f is not provided, the method first \\\nruns CylEqnImproved and then does the appropriate numerical integration to \\\nget the periods\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "PeriodsImproved[l1_,l2_,l3_,f_,z_]:=\nModule[{L=2(l1+l2+l3),\\[Theta]1,\\[Theta]2,\\[Delta],PreCorners,Corners},\n\\[Theta]1=2Pi*(l1)/(L);\n\\[Theta]2=2Pi*(l2)/(L);\n\\[Delta]=(Pi)/(L);\nPreCorners={ 1,Exp[I*(\\[Theta]1+\\[Theta]2)],Exp[I*(Pi+\\[Theta]1)]};\nCorners=NIntegrate[N[f,prec],{z,0,#},WorkingPrecision->prec]&/@PreCorners;\nReturn[{Corners[[1]]-Corners[[3]],Corners[[2]]-Corners[[3]],Corners[[1]]-Corners[[2]]},Module];\n];\nPeriodsImproved[l1_,l2_,l3_]:=Module[{cyl,F,z},\ncyl=CylEqnImproved[l1,l2,l3,z];\nF=cyl[[1]]*cyl[[2]];\nReturn[PeriodsImproved[l1,l2,l3,F,z],Module];\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nCalculate the b_i for each z_i, given the \\\\ell_i and the numerator \\\n(prefactor fixed by \\\\ell_i). If fNumerator is not provided then the method \\\nruns CylEqnImproved to generate it\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Calculateb[l1_,l2_,l3_,fNumerator_,z_]:=\nModule[{L=2(l1+l2+l3),bs,zs,newprefactors,\\[Theta]1,\\[Theta]2,\\[Delta]},\n\\[Theta]1=2Pi*(l1)/(L);\n\\[Theta]2=2Pi*(l2)/(L);\n(*\\[Delta]=(Pi)/(L);*)\nIf[l1==0||l2==0,\nzs={1,Exp[I*(\\[Theta]1+\\[Theta]2)],-1,-Exp[I*(\\[Theta]1+\\[Theta]2)]};\n(*removing the commented-out terms fixes the branch*)\nnewprefactors={((1+z zs[[1]]^-1)(1-z^2zs[[2]]^-2))^-1/2,((1+z zs[[2]]^-1)(1-z^2zs[[1]]^-2))^-1/2,((1-z zs[[1]]^-1)(1-z^2zs[[2]]^-2))^-1/2,((1-z zs[[2]]^-1)(1-z^2zs[[1]]^-2))^-1/2};\nbs=Table[N[newprefactors[[i]]*fNumerator/.z->zs[[i]],prec],{i,1,4}];\nReturn[bs,Module];\n];\nIf[l3==0,\nzs={1,Exp[I*(\\[Theta]1)],-1,-Exp[I*(\\[Theta]1)]};\n(*removing the commented-out terms fixes the branch*)\nnewprefactors={((1+z zs[[1]]^-1)(1-z^2zs[[2]]^-2))^-1/2,((1+z zs[[2]]^-1)(1-z^2zs[[1]]^-2))^-1/2,((1-z zs[[1]]^-1)(1-z^2zs[[2]]^-2))^-1/2,((1-z zs[[2]]^-1)(1-z^2zs[[1]]^-2))^-1/2};\nbs=Table[N[newprefactors[[i]]*fNumerator/.z->zs[[i]],prec],{i,1,4}];\nReturn[bs,Module];\n];\nzs={1,Exp[I*(\\[Theta]1)],Exp[I*(\\[Theta]1+\\[Theta]2)],-1,-Exp[I*(\\[Theta]1)],-Exp[I*(\\[Theta]1+\\[Theta]2)]};\n(*removing the commented-out terms fixes the branch*)\nnewprefactors={((*(-zs[[1]])^-1*)(1+z zs[[1]]^-1)(1-z^2zs[[2]]^-2)(1-z^2zs[[3]]^-2))^-1/3,((*(-zs[[2]])^-1*)(1+z zs[[2]]^-1)(1-z^2zs[[1]]^-2)(1-z^2zs[[3]]^-2))^-1/3,((*(-zs[[3]])^-1*)(1+z zs[[3]]^-1)(1-z^2zs[[2]]^-2)(1-z^2zs[[1]]^-2))^-1/3,((*(zs[[1]])^-1*)(1-z zs[[1]]^-1)(1-z^2zs[[2]]^-2)(1-z^2zs[[3]]^-2))^-1/3,((*(zs[[2]])^-1*)(1-z zs[[2]]^-1)(1-z^2zs[[1]]^-2)(1-z^2zs[[3]]^-2))^-1/3,((*(zs[[3]])^-1*)(1-z zs[[3]]^-1)(1-z^2zs[[2]]^-2)(1-z^2zs[[1]]^-2))^-1/3};\nbs=Table[N[newprefactors[[i]]*fNumerator/.z->zs[[i]],prec],{i,1,6}];\nReturn[bs,Module];\n];\nCalculateb[l1_,l2_,l3_]:=\nCalculateb[l1,l2,l3,CylEqnImproved[l1,l2,l3,z][[2]],z]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nAverage bs the smart way, taking into account how they should be related by \\\nphases\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "Averageb[l1_,l2_,l3_,bs_]:=Module[{b1,b2,b3,L=2(l1+l2+l3)},\nIf[l1==0||l2==0||l3==0,\nb1={bs[[1]],bs[[2]]*Exp[-I*Pi/2]*Exp[2 I *Pi * l1/L]}//Mean;\nb2={bs[[2]], bs[[1]]*Exp[I*Pi/2]*Exp[-2 I*Pi*l1/L]}//Mean;\nReturn[{b1,b2},Module];\n];\nb1={bs[[1]],bs[[2]]*Exp[-I*Pi/3]*Exp[2 I *Pi * l1/L], bs[[3]]*Exp[I*Pi/3]*Exp[-2 I*Pi*l3/L]}//Mean;\nb2={bs[[2]],bs[[3]]*Exp[-I*Pi/3]*Exp[2 I *Pi * l2/L], bs[[1]]*Exp[I*Pi/3]*Exp[-2 I*Pi*l1/L]}//Mean;\nb3={bs[[3]],bs[[1]]*Exp[-I*Pi/3]*Exp[2 I *Pi * l3/L], bs[[2]]*Exp[I*Pi/3]*Exp[-2 I*Pi*l2/L]}//Mean;\nReturn[{b1,b2,b3},Module];\n];\nAverageb[l1_,l2_,l3_]:=Averageb[l1,l2,l3,Calculateb[l1,l2,l3]];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "\\<\\\nCalculate g explicitly if necessary, but this can also be done by inverting f \\\nand then taking a series\\\n\\>",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "RecCylEqnImproved[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=100,shift,L,m,nList,improvement,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\nshift=Mod[l1,2]*Mod[l2,2]*Mod[l3,2]-Mod[l1+1,2]*Mod[l2+1,2]*Mod[l3+1,2];\n(*shift is 1 if all 3 are odd, -1 if all 3 are even, 0 otherwise*)\nnList=Range[m-shift]-2;\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L-Pi/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L-Pi/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L-Pi/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L-Pi/L,{k,1,m}],wp];\nimprovement[angle_]=(1-Exp[2*I*(angle)])^1/3(1-Exp[2*I*(angle-(2Pi l1/L))])^1/3(1-Exp[2*I*(angle-(2Pi l1/L+2Pi l2/L))])^1/3;\n\nB=Developer`ToPackedArray[DiagonalMatrix[N[improvement[#]&/@anglesL,wp]].Exp[I Outer[Times,anglesL,nList]]+DiagonalMatrix[N[improvement[#]&/@anglesR,wp]].Exp[I Outer[Times,Take[anglesR,Length[anglesL]],nList]],Complex];\n\ngram=Transpose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m-shift,1],Complex];\n\ncoeffs=LinearSolve[gram,rhsVec];\n{(1-z^2)^1/3(1-z^2Exp[2*I*(-(2Pi l1/L))])^1/3(1-z^2Exp[2*I*(-(2Pi l1/L+2Pi l2/L))])^1/3,Chop@Sum[coeffs[[n]] z^(n-1),{n,1,m-shift}]}]\nOptions[RecCylEqnFastOptimized]={WorkingPrecision->100};",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "## Old Methods",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "ClearAll[CylEqnFastOptimized];\nOptions[CylEqnFastOptimized]={WorkingPrecision->200};\n\nCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=100,L,m,nList,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\nnList=Range[m];\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n\nB=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nList]]+Exp[I Outer[Times,Take[anglesR,Length[anglesL]],nList]],Complex];\n\ngram=Transpose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\n\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]\nOptions[RecCylEqnFastOptimized]={WorkingPrecision->100};\n\nRecCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=OptionValue[WorkingPrecision],L,m,nShift,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\n(*exponents are (n-2),with n=1..m*)nShift=Range[m]-2;\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n(*Each constraint is CylForm(\\[Theta]L)+CylForm(\\[Theta]R)==0*)B=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nShift]]+Exp[I Outer[Times,anglesR,nShift]],Complex];\n(*Normal equations for min||B a||^2+ |a1-1|^2*)gram=ConjugateTranspose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]\nRecCylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=OptionValue[WorkingPrecision],L,m,nShift,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\n(*exponents are (n-2),with n=1..m*)nShift=Range[m]-2;\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n(*Each constraint is CylForm(\\[Theta]L)+CylForm(\\[Theta]R)==0*)B=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nShift]]+Exp[I Outer[Times,anglesR,nShift]],Complex];\n(*Normal equations for min||B a||^2+ |a1-1|^2*)gram=ConjugateTranspose[B].B;\ngram[[1,1]]+=SetPrecision[1,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\ncoeffs=LinearSolve[gram,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CylEqn[l1_,l2_,l3_,z_]:=Module[{L=2(l1+l2+l3),CylForm,n,eqns,solsub},CylForm[\\[Theta]_]:=Sum[A[n] E^(I n \\[Theta]),{n,1,L/2}];eqns={Join[{A[1]==1},Table[CylForm[2Pi (L/2+l1+1-k1)/L]==-CylForm[2Pi k1/L],{k1,1,l1}],Table[CylForm[2Pi (L/2+2l1+l2+1-k2)/L]==-CylForm[2Pi k2/L],{k2,l1+1,l1+l2}],Table[CylForm[2Pi (L+l1+l2+1-k3)/L]==-CylForm[2Pi k3/L],{k3,l1+l2+1,L/2}]],Table[A[n],{n,1,L/2}],WorkingPrecision\\[Rule]20};solsub=NSolve @@ eqns;\nSum[A[n] z^(n-1),{n,1,L/2}]/.solsub[[1]]//Chop]\nRecCylEqn[l1_,l2_,l3_,z_]:=Module[{L=2 (l1+l2+l3),CylForm,n,eqns,solsub},CylForm[\\[Theta]_]:=Sum[A[n] E^(I (n-2) \\[Theta]),{n,1,L/2}];\neqns={Join[{A[1]==1},Table[CylForm[2 Pi (L/2+l1+1-k1)/L]==-CylForm[2 Pi k1/L],{k1,1,l1}],Table[CylForm[2 Pi (L/2+2 l1+l2+1-k2)/L]==-CylForm[2 Pi k2/L],{k2,l1+1,l1+l2}],Table[CylForm[2 Pi (L+l1+l2+1-k3)/L]==-CylForm[2 Pi k3/L],{k3,l1+l2+1,L/2}]],Table[A[n],{n,1,L/2}],WorkingPrecision->20};solsub=NSolve@@eqns;\nSum[A[n] z^(n-1),{n,1,L/2}]/. solsub[[1]]//Chop]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "Periods[l1_,l2_,l3_,m1_,m2_,m3_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[z_]=Integrate[CylEqn[l1,l2,l3,z],z]/.A[_]:>0; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PeriodsFast[l1_,l2_,l3_,m1_,m2_,m3_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[z_]=Integrate[CylEqnFastOptimized[l1,l2,l3,z],z]; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PeriodsFastGivenF[l1_,l2_,l3_,m1_,m2_,m3_,f_,z_]:=Module[{L=2(l1+l2+l3),k1=m1,k2=l1+m2,k3=l1+l2+m3,func},\nfunc[w_]=Integrate[f/.{z->w},w]/.A[_]:>0; \n{func[E^(2Pi I (L/2+l1+1-k1)/L)]-func[E^(2Pi I k1/L)],func[E^(2Pi  I(L/2+2l1+l2+1-k2)/L)]-func[E^(2Pi I k2/L)],func[E^(2Pi I (L+l1+l2+1-k3)/L)]-func[E^(2Pi I k3/L)]}\n]",
+      "languageId": "wolfram"
+    }
+  ]
+}

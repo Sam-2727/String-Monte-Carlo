@@ -330,6 +330,7 @@ where:
 & A_{kl}=M_{kl}+M_{k'l}+M_{kl'}+M_{k'l'}\\
 & v_k=2\pi R\sum_{i=1}^3 s_i \sum_{m\in \text{seg }i}(M_{km'}+M_{k'm'})\\
 & C=4\pi^2 R^2\sum_{i,j}^3 s_i s_j \sum_{k\in \text{seg }i}\sum_{m\in \text{seg }j}M_{k'm'}
+\label{AvC}
 \fe
 and the primed position $k'$ stands for the position on the other half circle that's identified with $k$.
 
@@ -377,6 +378,10 @@ where $\Theta(A)$ is the Siegel theta function of the matrix $A$. This can be ev
 Since the $Z(l_i, R)$ only depend on $R$ via the zero mode factor $2\pi R$ and the theta function, in order to check the T-duality relation $Z(l_i;R)=Z(l_i;R^{-1})$ (taking $\alpha'=1$), we only need to check:
 \ie
 R\Theta(4i R^2 T')= R^{-1}\Theta(4i R^{-2} T')
+\fe
+and this has been checked numerically. We also checked numerically that the ratio between partition functions at different $R$ and the same moduli matches with the analytical value:
+\ie
+\frac{Z(l_i; R_1)}{Z(l_i;R_2)}=\frac{Z_\text{comp}(\tau(l_i),R_1)}{Z_\text{comp}(\tau(l_i),R_1)},\quad Z_\text{comp}(\tau, R)=\frac{1}{\sqrt{\tau_2}|\eta(\tau)|^2}\sum_{m,n}e^{-\frac{\pi R^2}{\tau_2}|m\tau-n|^2}
 \fe
 
 \subsection{Torus two point function of compact boson in flat coordinate}
@@ -475,8 +480,6 @@ Conduct conformal transformation to the disc coordinate, we have
 \langle :\partial X \bar \partial X:(0) \rangle_{D^2,R} = \langle :\partial X \partial X:(0) \rangle_{T^2,R} -\frac{\alpha'}{12} f''(0),
 \end{equation}
 We should be able to verify this relation by the discretized computation on the disk.
-
-
 
 
 \section{Moduli and Weyl anomaly in disc coordinate}
@@ -708,6 +711,51 @@ The NS-NS sector amplitude on the flat torus is
 with similar contributions from the NS/R and R/NS sectors. The Weyl anomaly is $1/2$ the Weyl anomaly of the Empirically, one finds that, proceeding counterclockwise along the bottom segment of the disc, NS/NS corresponds to $-i,-i,+i$, NS/R corresponds to $-i,+i,-i$, and R/NS corresponds to $+i,-i,-i$.
 
 The R/R sector should evaluate to zero without an insertion of the Ramond sector zero mode, which we have not yet inserted.
+
+\section{Higher Genus}
+
+\subsection{Compact boson at higher genus}
+
+For genus 2 surface with 1 puncture, the ribbon graph has 1 face, 6 vertices and 9 edges. There are 4 different topologies of graphs that covers different region of $\mathcal{M}_{2,1}$. Given a ribbon graph, we now describe the algorithm of computing the compact boson partition function on the Riemann surface associated with that ribbon graph. Although we use genus 2 as example, this can be trivially generalized to the case of arbitrary genera.
+
+In order to write down the identification map, Let's label the segments $S_i\ (i=1,...,18)$ from $k=1$ with increasing $k$. The edges can be written as $E_a\ (a=1,...,9)$, where each $E_a$ pairs 2 segments $S_{i_1(a)}, S_{i_2(a)}$ (we always take $i_1(a)<i_2(a)$) and glue them in the opposite orientation. We denote the edge associated with segment $S_i$ by $E_{a(i)}$ and its length $\ell_{a(i)}$. The identification map of compact boson on edge $E_a$ is then:
+\ie
+X\left(\sum_{j\leq i_1(a)}\ell_{a(j)}+\sum_{k< i_2(a)}\ell_{a(k)}-k+1\right)=X(k)+2\pi R s_a,\quad \sum_{j<i_1(a)}\ell_{a(j)}+1\leq k \leq \sum_{j\leq i_1(a)}\ell_{a(j)}
+\fe
+One additional complication is that, for higher genus, the independent variables are not simply $X(k)$ with $1\leq k \leq L/2$, since the segments in the same half-circle can be glued together. We take the set of independent variables to be $\mathcal{K}=\cup_{a=1}^9\{k, k\in S_{i_1(a)}\}$, and denote $\mathcal{K}'=\mathcal{K}\backslash \{1\}$.
+
+The condition of no winding around the unit circle can be translated to the following 6 constraints: For each vertex $V_A$, we label the segment that connects to it with the smallest label $S_{i_0(A)}$ (which includes $S_0=S_{18}$), and define
+\ie
+i_1(A)=i_0(A)+1,\quad  i_2(A)=p(i_1(A))+1,\quad i_3(A)=p(i_2(A))+1
+\fe
+where $S_{p(i)}$ is the edge paired with $S_i$. The constraints are given by:
+\ie
+\text{sgn}(i_1(A)) s_{a(i_1(A))}+\text{sgn}(i_2(A)) s_{a(i_2(A))}+\text{sgn}(i_3(A)) s_{a(i_3(A))}=0
+\fe
+where $\text{sgn}(i)$ is defined such that $\text{sgn}(i)=1$ if $i<p(i)$ and $-1$ if $i>p(i)$. Among the 6 constraints, only 5 of them are independent. This reduces the independent number of shifts from 9 to 4, which corresponds to the holonomies around the 4 non-contractible 1-cycles. 
+
+The genus-2 compact boson partition function can be discretized as:
+\ie
+Z^{(2)}(\ell_a;R)=2\pi R \int \prod_{k\in \mathcal{K}} dX(k)\exp\left[-\frac{1}{\pi}\left(\sum_{k,l\in \mathcal{K}'}A_{kl}'X(k)X(l)+2\sum_{k\in\mathcal{K}'}v_k' X(k)+C\right)\right]
+\fe
+where, similar to \eqref{AvC},
+\ie
+& A_{kl}=M_{kl}+M_{k'l}+M_{kl'}+M_{k'l'}\\
+& A^{'}_{kl}=A_{kl}-A_{1,l}-A_{k,1}-A_{1,1} \\
+& v_k=2\pi R\sum_{a=1}^9 s_a \sum_{l\in S_{i_1(a)}}(M_{kl'}+M_{k'l'})\\
+& v_{k}^{'}=v_{k}-v_1\\
+& C=4\pi^2 R^2\sum_{a,b=1}^9 s_a s_b \sum_{k\in S_{i_1(a)}}\sum_{l\in S_{i_1(b)}}M_{k'm'}
+\fe
+Following the same procedure with the genus-1 case, the partition function can be computed as:
+\ie
+Z^{(2)}(\ell_a;R)=2\pi R(\det A')^{-1/2}\Theta(4iR^2 T')
+\fe
+where $T'$ is the following matrix $T_{ab}$, restricted to the 4-dimensional subspace.
+\ie
+T_{ab}&=\sum_{k\in S_{i_1}(a)}\sum_{l\in S_{i_1}(b)}\left(M_{k'l'}-\sum_{m,n\in \mathcal{K}'}(A')^{-1}_{mn}W_{mk}W_{nl}\right)\\
+W_{km}&= M_{km'}+M_{k'm'}-M_{1,m'}-M_{1',m'}
+\fe
+
 \section{Analytic construction}
 
 \subsection{Trinion vertex}
