@@ -83,6 +83,8 @@ class MixedLinearFermionDecomposition:
     n3: int
     coeff_i_plus: complex
     coeff_i_minus: complex
+    coeff_nabla_plus: complex
+    coeff_nabla_minus: complex
     theta_cm_coefficient: complex
     lambda_lat_coefficient: complex
     oscillator_row_leg1: np.ndarray
@@ -224,6 +226,8 @@ def decompose_join_linear_combination(
         n3=n3,
         coeff_i_plus=complex(coeff_i_plus),
         coeff_i_minus=complex(coeff_i_minus),
+        coeff_nabla_plus=0.0j,
+        coeff_nabla_minus=0.0j,
         theta_cm_coefficient=complex(theta_cm_coefficient),
         lambda_lat_coefficient=complex(lambda_lat_coefficient),
         oscillator_row_leg1=np.asarray(
@@ -234,6 +238,107 @@ def decompose_join_linear_combination(
             coeff_i_minus * data.theta_i_minus.oscillator_row,
             dtype=complex,
         ),
+    )
+
+
+def decompose_local_candidate(
+    n1: int,
+    n2: int,
+    *,
+    coeff_i_plus: complex,
+    coeff_i_minus: complex,
+    coeff_nabla_plus: complex = 0.0,
+    coeff_nabla_minus: complex = 0.0,
+) -> MixedLinearFermionDecomposition:
+    """
+    Decompose a join-local candidate built from endpoint values and arc data.
+
+    The one-sided arc differences carry no average mode, so they only modify
+    the explicit nonzero-mode correction sector.
+    """
+    data = join_local_fermion_data(n1, n2)
+    endpoint = decompose_join_linear_combination(
+        n1,
+        n2,
+        coeff_i_plus,
+        coeff_i_minus,
+    )
+    return MixedLinearFermionDecomposition(
+        n1=n1,
+        n2=n2,
+        n3=n1 + n2,
+        coeff_i_plus=complex(coeff_i_plus),
+        coeff_i_minus=complex(coeff_i_minus),
+        coeff_nabla_plus=complex(coeff_nabla_plus),
+        coeff_nabla_minus=complex(coeff_nabla_minus),
+        theta_cm_coefficient=endpoint.theta_cm_coefficient,
+        lambda_lat_coefficient=endpoint.lambda_lat_coefficient,
+        oscillator_row_leg1=np.asarray(
+            endpoint.oscillator_row_leg1
+            + coeff_nabla_plus * data.nabla_plus_oscillator_row,
+            dtype=complex,
+        ),
+        oscillator_row_leg2=np.asarray(
+            endpoint.oscillator_row_leg2
+            + coeff_nabla_minus * data.nabla_minus_oscillator_row,
+            dtype=complex,
+        ),
+    )
+
+
+def endpoint_linear_coefficients_for_mixed_constraints(
+    n1: int,
+    n2: int,
+    *,
+    theta_cm_target: complex = 0.0,
+    lambda_lat_target: complex = 1.0,
+) -> tuple[complex, complex]:
+    """
+    Solve for the endpoint-linear candidate with prescribed mixed zero-mode data.
+
+    For a trial local variable
+
+        Lambda_trial = c_+ theta_{I_+} + c_- theta_{I_-},
+
+    the mixed zero-mode coefficients are determined exactly by
+    `decompose_join_linear_combination`. This helper inverts that map.
+    """
+    ((theta1_cm, theta1_lambda), (theta2_cm, theta2_lambda)) = (
+        average_to_mixed_zero_mode_map(n1, n2)
+    )
+    system = np.array(
+        [
+            [complex(theta1_cm), complex(theta2_cm)],
+            [complex(theta1_lambda), complex(theta2_lambda)],
+        ],
+        dtype=complex,
+    )
+    target = np.array(
+        [complex(theta_cm_target), complex(lambda_lat_target)],
+        dtype=complex,
+    )
+    coeff_i_plus, coeff_i_minus = np.linalg.solve(system, target)
+    return complex(coeff_i_plus), complex(coeff_i_minus)
+
+
+def canonical_endpoint_difference_coefficients(
+    n1: int,
+    n2: int,
+) -> tuple[complex, complex]:
+    """
+    Unique endpoint-linear coefficients with zero Theta_cm and unit Lambda_lat.
+
+    Among all linear combinations of the two endpoint site fermions, the
+    canonical scaled difference is the unique one with
+
+    - no center-of-mass contamination,
+    - unit reduced zero-mode coefficient.
+    """
+    return endpoint_linear_coefficients_for_mixed_constraints(
+        n1,
+        n2,
+        theta_cm_target=0.0,
+        lambda_lat_target=1.0,
     )
 
 
@@ -249,8 +354,37 @@ def canonical_local_difference_decomposition(
     This has zero center-of-mass piece and unit Lambda_lat coefficient, with an
     explicit nonzero-mode correction carried by the site rows on the two legs.
     """
-    scale, minus_scale = reduced_lambda_average_weights(n1, n2)
-    return decompose_join_linear_combination(n1, n2, scale, minus_scale)
+    coeff_i_plus, coeff_i_minus = canonical_endpoint_difference_coefficients(n1, n2)
+    return decompose_local_candidate(
+        n1,
+        n2,
+        coeff_i_plus=coeff_i_plus,
+        coeff_i_minus=coeff_i_minus,
+    )
+
+
+def canonical_local_candidate_with_arc_admixtures(
+    n1: int,
+    n2: int,
+    *,
+    coeff_nabla_plus: complex = 0.0,
+    coeff_nabla_minus: complex = 0.0,
+) -> MixedLinearFermionDecomposition:
+    """
+    Canonical endpoint difference with optional one-sided local arc admixtures.
+
+    These arc terms leave the mixed zero-mode coefficients unchanged and only
+    modify the explicit nonzero-mode correction sector.
+    """
+    coeff_i_plus, coeff_i_minus = canonical_endpoint_difference_coefficients(n1, n2)
+    return decompose_local_candidate(
+        n1,
+        n2,
+        coeff_i_plus=coeff_i_plus,
+        coeff_i_minus=coeff_i_minus,
+        coeff_nabla_plus=coeff_nabla_plus,
+        coeff_nabla_minus=coeff_nabla_minus,
+    )
 
 
 def join_local_fermion_data(n1: int, n2: int) -> JoinLocalFermionData:
@@ -313,6 +447,24 @@ def local_join_summary(n1: int, n2: int) -> dict[str, object]:
         "canonical_lambda_lat_coefficient": {
             "real": float(canonical.lambda_lat_coefficient.real),
             "imag": float(canonical.lambda_lat_coefficient.imag),
+        },
+        "canonical_endpoint_coefficients": {
+            "I_plus": {
+                "real": float(canonical.coeff_i_plus.real),
+                "imag": float(canonical.coeff_i_plus.imag),
+            },
+            "I_minus": {
+                "real": float(canonical.coeff_i_minus.real),
+                "imag": float(canonical.coeff_i_minus.imag),
+            },
+            "nabla_plus": {
+                "real": float(canonical.coeff_nabla_plus.real),
+                "imag": float(canonical.coeff_nabla_plus.imag),
+            },
+            "nabla_minus": {
+                "real": float(canonical.coeff_nabla_minus.real),
+                "imag": float(canonical.coeff_nabla_minus.imag),
+            },
         },
         "canonical_leg1_oscillator_norm": float(
             np.linalg.norm(canonical.oscillator_row_leg1)

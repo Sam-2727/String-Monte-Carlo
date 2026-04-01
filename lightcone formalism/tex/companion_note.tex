@@ -357,7 +357,23 @@ The helper \texttt{continuum\_tachyon\_benchmark.py} compares the fixed-ratio Ri
 =5.37\times 10^{-5}.
 \label{eq:companion-gamma-cont-error}
 \end{equation}
-So the bosonic three-tachyon sector now matches the known continuum Schur-complement kinematics quantitatively, while the overall cubic normalization remains a separate question encoded in ${\cal C}_{\mathrm{tail}}$.
+There is also an exact on-shell factor split in the same convention:
+\begin{equation}
+\log \mu(\alpha_1,\alpha_2,\alpha_3)^2
+=
+\frac{q_{\mathrm{rel}}^2}{2\gamma_T^{\mathrm{cont}}},
+\label{eq:companion-mu-split}
+\end{equation}
+so the continuum Mandelstam prefactor is controlled by the same Schur complement. The helper \texttt{continuum\_tachyon\_factor\_split.py} verifies both this identity and the discrete Richardson limit on the sampled family set:
+\begin{equation}
+\max\left|\frac{q_{\mathrm{rel}}^2}{2\gamma_T^{\mathrm{cont}}}-\log\mu^2\right|
+=8.88\times 10^{-16},
+\qquad
+\max\left|\frac{q_{\mathrm{rel}}^2}{2\gamma_T^{(\infty)}}-\log\mu^2\right|
+=1.01\times 10^{-6},
+\label{eq:companion-mu-split-error}
+\end{equation}
+with maximum relative error $2.42\times 10^{-7}$ in the second comparison. So the bosonic three-tachyon sector now matches the known continuum Schur-complement kinematics and the full on-shell Mandelstam exponential quantitatively, while the overall cubic normalization remains a separate question encoded in ${\cal C}_{\mathrm{tail}}$.
 
 \subsection{Two-tachyon / one-massless amplitude}
 
@@ -464,6 +480,45 @@ for which
 \sqrt{\frac{N_1}{N_2N_3}}\,\Lambda_{\mathrm{lat}}^a.
 \label{eq:theta-mixed-avg}
 \end{equation}
+For the most general endpoint-linear local candidate
+\begin{equation}
+\Lambda_{\mathrm{trial}}^a
+\equiv
+c_+\,\theta_{I_+}^a+c_-\,\theta_{I_-}^a,
+\label{eq:theta-local-trial}
+\end{equation}
+the exact mixed zero-mode piece is
+\begin{equation}
+\Lambda_{\mathrm{trial}}^a
+=
+(c_+ + c_-)\,\Theta_{\mathrm{cm}}^a
+\;+\;
+\left(
+c_+\sqrt{\frac{N_2}{N_1N_3}}
+-c_-\sqrt{\frac{N_1}{N_2N_3}}
+\right)\Lambda_{\mathrm{lat}}^a
+\;+\;(\text{nonzero modes}),
+\label{eq:theta-local-trial-mixed}
+\end{equation}
+so imposing zero $\Theta_{\mathrm{cm}}$ contamination and unit
+$\Lambda_{\mathrm{lat}}$ coefficient gives
+\begin{equation}
+c_+ + c_- = 0,
+\qquad
+c_+\sqrt{\frac{N_2}{N_1N_3}}
+-c_-\sqrt{\frac{N_1}{N_2N_3}}
+=1,
+\label{eq:theta-local-trial-constraints}
+\end{equation}
+with unique solution
+\begin{equation}
+c_+=\sqrt{\frac{N_1N_2}{N_3}},
+\qquad
+c_-=-\sqrt{\frac{N_1N_2}{N_3}}.
+\label{eq:theta-local-trial-solution}
+\end{equation}
+So the scaled endpoint difference is the unique endpoint-linear choice with no
+center-of-mass contamination and unit reduced coefficient.
 Substituting into \eqref{eq:theta-site-split} gives the exact finite-$N$ identity
 \begin{equation}
 \sqrt{\frac{N_1N_2}{N_3}}\,
@@ -535,6 +590,80 @@ with no residual $\Xi_{\mathrm{loc}}$ dependence. By contrast, the benchmark dil
 \label{eq:theta-local-channel-dilaton}
 \end{equation}
 and the corresponding trace-dropped $\delta^{IJ}$ benchmark channel vanishes on the same grid. So, for this canonical endpoint-difference local candidate, the benchmark graviton channels already reduce exactly to the old reduced ansatz before any further nonzero-mode averaging, while the genuinely local correction sectors first appear in channels that are absent in the reduced benchmark. The helper \texttt{local\_channel\_catalog.py} extends this from the benchmark set to the full $5^3$ polarization catalog built from $\{\epsilon_\parallel,\epsilon_{23},\epsilon_{24},\epsilon_{\mathrm{dil}},B_{23}\}$. On the same sampled ratio grid and in the trace-dropped $qq$ response, the 125 channels split into only five exact classes: 47 vanish identically, 37 are purely quadratic in $\Xi_{\mathrm{loc}}$, 16 are pure reduced degree-$0$ responses, 16 are purely quartic, and 9 contain both reduced and quartic pieces. For the trace-dropped $\delta^{IJ}$ response, all 125 sampled channels vanish. This makes clear that the benchmark graviton collapse is part of a small exact finite-$N$ classification rather than an isolated special case.
+For the same canonical endpoint-difference candidate, the helper \texttt{local\_vacuum\_reduction.py} now performs the first explicit three-point nonzero-mode vacuum contraction. In the product external oscillator vacuum one has
+\begin{equation}
+\bigl\langle \Xi_{\mathrm{loc}}^a \Xi_{\mathrm{loc}}^b \bigr\rangle_{\mathrm{vac}}
+=
+C_\Xi(N_1,N_2)\,\delta^{ab},
+\qquad
+C_\Xi(N_1,N_2)
+=
+\frac{2N_1N_2-N_1-N_2}{2N_3},
+\label{eq:theta-local-vacuum-two-point}
+\end{equation}
+so every positive-degree $\Xi_{\mathrm{loc}}$ monomial in the local catalog has zero vacuum expectation because its SO$(8)$ indices are all distinct. Therefore the sampled trace-dropped catalog collapses after contraction to
+\begin{equation}
+\#(\text{vanishing})=100,
+\qquad
+\#(\text{reduced only})=25,
+\qquad
+\mathcal{R}^{(23,23,\mathrm{dil})}_{qq,\mathrm{loc,vac}}(\lambda)=0,
+\label{eq:theta-local-vacuum-collapse}
+\end{equation}
+so, for the present canonical local candidate and three-point vacuum external states, the explicit nonzero-mode reduction produces no correction beyond the degree-$0$ reduced ansatz.
+The new helper \texttt{local\_superstring\_tree\_benchmark.py} then assembles the actual trace-dropped benchmark amplitudes from these vacuum-contracted local responses and the bosonic coefficients $(A_\delta,B_{qq})$. On the sampled family set $1{:}3,1{:}2,3{:}5,2{:}3,1{:}1$ with scales $L=16,32,64,128$ it gives
+\begin{equation}
+\max_{\mathrm{bench}}\bigl|\mathcal{A}^{\mathrm{loc,vac}}_F-\mathcal{A}^{\mathrm{red}}_F\bigr|=0,
+\qquad
+\max_{\mathrm{bench}}\bigl|\mathcal{A}^{\mathrm{loc,vac}}_F-\mathcal{A}^{\mathrm{bench}}_{\mathrm{GS}}\bigr|<10^{-14},
+\label{eq:theta-local-tree-benchmark}
+\end{equation}
+so, for this current canonical local candidate and three-point vacuum external states, the local construction reproduces the same benchmark graviton, dilaton, and antisymmetric-channel answers as the reduced calculation, but now by explicit local-vacuum reduction rather than by direct insertion of the reduced ansatz.
+The new helper \texttt{local\_arc\_catalog\_scan.py} sharpens the same point at
+the level of the full sampled vacuum-contracted catalog. For the simple
+one-sided arc family
+\[
+\Lambda_{\mathrm{trial}}
+=
+\Lambda_{\mathrm{join}}
++c_{\nabla,+}\,\nabla_+\theta
++c_{\nabla,-}\,\nabla_-\theta
+\]
+with sampled coefficients
+\[
+(c_{\nabla,+},c_{\nabla,-})
+\in
+\left\{
+(0,0),\left(\frac12,0\right),\left(0,\frac12\right),
+\left(\frac12,-\frac12\right),\left(\frac12,\frac12\right),(1,-1)
+\right\},
+\]
+the entire trace-dropped vacuum-reduced catalog remains unchanged on the same
+sampled $\lambda$ grid:
+\begin{equation}
+\max_{\mathrm{arc},\,\mathrm{catalog}}
+\bigl|
+\mathcal{R}^{\mathrm{trial,vac}}_{\mathrm{loc}}
+\;-\;
+\mathcal{R}^{\mathrm{red}}_{\mathrm{loc}}
+\bigr|
+=0,
+\qquad
+\#_{qq}^{\mathrm{trial,vac}}
+=
+100\ \text{vanishing}
+\;+\;
+25\ \text{reduced only},
+\qquad
+\#_{\delta}^{\mathrm{trial,vac}}
+=
+125\ \text{vanishing}.
+\label{eq:theta-local-arc-catalog}
+\end{equation}
+So the present three-point vacuum problem fixes the endpoint-linear part of the
+local fermion but does not yet distinguish these simple pure-local arc
+admixtures; the remaining uncertainty lives in the deeper local completion and
+its branch-point normalization, not in the reduced zero-mode coordinate itself.
 
 \subsection{Bosonic prefactor: parity obstruction and stencil choice}
 
@@ -858,20 +987,24 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \section{Status and outlook}
 \label{sec:outlook}
 
-\textbf{Validated} (76/76 tests passing in the automated suite):
+\textbf{Validated} (87/87 tests passing in the automated suite):
 \begin{itemize}
 \item Overlap algebra to $10^{-15}$.
 \item Bosonic three-tachyon factorization at $\perpD = 24$ with $10^5$ separation ratio.
 \item Continuum bosonic Schur benchmark: the Richardson-extrapolated fixed-ratio $\gamma_T$ values agree with the analytic continuum target~\eqref{eq:companion-gamma-cont} with maximum absolute error $1.94\times 10^{-5}$ and maximum relative error $5.37\times 10^{-5}$ on the sampled family set.
+\item Continuum bosonic factor split: the on-shell identity~\eqref{eq:companion-mu-split} holds to $8.88\times 10^{-16}$, and the discrete Richardson limit matches $\log\mu(\alpha)^2$ with maximum absolute error $1.01\times 10^{-6}$ and maximum relative error $2.42\times 10^{-7}$ on the sampled family set.
 \item $2T+1M$ tensor: $A_{\mathrm{tr}} \approx 0$, $B_{\mathrm{rel}} \to 1.920$ with continuum error bar $\pm 7 \times 10^{-4}$.
 \item Bosonic normalization structure: on the $4\le N_1,N_2\le 60$, $N_3\le 120$ grid the invariant three-leg tail gives ${\cal C}_{\mathrm{tail}}=-22.496054835$ with RMS residual $2.48\times 10^{-7}$, while the fixed incoming/outgoing nonlinear tails $(7,\pi,\pi^2/72)$ and $(-5,-\pi,\pi^2/72)$ leave only linear-plus-constant remainders with RMS residuals $1.61\times 10^{-12}$ and $2.91\times 10^{-11}$.
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
 \item Finite-$N$ local interaction-point fermion scaffolding: the exact identities \eqref{eq:theta-site-split}, \eqref{eq:theta-mixed-avg}, and \eqref{eq:theta-local-bridge}, together with the corresponding one-sided local arc-difference rows, are implemented and regression-tested, making the distinction between join-local data and reduced zero-mode coordinates explicit.
+\item Endpoint-linear local fermion uniqueness: among linear combinations of $\theta_{I_+}$ and $\theta_{I_-}$, the scaled endpoint difference is the unique finite-$N$ choice with zero $\Theta_{\mathrm{cm}}$ contamination and unit $\Lambda_{\mathrm{lat}}$ coefficient.
 \item Exact mixed local prefactor expansion: the sparse-polynomial decomposition \eqref{eq:theta-local-prefactor-expand} is implemented and regression-tested, with the $\Xi_{\mathrm{loc}}$-degree-$0$ sector reducing exactly to the current reduced ansatz and the higher-degree correction sectors remaining explicitly nonzero.
 \item Exact local channel reduction at fixed benchmark polarizations: on the sampled ratio grid, the trace-dropped graviton $qq$ channels already collapse to the reduced responses \eqref{eq:theta-local-channel-collapse}, while the benchmark dilaton channel is purely quartic in $\Xi_{\mathrm{loc}}$ as in \eqref{eq:theta-local-channel-dilaton}.
 \item Full local channel catalog: on the sampled ratio grid the trace-dropped $qq$ response over the full $5^3$ polarization basis splits into 47 vanishing channels, 37 purely quadratic local channels, 16 pure reduced channels, 16 pure quartic local channels, and 9 mixed reduced-plus-quartic channels; the trace-dropped $\delta^{IJ}$ response vanishes for all 125 sampled channels.
+\item Explicit local nonzero-mode vacuum reduction for the same canonical endpoint-difference candidate: after contraction, the sampled trace-dropped local catalog collapses to 100 vanishing channels and 25 pure reduced channels, with the benchmark dilaton quartic sector vanishing as in \eqref{eq:theta-local-vacuum-collapse}.
+\item Local three-point benchmark assembled from the vacuum-contracted local responses: on the sampled family set, the current canonical local candidate reproduces the same benchmark graviton, dilaton, and antisymmetric-channel amplitudes as the reduced calculation, with exact local-vs-reduced agreement and maximum benchmark mismatch below $10^{-14}$ as in \eqref{eq:theta-local-tree-benchmark}.
 \item Interaction-region geometry: the current finite-$a$ scheme is kept as an exact pairwise sewing together with a resolved bond-centered local interaction region supported on $(I_+,I_-)$ and adjacent one-sided arc data, rather than being reformulated around a single distinguished lattice site.
 \item Trace-dropped assembled benchmark amplitudes reduce directly to the closed forms in \eqref{eq:ferm-assembled-closed-family} and \eqref{eq:ferm-assembled-closed-family-2}, with maximum finite-$N$ scan error $1.60\times 10^{-14}$.
 \item Direct structural comparison to the known flat-space GS lightcone cubic benchmark $\,\mathbb{P}^I\mathbb{P}^Jv_{IJ}(\Lambda)\,$ agrees on the same scan with the same $1.60\times 10^{-14}$ maximum error, but only within the same reduced $\Lambda$ ansatz and still up to the unfixed overall normalization.
@@ -886,7 +1019,7 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 
 \textbf{Remaining:}
 \begin{enumerate}
-\item Derive the genuinely local finite-$N$ fermionic interaction-point variable and revisit the full superstring cubic calculation on that basis.
+\item Derive the genuinely local branch-point-normalized finite-$N$ fermionic interaction-point variable and check whether it reduces to the present canonical endpoint-difference candidate in the three-point vacuum problem.
 \item Fix the overall cubic normalization by matching the remaining bosonic and superstring overall coefficients to the continuum three-tachyon and three-graviton couplings. The bosonic Schur-complement kinematics are now already matched, so the unresolved part is the overall normalization rather than the reduced Gaussian structure.
 \item Assemble the physical spin-structure/GSO and zero-mode factors on top of the single-cylinder prototype; the unsummed sector scan already shows that pre-GSO oscillator sectors do not cancel by themselves.
 \item Assemble the first loop integrand by adding the remaining zero-mode factor to the now-tested twisted propagator building blocks.
@@ -894,6 +1027,6 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Spin-structure/GSO bookkeeping for physical superstring loops.
 \end{enumerate}
 
-The method reduces higher-loop superstring amplitudes to exact Gaussian sewing plus numerical moduli integration. On the bosonic tree side, the current evidence is now stronger than a qualitative convergence claim: the factorization test, the critical-dimension signal, the direct continuum Schur-complement match, and the $2T+1M$ tensor check all point in the same direction, leaving the overall cubic normalization as the main open bosonic amplitude-level task. On the superstring side, the current tree-level results should still be read more cautiously: they provide strong evidence that one reduced $\Lambda$ ansatz has the correct benchmark channel structure, but the genuinely local finite-$N$ fermionic interaction-point operator still needs to be derived before the superstring cubic vertex can be regarded as established.
+The method reduces higher-loop superstring amplitudes to exact Gaussian sewing plus numerical moduli integration. On the bosonic tree side, the current evidence is now stronger than a qualitative convergence claim: the factorization test, the critical-dimension signal, the direct continuum Schur-complement match, and the $2T+1M$ tensor check all point in the same direction, leaving the overall cubic normalization as the main open bosonic amplitude-level task. On the superstring side, the current tree-level results should still be read more cautiously: they now show that, for the present canonical endpoint-difference local candidate, the explicit three-point nonzero-mode vacuum reduction adds no correction beyond the reduced ansatz on the sampled local catalog, but the genuinely local branch-point-normalized finite-$N$ fermionic interaction-point operator still needs to be derived before the superstring cubic vertex can be regarded as established.
 
 \end{document}

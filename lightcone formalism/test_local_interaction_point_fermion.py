@@ -114,6 +114,62 @@ def test_canonical_local_difference_isolates_reduced_lambda() -> dict[str, objec
     }
 
 
+def test_endpoint_constraint_solution_matches_canonical() -> dict[str, object]:
+    n1, n2 = 5, 8
+    coeff_i_plus, coeff_i_minus = lif.endpoint_linear_coefficients_for_mixed_constraints(
+        n1,
+        n2,
+        theta_cm_target=0.0,
+        lambda_lat_target=1.0,
+    )
+    canonical = lif.canonical_local_difference_decomposition(n1, n2)
+    diff = float(
+        max(
+            abs(coeff_i_plus - canonical.coeff_i_plus),
+            abs(coeff_i_minus - canonical.coeff_i_minus),
+        )
+    )
+    expected_scale = np.sqrt(n1 * n2 / (n1 + n2))
+    expected_diff = float(
+        max(abs(coeff_i_plus - expected_scale), abs(coeff_i_minus + expected_scale))
+    )
+    return {
+        "test": "endpoint_constraint_solution_matches_canonical",
+        "max_difference_from_canonical": diff,
+        "max_difference_from_closed_form": expected_diff,
+        "pass": diff < 1.0e-12 and expected_diff < 1.0e-12,
+    }
+
+
+def test_general_endpoint_linear_decomposition_constraints() -> dict[str, object]:
+    n1, n2 = 7, 11
+    target_theta_cm = 0.3 - 0.2j
+    target_lambda = -1.4 + 0.5j
+    coeff_i_plus, coeff_i_minus = lif.endpoint_linear_coefficients_for_mixed_constraints(
+        n1,
+        n2,
+        theta_cm_target=target_theta_cm,
+        lambda_lat_target=target_lambda,
+    )
+    decomposition = lif.decompose_join_linear_combination(
+        n1,
+        n2,
+        coeff_i_plus,
+        coeff_i_minus,
+    )
+    max_error = float(
+        max(
+            abs(decomposition.theta_cm_coefficient - target_theta_cm),
+            abs(decomposition.lambda_lat_coefficient - target_lambda),
+        )
+    )
+    return {
+        "test": "general_endpoint_linear_decomposition_constraints",
+        "max_error": max_error,
+        "pass": max_error < 1.0e-12,
+    }
+
+
 def run_all_tests() -> dict[str, object]:
     results = {
         "site_decomposition_identity": test_site_decomposition_identity(),
@@ -121,6 +177,8 @@ def run_all_tests() -> dict[str, object]:
         "local_sites_are_not_leg_averages": test_local_sites_are_not_leg_averages(),
         "average_to_mixed_zero_mode_map": test_average_to_mixed_zero_mode_map(),
         "canonical_local_difference_isolates_reduced_lambda": test_canonical_local_difference_isolates_reduced_lambda(),
+        "endpoint_constraint_solution_matches_canonical": test_endpoint_constraint_solution_matches_canonical(),
+        "general_endpoint_linear_decomposition_constraints": test_general_endpoint_linear_decomposition_constraints(),
     }
     passed = sum(1 for item in results.values() if item.get("pass"))
     total = len(results)
