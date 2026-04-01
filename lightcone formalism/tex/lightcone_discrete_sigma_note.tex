@@ -2602,6 +2602,22 @@ A^{(0)}_{IJ}
 \end{equation}
 with the coefficients built from SO$(8)$ gamma matrices and the Levi-Civita tensor. This note does not reproduce the full component formulas for those coefficients because they are lengthy and convention-dependent; the precise expressions depend on the chosen SO$(8)$ gamma-matrix basis and the left/right chirality conventions of the flat-space GS formalism. Explicit formulas are available in the continuum lightcone literature \cite{SpradlinVolovich2002,PankiewiczStefanski2002}; for implementation one should import those tensors from a single fixed convention rather than mixing formulas across sources. The matrix-string interpretation of the same structure is discussed in \cite{DijkgraafMotl2003,Kishimoto2006}.
 That matrix-string interpretation is more explicit than a bare citation. In Section~2 of \cite{DijkgraafMotl2003}, the local interaction is written as $(\tau^i\Sigma^i)(\bar\tau^j\bar\Sigma^j)$ with $\tau^i\Sigma^i=G_{-1/2}^{\dot a}(\sigma\Sigma^{\dot a})$ on the left-moving side. The regularized singular bosonic operators $p^i_{\mathrm{reg}}$, $\tilde p^j_{\mathrm{reg}}$ convert the bare twist fields $\sigma$, $\tilde\sigma$ into the excited twists $\tau^i$, $\tilde\tau^j$. On the fermionic side, Dijkgraaf--Motl identify the Grassmann-module unit function with $\Sigma^i\tilde\Sigma^i-\ii\Sigma^{\dot a}\tilde\Sigma^{\dot a}$, show that repeated multiplication by $\Lambda^a$ generates the full spin-field basis, and derive the final continuum identity $v^{ij}(\Lambda)\leftrightarrow 16\,\Sigma^j\tilde\Sigma^i$. The numerical factor $16$ here is the Dijkgraaf--Motl normalization convention; when comparing with other continuum sources one should allow for the corresponding overall conversion factor before matching component formulas. So the continuum GS prefactor $p^i_{\mathrm{reg}}\tilde p^j_{\mathrm{reg}}v_{ij}(\Lambda)$ is precisely the lightcone Green--Schwarz representative of the same local supercurrent insertion at the join. This is the conceptual bridge from the NSR/matrix-string $G^\perp\widetilde G^\perp$ language to the compact GS formula $K^I\widetilde K^Jv_{IJ}(\Lambda)$ used in this note. What it does \emph{not} yet determine is the preferred finite-$a$ lattice quantization of the corresponding local operator.
+There is also a concrete continuum convention bridge that is worth making explicit. Dijkgraaf--Motl define the local interaction-point fermion by the regulated branch-point field
+\[
+\Lambda^a_{\mathrm{DM}}
+=
+\sqrt{\frac z2}\,\theta^a(z)
+\ii\sqrt{\frac{\bar z}2}\,\tilde\theta^a(\bar z),
+\]
+and state that it is related to the Brink--Green--Schwarz variable used in the older lightcone prefactor formulas by
+\begin{equation}
+\label{eq:s14-021a}
+\Lambda^a_{\mathrm{DM}}
+=
+\sqrt{\frac{2}{\alpha}}\,
+\Lambda^a_{\mathrm{GSB}}.
+\end{equation}
+Therefore a degree-$d$ monomial in the Pankiewicz--Stefanski / Brink--Green--Schwarz convention differs from the Dijkgraaf--Motl convention by the universal rescaling factor $(\alpha/2)^{d/2}$. The new helper \texttt{lambda\_convention\_bridge.py} verifies this directly on the imported coefficient tensors: after multiplying the degree-$2,4,6,8$ coefficient blocks by $(\alpha/2)^{1,2,3,4}$ respectively, the explicit continuum tensor set becomes $\alpha$-independent to machine precision and reproduces the Dijkgraaf--Motl normalized coefficients. So the present continuum implementation no longer has an unresolved Dijkgraaf--Motl versus Pankiewicz--Stefanski normalization ambiguity. The still-open issue is instead the genuinely local \emph{lattice} branch-point normalization.
 For an actual implementation these coefficients must therefore be imported from a fixed continuum convention; the present note identifies the required tensor structures but does not itself rederive them from first principles. In the local diagnostics accompanying this note, the files \texttt{so8\_gamma.py} and \texttt{gs\_zero\_mode\_prefactor.py} now fix one concrete SO$(8)$ convention and assemble the imported continuum coefficients $v_{IJ}(\Lambda)$ explicitly in that basis, while \texttt{gs\_zero\_mode\_module.py} makes the corresponding $8_v\oplus 8_c$ ground-state Clifford module explicit. What is still not supplied by those helpers is the separate dictionary between the resulting Grassmann-polynomial basis and the external lightcone graviton states.
 Throughout this discussion $\gamma^I_{a\dot a}$ denotes an SO$(8)$ Clebsch--Gordan matrix coupling $\mathbf 8_s\otimes \mathbf 8_c\to \mathbf 8_v$, and $\gamma^{IJ}_{ab}$ denotes the induced antisymmetrized two-index matrix acting on the chosen chiral spinor representation. The note itself still keeps these symbols abstract, but whenever a concrete component calculation is needed one must choose one fixed convention and stick to it throughout.
 
@@ -2720,6 +2736,38 @@ $\Theta_{\mathrm{cm}}$ contamination and unit $\Lambda_{\mathrm{lat}}$
 coefficient. The helper \texttt{local\_interaction\_point\_fermion.py} now
 exposes this inversion explicitly and verifies the closed-form coefficients at
 finite~$N$.
+One can sharpen this endpoint-linear statement by scanning the equal-magnitude
+phase family
+\begin{equation}
+\label{eq:s14-023c5}
+\widehat\Lambda_{\mathrm{phase}}^a(\phi)
+\equiv
+\mathcal{N}(\phi)\,
+\bigl(\theta_{I_+}^a+e^{\ii\phi}\theta_{I_-}^a\bigr),
+\qquad
+\text{with $\mathcal{N}(\phi)$ chosen so that the $\Lambda_{\mathrm{lat}}$
+coefficient is $1$.}
+\end{equation}
+The new helper \texttt{local\_endpoint\_phase\_scan.py} shows that, within this
+equal-magnitude endpoint family, the canonical anti-phase point
+$\phi=\pi$ is not only the unique CM-free choice but also the one that
+minimizes the nonzero-mode two-point scalar after unit-$\Lambda_{\mathrm{lat}}$
+normalization. On the sample point $(N_1,N_2)=(128,192)$ one finds
+\begin{equation}
+\label{eq:s14-023c6}
+\bigl|\Theta_{\mathrm{cm}}\bigr|_{\phi=\pi}=0,
+\qquad
+\bigl|\Theta_{\mathrm{cm}}\bigr|_{\phi=\pm \pi/2}\approx 1.72\times 10^1,
+\qquad
+C_\Xi(\phi=\pi)\approx 7.63\times 10^1,
+\qquad
+C_\Xi(\phi=\pm\pi/2)\approx 1.47\times 10^2.
+\end{equation}
+So a literal finite-$N$ endpoint sum with relative phase $\pm\ii$ is not just
+a harmless rephasing of the canonical difference. It carries large
+center-of-mass contamination and a substantially larger local nonzero-mode
+weight, so using it as the lattice interaction-point fermion would require an
+additional local completion beyond the bare endpoint-linear ansatz.
 Substituting this into \eqref{eq:s14-023b} yields one exact finite-$N$ local-to-reduced bridge:
 \begin{equation}
 \label{eq:s14-023d}
@@ -3623,7 +3671,7 @@ a^{-1/2}\widetilde c_K\,\widetilde D^{(2)}_{I_-}X^J.
 \end{equation}
 The word ``provisional'' matters here: this is not yet derived from the discrete superalgebra. It is simply the minimal local choice currently known to survive the bosonic part of the three-graviton test with a smooth ratio-dependent continuum profile. The actual supercharge-closure calculation must still determine whether these stencils are exact, whether additional local admixtures are required, and how the constants $c_K,\widetilde c_K$ are fixed.
 
-It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic normalization-structure fits, the continuum three-tachyon Schur benchmark, the explicit continuum $\mu(\alpha)^2$ factor split, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction in the reduced $\Lambda$ ansatz, pure fermionic response-basis checks, finite-$N$ local interaction-point fermion decomposition checks, the exact mixed-variable local prefactor expansion checks, the exact local channel-polynomial checks, the full local channel catalog, the explicit local nonzero-mode vacuum reduction for the canonical endpoint-difference candidate, the new local three-point tree benchmark assembled from those vacuum-contracted local responses, the dedicated $\lambda$-profile scan of those reduced responses, trace-dropped superstring ansatz checks, a structural comparison to the known flat-space GS lightcone benchmark within the same reduced ansatz, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, the first single-cylinder oscillator-trace prototype, and the stable pre-GSO Bose--Fermi ratio scan into one reproducible checkpoint. In its present form the suite reports $87/87$ passing tests. Within the endpoint-linear family, the scaled local difference
+It is therefore useful to separate the \emph{current numerical status} of this stencil family from the still-open structural questions. The local regression driver \texttt{numerical\_suite.py} now bundles the bosonic three-tachyon, bosonic $2T+1M$, bosonic normalization-structure fits, the continuum three-tachyon Schur benchmark, the explicit continuum $\mu(\alpha)^2$ factor split, the continuum DM/PS $\Lambda$-convention bridge, bosonic prefactor, Weyl-block, projected-channel, explicit fermionic tree-level contraction in the reduced $\Lambda$ ansatz, pure fermionic response-basis checks, finite-$N$ local interaction-point fermion decomposition checks, the exact mixed-variable local prefactor expansion checks, the exact local channel-polynomial checks, the full local channel catalog, the explicit local nonzero-mode vacuum reduction for the canonical endpoint-difference candidate, the new local three-point tree benchmark assembled from those vacuum-contracted local responses, the dedicated $\lambda$-profile scan of those reduced responses, trace-dropped superstring ansatz checks, a structural comparison to the known flat-space GS lightcone benchmark within the same reduced ansatz, normalization-factorization scripts, the twisted-cylinder loop-building-block diagnostics, the first single-cylinder oscillator-trace prototype, and the stable pre-GSO Bose--Fermi ratio scan into one reproducible checkpoint. In its present form the suite reports $87/87$ passing tests. Within the endpoint-linear family, the scaled local difference
 \[
 \Lambda_{\mathrm{join}}
 =
@@ -3631,7 +3679,17 @@ It is therefore useful to separate the \emph{current numerical status} of this s
 \]
 is now also fixed uniquely by the finite-$N$ requirements of zero
 $\Theta_{\mathrm{cm}}$ contamination and unit $\Lambda_{\mathrm{lat}}$
-coefficient. The bosonic checks remain sharp: the three-tachyon factorization residual is at the $10^{-9}$ level and its critical-dimension scan still singles out $D_\perp=24$, the fixed-ratio Schur benchmark matches the analytic continuum target with maximum absolute error $1.94\times 10^{-5}$ and maximum relative error $5.37\times 10^{-5}$, while the on-shell factor split also verifies $\log\mu(\alpha)^2=q_{\mathrm{rel}}^2/(2\gamma_T^{\mathrm{cont}})$ exactly and matches the discrete Richardson limit with maximum absolute error $1.01\times 10^{-6}$ and maximum relative error $2.42\times 10^{-7}$, while the $2T+1M$ continuum fits give
+coefficient. Moreover, the new endpoint-phase scan shows that after
+unit-$\Lambda_{\mathrm{lat}}$ normalization the canonical anti-phase endpoint
+difference is the unique CM-free equal-magnitude endpoint choice, while the
+naive $\theta_{I_+}\pm\ii\theta_{I_-}$ sums carry large
+$\Theta_{\mathrm{cm}}$ contamination and a substantially larger local
+two-point scalar. The bosonic checks remain sharp: the three-tachyon
+factorization residual is at the $10^{-9}$ level and its critical-dimension
+scan still singles out $D_\perp=24$, the fixed-ratio Schur benchmark matches
+the analytic continuum target with maximum absolute error $1.94\times 10^{-5}$
+and maximum relative error $5.37\times 10^{-5}$, while the on-shell factor
+split also verifies $\log\mu(\alpha)^2=q_{\mathrm{rel}}^2/(2\gamma_T^{\mathrm{cont}})$ exactly and matches the discrete Richardson limit with maximum absolute error $1.01\times 10^{-6}$ and maximum relative error $2.42\times 10^{-7}$, while the $2T+1M$ continuum fits give
 \begin{equation}
 \label{eq:s15-1-037}
 A_{\rm tr}=-3.68\times 10^{-6}\pm 3.55\times 10^{-6},

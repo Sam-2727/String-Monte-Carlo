@@ -2148,3 +2148,140 @@ The remaining ambiguity therefore lives one level deeper:
 This is useful because it tells us what *not* to overclaim from the present
 three-point numerics. They strongly constrain the local rebuild, but they still
 do not uniquely determine the full finite-$N$ local interaction-point fermion.
+
+---
+
+# Claude review (2026-04-01, third pass)
+
+## New content since last review
+
+### Arc-admixture catalog scan
+
+Six sampled arc admixtures $(c_{\nabla,+}, c_{\nabla,-})$ tested against the full 125-channel catalog at three $\lambda$ values. Result: **all arc admixtures are invisible** to the three-point vacuum catalog. The qq counts (100 vanishing + 25 reduced) and delta counts (125 vanishing) are identically preserved for every sampled arc candidate. Max discrepancy: exactly 0.
+
+**Why this is expected**: The arc differences $\nabla_\pm\theta$ are pure nonzero-mode quantities (they have zero leg average, as the test `join_arc_difference_rows` verifies). Adding them to $\Lambda_{\rm join}$ only modifies $\Xi_{\rm loc}$, and we already proved that all $\Xi_{\rm loc}$ sectors vanish after vacuum contraction (because every $\Xi$ monomial has distinct SO(8) indices). So the arc admixtures are guaranteed to be invisible for vacuum external states.
+
+**What this tells us**: The three-point vacuum problem cannot distinguish different local candidates within the $\Lambda_{\rm join} + c_{\nabla,+}\nabla_+\theta + c_{\nabla,-}\nabla_-\theta$ family. The endpoint-linear part is fixed (unique by the zero-CM + unit-$\Lambda_{\rm lat}$ constraints), but the arc part is a flat direction. This flat direction would be lifted by:
+- Excited external states (where the nonzero-mode contraction is not diagonal)
+- The four-point function (where internal propagation mixes modes)
+- The DM branch-point normalization (which selects a specific linear combination)
+
+### Companion and main note updates
+
+Both notes now include:
+- The general endpoint-linear candidate classification (eqs s14-023c1 through s14-023c4)
+- The arc-admixture family definition (eq s14-023m)
+- The arc-invariance result (eqs s14-023n, s14-023o)
+- Updated test count (now reports 91/91 in the main note based on codex's agents_chat entry; let me verify)
+
+## Test count verification
+
+New test files and counts:
+- `test_local_arc_candidate_scan.py`: 3/3 PASS
+- `test_local_arc_catalog_scan.py`: 3/3 PASS
+
+These add to the previous 85 → **91 total** (85 + 3 arc-candidate + 3 arc-catalog).
+
+## Both notes compile: companion 17pp, main 67pp
+
+## Issues found: None
+
+The arc-invariance result is physically correct and follows logically from the previous vacuum reduction theorem. The code correctly implements the arc-admixture parameterization and verifies the invariance both at the benchmark level and the full catalog level.
+
+---
+
+# Development update (2026-04-01, endpoint-phase scan)
+
+## Equal-magnitude endpoint phases are now quantitatively constrained
+
+The new helper `local_endpoint_phase_scan.py` studies the finite-$N$
+equal-magnitude endpoint family
+\[
+\widehat\Lambda_{\rm phase}(\phi)
+=
+\mathcal N(\phi)\bigl(\theta_{I_+}+e^{i\phi}\theta_{I_-}\bigr),
+\]
+where $\mathcal N(\phi)$ is chosen so that the reduced
+$\Lambda_{\rm lat}$ coefficient is normalized to $1$.
+
+This isolates a clean question: once one fixes the overlap-constrained
+zero-mode direction, how much center-of-mass contamination and local
+nonzero-mode weight remain in different endpoint phase choices?
+
+### New result
+
+Within this equal-magnitude endpoint family:
+
+1. $\phi=\pi$ (the canonical endpoint difference) is the **unique**
+   CM-free point.
+2. The same $\phi=\pi$ point also minimizes the local two-point scalar
+   $C_\Xi$ after unit-$\Lambda_{\rm lat}$ normalization.
+3. The naive DM-style endpoint sums with relative phase $\phi=\pm\pi/2$
+   are **not** equivalent to the canonical difference at finite $N$.
+
+At the benchmark point $(N_1,N_2)=(128,192)$:
+- canonical anti-phase $\phi=\pi$:
+  $|\Theta_{\rm cm}| \approx 10^{-15}$,
+  $C_\Xi \approx 76.3$
+- DM-style $\phi=\pm\pi/2$:
+  $|\Theta_{\rm cm}| \approx 1.72\times 10^1$,
+  $C_\Xi \approx 1.47\times 10^2$
+- same-phase $\phi=0$:
+  $|\Theta_{\rm cm}| \approx 8.76\times 10^1$
+
+So a literal endpoint choice $\theta_{I_+} + i\theta_{I_-}$ is not just a
+harmless rephasing of the canonical local difference. It lies well outside the
+CM-free endpoint-linear subspace and would require an additional local
+completion if it is to represent the finite-$N$ lattice counterpart of the DM
+branch-point operator.
+
+### Interpretation
+
+This does **not** derive the true DM branch-point normalization. What it does
+show is more modest but still useful:
+- the finite-$N$ endpoint-linear ambiguity is now even smaller than before,
+- the canonical difference is singled out not only by mixed zero-mode matching
+  but also by the simplest phase-family stability criterion,
+- the remaining branch-point problem is no longer “maybe any endpoint phase
+  works”; it is a more specific question about how a DM-style local operator is
+  completed beyond the bare endpoint-linear ansatz.
+
+### Tests
+
+- `test_local_endpoint_phase_scan.py`: 3/3 PASS
+- `test_lambda_convention_bridge.py`: 3/3 PASS
+
+### Recommended next steps
+
+1. Keep the superstring focus on the three-point tree vertex.
+2. Use the new endpoint-phase result to constrain any future DM-inspired local
+   completion: it must remove the large $\Theta_{\rm cm}$ contamination of the
+   naive $+i$ endpoint sum.
+3. Continue the bosonic normalization match in parallel, since that remains the
+   cleanest fully analytic continuum target.
+
+---
+
+# Claude review: DM/PS convention bridge (2026-04-01)
+
+## New result: DM vs PS normalization resolved
+
+New file `lambda_convention_bridge.py` (3/3 tests pass) verifies that the Dijkgraaf-Motl and Pankiewicz-Stefanski variables are related by the exact rescaling stated in DM's eq. "vztah":
+
+$$\Lambda_{\rm DM}^a = \sqrt{2/\alpha}\,\Lambda_{\rm GSB}^a$$
+
+After multiplying each degree-$d$ PS coefficient block by $(\alpha/2)^{d/2}$, the resulting DM-normalized coefficients are **$\alpha$-independent to machine precision** ($\max$ error $\le 10^{-16}$) across $\alpha \in \{0.5, 1.0, 2.0, 3.0\}$.
+
+## What this settles
+
+The continuum $v_{IJ}(\Lambda)$ polynomial has no remaining DM-vs-PS ambiguity. The PS coefficients (with their explicit $1/\alpha, 1/\alpha^2, \ldots$ factors) and the DM coefficients (which are $\alpha$-independent) are related by a clean convention conversion. The code's `gs_zero_mode_prefactor.py` uses the PS convention with `alpha_ratio` as the parameter; the bridge module converts to the DM convention and verifies $\alpha$-independence.
+
+## What this does NOT settle
+
+The **lattice** branch-point normalization. The continuum $\Lambda_{\rm DM}$ is defined by the regulated local field $\sqrt{z/2}\theta(z) + \ldots$ at the branch point. The lattice candidate $\Lambda_{\rm join} = \sqrt{N_1 N_2/N_3}(\theta_{I_+} - \theta_{I_-})$ is a specific discrete analogue. The relationship between $\Lambda_{\rm join}$ and $\Lambda_{\rm DM}$ involves the discrete-to-continuum mapping of the branch-point local coordinate, which is not yet derived.
+
+However, for the three-point vacuum problem this doesn't matter: the local-to-reduced reduction is exact regardless of the normalization (as proven by the vacuum reduction theorem and the arc-invariance scan).
+
+## Updated test count: 87/87
+
+Both notes compile: companion 17pp, main 67pp. No issues found.

@@ -39,10 +39,12 @@ import test_fermionic_graviton_contraction as tfgc
 import test_fermionic_response_scan as tfrs
 import test_graviton_assembly as tga
 import test_graviton_prefactor as tgp
+import test_lambda_convention_bridge as tlcb
 import test_local_arc_catalog_scan as tlaccs
 import test_local_arc_candidate_scan as tlacs
 import test_local_channel_catalog as tlcc
 import test_local_channel_response as tlcr
+import test_local_endpoint_phase_scan as tleps
 import test_local_interaction_point_fermion as tlipf
 import test_local_prefactor_expansion as tlpe
 import test_local_superstring_tree_benchmark as tlstb
@@ -180,6 +182,18 @@ def run_graviton_assembly_tests() -> dict[str, Any]:
     }
 
 
+def run_lambda_convention_bridge_tests() -> dict[str, Any]:
+    results = {
+        "dm_expected_form_matches_rescaled_ps_coefficients": tlcb.test_dm_expected_form_matches_rescaled_ps_coefficients(),
+        "dm_rescaled_coefficients_are_alpha_independent": tlcb.test_dm_rescaled_coefficients_are_alpha_independent(),
+        "degree_rescaling_matches_dm_ps_relation": tlcb.test_degree_rescaling_matches_dm_ps_relation(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
 def run_fermionic_graviton_contraction_tests() -> dict[str, Any]:
     results = {
         "trace_dropped_benchmark_responses": tfcr.test_trace_dropped_benchmark_responses(),
@@ -267,6 +281,18 @@ def run_local_arc_catalog_scan_tests() -> dict[str, Any]:
         "arc_family_preserves_vacuum_catalog_values": tlaccs.test_arc_family_preserves_vacuum_catalog_values(),
         "arc_family_preserves_vacuum_catalog_counts_qq": tlaccs.test_arc_family_preserves_vacuum_catalog_counts_qq(),
         "arc_family_preserves_vacuum_catalog_counts_delta": tlaccs.test_arc_family_preserves_vacuum_catalog_counts_delta(),
+    }
+    return {
+        "summary": summarize_passes(results),
+        "results": results,
+    }
+
+
+def run_local_endpoint_phase_scan_tests() -> dict[str, Any]:
+    results = {
+        "canonical_phase_is_cm_free": tleps.test_canonical_phase_is_cm_free(),
+        "dm_phase_has_large_cm_contamination": tleps.test_dm_phase_has_large_cm_contamination(),
+        "phase_family_selects_canonical_antiphase": tleps.test_phase_family_selects_canonical_antiphase(),
     }
     return {
         "summary": summarize_passes(results),
@@ -424,6 +450,7 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
     local_catalog = report["tests"]["local_channel_catalog"]["results"]
     local_arc = report["tests"]["local_arc_candidate_scan"]["results"]
     local_arc_catalog = report["tests"]["local_arc_catalog_scan"]["results"]
+    local_endpoint_phase = report["tests"]["local_endpoint_phase_scan"]["results"]
     local_vacuum = report["tests"]["local_vacuum_reduction"]["results"]
     local_tree = report["tests"]["local_superstring_tree_benchmark"]["results"]
     bose_fermi = report["tests"]["bose_fermi_cancellation"]["results"]
@@ -493,6 +520,10 @@ def extract_key_benchmarks(report: dict[str, Any]) -> dict[str, Any]:
         "local_arc_family_reduced_error": local_arc["family_arc_scan_is_benchmark_invariant"]["max_local_reduced_error"],
         "local_arc_catalog_qq_error": local_arc_catalog["arc_family_preserves_vacuum_catalog_values"]["qq_max_abs_error"],
         "local_arc_catalog_delta_error": local_arc_catalog["arc_family_preserves_vacuum_catalog_values"]["delta_max_abs_error"],
+        "local_endpoint_phase_dm_theta_cm_abs": local_endpoint_phase["dm_phase_has_large_cm_contamination"]["theta_cm_abs"],
+        "local_endpoint_phase_dm_two_point_scalar": local_endpoint_phase["dm_phase_has_large_cm_contamination"]["two_point_scalar"],
+        "local_endpoint_phase_best_cm_phase_error": local_endpoint_phase["phase_family_selects_canonical_antiphase"]["max_best_cm_phase_error"],
+        "local_endpoint_phase_best_two_point_phase_error": local_endpoint_phase["phase_family_selects_canonical_antiphase"]["max_best_two_point_phase_error"],
         "local_vacuum_qq_counts": local_vacuum["catalog_collapses_after_vacuum_contraction"]["qq_counts"],
         "local_vacuum_delta_counts": local_vacuum["catalog_collapses_after_vacuum_contraction"]["delta_counts"],
         "local_vacuum_dilaton_max": local_vacuum["benchmark_dilaton_quartic_sector_vanishes_after_contraction"]["max_abs_value"],
@@ -526,6 +557,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "neumann_extraction": run_neumann_tests(),
         "graviton_prefactor": run_graviton_prefactor_tests(),
         "graviton_assembly": run_graviton_assembly_tests(),
+        "lambda_convention_bridge": run_lambda_convention_bridge_tests(),
         "fermionic_graviton_contraction": run_fermionic_graviton_contraction_tests(),
         "local_interaction_point_fermion": run_local_interaction_point_fermion_tests(),
         "local_prefactor_expansion": run_local_prefactor_expansion_tests(),
@@ -533,6 +565,7 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
         "local_channel_catalog": run_local_channel_catalog_tests(),
         "local_arc_candidate_scan": run_local_arc_candidate_scan_tests(),
         "local_arc_catalog_scan": run_local_arc_catalog_scan_tests(),
+        "local_endpoint_phase_scan": run_local_endpoint_phase_scan_tests(),
         "local_vacuum_reduction": run_local_vacuum_reduction_tests(),
         "local_superstring_tree_benchmark": run_local_superstring_tree_benchmark_tests(),
         "weyl_formula": run_weyl_formula_tests(),
@@ -592,10 +625,12 @@ def markdown_report(report: dict[str, Any]) -> str:
     neumann_module = report["tests"]["neumann_extraction"]["summary"]
     prefactor_module = report["tests"]["graviton_prefactor"]["summary"]
     graviton_module = report["tests"]["graviton_assembly"]["summary"]
+    lambda_bridge_module = report["tests"]["lambda_convention_bridge"]["summary"]
     local_fermion_module = report["tests"]["local_interaction_point_fermion"]["summary"]
     local_catalog_module = report["tests"]["local_channel_catalog"]["summary"]
     local_arc_module = report["tests"]["local_arc_candidate_scan"]["summary"]
     local_arc_catalog_module = report["tests"]["local_arc_catalog_scan"]["summary"]
+    local_endpoint_phase_module = report["tests"]["local_endpoint_phase_scan"]["summary"]
     local_vacuum_module = report["tests"]["local_vacuum_reduction"]["summary"]
     local_tree_module = report["tests"]["local_superstring_tree_benchmark"]["summary"]
     projected_module = report["tests"]["projected_graviton_channels"]["summary"]
@@ -688,6 +723,7 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"`max |exp_inf - log mu^2| = {benchmarks['continuum_mu_discrete_max_abs_error']:.3e}`, "
             f"`max relative error = {benchmarks['continuum_mu_discrete_max_rel_error']:.3e}`"
         ),
+        "- DM/PS Lambda convention bridge: degree-rescaled prefactor tensors are alpha-independent and match the expected DM-normalized coefficients to numerical precision.",
         (
             "- Local channel catalog (trace-dropped): "
             f"`qq counts = {benchmarks['local_qq_catalog_counts']}`, "
@@ -704,6 +740,15 @@ def markdown_report(report: dict[str, Any]) -> str:
             "- Local arc-admixture vacuum-catalog scan: "
             f"`qq catalog error = {benchmarks['local_arc_catalog_qq_error']:.3e}`, "
             f"`delta catalog error = {benchmarks['local_arc_catalog_delta_error']:.3e}`"
+        ),
+        (
+            "- Local endpoint-phase scan: "
+            f"`|Theta_cm|` for the naive `+i` endpoint sum after unit-Lambda normalization"
+            f" = {benchmarks['local_endpoint_phase_dm_theta_cm_abs']:.3e}, "
+            f"`two-point scalar = {benchmarks['local_endpoint_phase_dm_two_point_scalar']:.6f}`, "
+            f"`best CM/two-point phase errors = "
+            f"{benchmarks['local_endpoint_phase_best_cm_phase_error']:.3e} / "
+            f"{benchmarks['local_endpoint_phase_best_two_point_phase_error']:.3e}`"
         ),
         (
             "- Local vacuum reduction (canonical endpoint-difference candidate): "
@@ -733,10 +778,12 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- `neumann_extraction`: `{neumann_module['passed']}/{neumann_module['total']}` passed",
         f"- `graviton_prefactor`: `{prefactor_module['passed']}/{prefactor_module['total']}` passed",
         f"- `graviton_assembly`: `{graviton_module['passed']}/{graviton_module['total']}` passed",
+        f"- `lambda_convention_bridge`: `{lambda_bridge_module['passed']}/{lambda_bridge_module['total']}` passed",
         f"- `local_interaction_point_fermion`: `{local_fermion_module['passed']}/{local_fermion_module['total']}` passed",
         f"- `local_channel_catalog`: `{local_catalog_module['passed']}/{local_catalog_module['total']}` passed",
         f"- `local_arc_candidate_scan`: `{local_arc_module['passed']}/{local_arc_module['total']}` passed",
         f"- `local_arc_catalog_scan`: `{local_arc_catalog_module['passed']}/{local_arc_catalog_module['total']}` passed",
+        f"- `local_endpoint_phase_scan`: `{local_endpoint_phase_module['passed']}/{local_endpoint_phase_module['total']}` passed",
         f"- `local_vacuum_reduction`: `{local_vacuum_module['passed']}/{local_vacuum_module['total']}` passed",
         f"- `local_superstring_tree_benchmark`: `{local_tree_module['passed']}/{local_tree_module['total']}` passed",
         f"- `projected_graviton_channels`: `{projected_module['passed']}/{projected_module['total']}` passed",

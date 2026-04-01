@@ -442,6 +442,32 @@ where $|V_{\mathrm{kin}}\rangle$ is the exact bosonic-plus-fermionic kinematic o
 \item $v_{IJ}(\Lambda)$: the SO$(8)$-covariant octic polynomial evaluated in a reduced fermionic ansatz. The variable $\Lambda^a \equiv \sqrt{N_1 N_2/N_3}\,(\theta_{\mathrm{av}}^{(1)a} - \theta_{\mathrm{av}}^{(2)a})$, where $\theta_{\mathrm{av}}^{(r)a} = N_r^{-1}\sum_n \theta_n^{(r)a}$ is the average GS fermion on leg~$r$, is a convenient overlap-constrained zero-mode coordinate. It is not yet a derivation of the genuinely local interaction-point fermion, and all later fermionic numerics should be read with that caveat.
 \end{itemize}
 
+At the continuum level, however, the Dijkgraaf--Motl and
+Pankiewicz--Stefanski conventions are now aligned explicitly rather than only
+qualitatively. Dijkgraaf--Motl define the local regulated interaction-point
+fermion by
+\[
+\Lambda^a_{\mathrm{DM}}
+=
+\sqrt{\frac z2}\,\theta^a(z)
+\ii\sqrt{\frac{\bar z}2}\,\tilde\theta^a(\bar z),
+\]
+and state that it is related to the Brink--Green--Schwarz variable by
+\begin{equation}
+\Lambda^a_{\mathrm{DM}}
+=
+\sqrt{\frac{2}{\alpha}}\,
+\Lambda^a_{\mathrm{GSB}}.
+\label{eq:dm-ps-bridge}
+\end{equation}
+So a degree-$d$ monomial differs only by the universal factor
+$(\alpha/2)^{d/2}$. The helper \texttt{lambda\_convention\_bridge.py} verifies
+directly on the imported prefactor tensors that this rescaling removes the
+explicit $\alpha$-dependence and reproduces the Dijkgraaf--Motl normalized
+coefficients to machine precision. The remaining ambiguity is therefore not a
+continuum DM-versus-PS mismatch, but the finite-$N$ lattice realization of the
+local branch-point operator itself.
+
 In the unfolded closed-string strip, the interaction region has two representatives at the ends of the cut: $X_{I_+} \equiv X_0^{(1)} = X_0^{(3)}$ and $X_{I_-} \equiv X_0^{(2)} = X_{N_1}^{(3)}$.
 The finite-$a$ standpoint of this note is to keep these two representatives distinct and to treat the interaction point as a resolved bond-centered local region, not as a single pre-existing lattice site. The exact cubic sewing is still the simple ordered concatenation of the three boundaries; the nontrivial branch-point geometry is deferred to the local prefactor and any finite-$a$ counterterms. This is the reason the local bosonic and fermionic prefactors are built from one-sided arc data attached to $I_+$ and $I_-$ rather than from a separately inserted midpoint site.
 The corresponding local fermions satisfy the exact finite-$N$ decomposition
@@ -519,6 +545,22 @@ c_-=-\sqrt{\frac{N_1N_2}{N_3}}.
 \end{equation}
 So the scaled endpoint difference is the unique endpoint-linear choice with no
 center-of-mass contamination and unit reduced coefficient.
+The new helper \texttt{local\_endpoint\_phase\_scan.py} strengthens this by
+scanning the equal-magnitude phase family
+\[
+\widehat\Lambda_{\mathrm{phase}}^a(\phi)
+=
+\mathcal N(\phi)\,
+\bigl(\theta_{I_+}^a+e^{\ii\phi}\theta_{I_-}^a\bigr),
+\]
+normalized so that the reduced $\Lambda_{\mathrm{lat}}$ coefficient is $1$.
+Within that family, $\phi=\pi$ is the unique CM-free point and also minimizes
+the local two-point scalar. At $(N_1,N_2)=(128,192)$ the naive DM-style
+endpoint sum with phase $\phi=\pm\pi/2$ has
+$|\Theta_{\mathrm{cm}}|\approx 1.72\times 10^1$, whereas the canonical
+anti-phase point has $|\Theta_{\mathrm{cm}}|=0$. So a literal finite-$N$
+endpoint sum with relative phase $\pm\ii$ is not equivalent to the canonical
+difference and would require further local completion.
 Substituting into \eqref{eq:theta-site-split} gives the exact finite-$N$ identity
 \begin{equation}
 \sqrt{\frac{N_1N_2}{N_3}}\,
@@ -997,9 +1039,11 @@ The symmetry $\bar N^{rs}_{mn} = \bar N^{sr}_{nm}$ follows from $G_T^{-1} = G_T^
 \item Bosonic normalization structure: on the $4\le N_1,N_2\le 60$, $N_3\le 120$ grid the invariant three-leg tail gives ${\cal C}_{\mathrm{tail}}=-22.496054835$ with RMS residual $2.48\times 10^{-7}$, while the fixed incoming/outgoing nonlinear tails $(7,\pi,\pi^2/72)$ and $(-5,-\pi,\pi^2/72)$ leave only linear-plus-constant remainders with RMS residuals $1.61\times 10^{-12}$ and $2.91\times 10^{-11}$.
 \item Bosonic graviton prefactor convergence: $N_1 B_{qq} \to 1.157$, $A_\delta \to 0.305$.
 \item Closed-form Weyl coefficients~\eqref{eq:weyl} verified to $10^{-12}$.
+\item Continuum DM/PS fermion-variable convention bridge: the degree-rescaled prefactor tensors satisfy \eqref{eq:dm-ps-bridge} numerically, becoming $\alpha$-independent and reproducing the Dijkgraaf--Motl normalized coefficients to machine precision.
 \item Pure fermionic response scan: ${\cal R}^{(23,23,\parallel)}_{qq}(\lambda)=4\sqrt{14}(1-\lambda)^2$ on the sampled $\lambda$ grid with maximum error $2.13\times 10^{-14}$.
 \item Finite-$N$ local interaction-point fermion scaffolding: the exact identities \eqref{eq:theta-site-split}, \eqref{eq:theta-mixed-avg}, and \eqref{eq:theta-local-bridge}, together with the corresponding one-sided local arc-difference rows, are implemented and regression-tested, making the distinction between join-local data and reduced zero-mode coordinates explicit.
 \item Endpoint-linear local fermion uniqueness: among linear combinations of $\theta_{I_+}$ and $\theta_{I_-}$, the scaled endpoint difference is the unique finite-$N$ choice with zero $\Theta_{\mathrm{cm}}$ contamination and unit $\Lambda_{\mathrm{lat}}$ coefficient.
+\item Endpoint-phase scan: after unit-$\Lambda_{\mathrm{lat}}$ normalization, the canonical anti-phase endpoint difference is the unique CM-free equal-magnitude endpoint choice and also minimizes the local two-point scalar, whereas the naive $\theta_{I_+}+\ii\theta_{I_-}$ and $\theta_{I_+}-\ii\theta_{I_-}$ sums carry large center-of-mass contamination.
 \item Exact mixed local prefactor expansion: the sparse-polynomial decomposition \eqref{eq:theta-local-prefactor-expand} is implemented and regression-tested, with the $\Xi_{\mathrm{loc}}$-degree-$0$ sector reducing exactly to the current reduced ansatz and the higher-degree correction sectors remaining explicitly nonzero.
 \item Exact local channel reduction at fixed benchmark polarizations: on the sampled ratio grid, the trace-dropped graviton $qq$ channels already collapse to the reduced responses \eqref{eq:theta-local-channel-collapse}, while the benchmark dilaton channel is purely quartic in $\Xi_{\mathrm{loc}}$ as in \eqref{eq:theta-local-channel-dilaton}.
 \item Full local channel catalog: on the sampled ratio grid the trace-dropped $qq$ response over the full $5^3$ polarization basis splits into 47 vanishing channels, 37 purely quadratic local channels, 16 pure reduced channels, 16 pure quartic local channels, and 9 mixed reduced-plus-quartic channels; the trace-dropped $\delta^{IJ}$ response vanishes for all 125 sampled channels.
