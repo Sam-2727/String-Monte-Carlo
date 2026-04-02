@@ -131,6 +131,8 @@ def traced_bmat_f1(ribbon_graph, ell_list, dtype=np.complex128) -> np.ndarray:
     Rows are reduced boundary sites, columns are positive Fourier modes.
     The sign convention matches the legacy genus-1 B matrix:
         exp(2π i m r / L) - exp(2π i m r_partner / L).
+
+    This is the square Psi_c-style matrix with modes m=1,...,N_red.
     """
     data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
     L = data["L"]
@@ -145,6 +147,80 @@ def traced_bmat_f1(ribbon_graph, ell_list, dtype=np.complex128) -> np.ndarray:
         phase_partner = np.exp(twopi_i_over_L * (modes * float(partner_pos)))
         rows.append(phase_rep - phase_partner)
     return np.vstack(rows).astype(dtype, copy=False)
+
+
+def traced_bmat_psi1_rect_f1(ribbon_graph, ell_list, dtype=np.complex128) -> np.ndarray:
+    """
+    Rectangular F=1 ghost matrix for the identity wavefunctional Psi_1.
+
+    This removes the m=1 column from the square Psi_c-style matrix, leaving the
+    modes m=2,...,N_red. With the row/column convention used here, the output
+    has shape (N_red, N_red-1), where rows are reduced boundary sites and columns
+    are the surviving Fourier modes.
+    """
+    B = traced_bmat_f1(ribbon_graph, ell_list, dtype=dtype)
+    if B.shape[1] < 2:
+        raise ValueError("Need at least two reduced Fourier modes to build the Psi_1 matrix.")
+    return B[:, 1:]
+
+
+def _left_null_vector_rectangular(Brect: np.ndarray) -> np.ndarray:
+    """
+    Unit-norm left null vector v of a full-column-rank rectangular matrix Brect.
+
+    Here "left null" means Brect^T v = 0, which is the null direction in the
+    reduced c-variable space when Brect is viewed as the constrained Psi_1 matrix
+    with rows indexed by variables and columns indexed by mode factors.
+    """
+    _, _, Vh = np.linalg.svd(Brect.T, full_matrices=True)
+    v = Vh[-1, :].conj()
+    norm = np.linalg.norm(v)
+    if norm == 0.0:
+        raise np.linalg.LinAlgError("Rectangular Psi_1 matrix has a zero left-null vector.")
+    return v / norm
+
+
+def traced_bmat_psi1_quotient_f1(ribbon_graph, ell_list, dtype=np.complex128, pivot: int | None = None):
+    """
+    Explicit square quotient representative for the sewn Psi_1 ghost matrix.
+
+    Returns
+    -------
+    B_tilde : ndarray, shape (N_red-1, N_red-1)
+        Square matrix obtained by projecting the reduced c-variable space onto an
+        orthonormal complement of the missing Psi_c direction.
+    null_vec : ndarray, shape (N_red,)
+        Unit-norm left null vector of the rectangular Psi_1 matrix.
+
+    pivot : int or None
+        Reduced-site index to eliminate. If None, use the entry of the left null
+        vector with largest magnitude for numerical stability.
+
+    Notes
+    -----
+    The quotient is defined by solving the bilinear null constraint
+        v^T c = 0
+    for one reduced variable c_p, where v is a left null vector of the rectangular
+    Psi_1 matrix. This yields a concrete square matrix B_tilde whose determinant is
+    the numerical ghost factor in the chosen elimination convention.
+    """
+    Brect = traced_bmat_psi1_rect_f1(ribbon_graph, ell_list, dtype=dtype)
+    null_vec = _left_null_vector_rectangular(Brect)
+    if pivot is None:
+        pivot = int(np.argmax(np.abs(null_vec)))
+    pivot = int(pivot)
+    if pivot < 0 or pivot >= null_vec.size:
+        raise IndexError(f"Pivot {pivot} is out of range for null vector of size {null_vec.size}.")
+    if abs(null_vec[pivot]) == 0.0:
+        raise np.linalg.LinAlgError("Chosen pivot lies in a zero component of the left null vector.")
+
+    keep = [idx for idx in range(null_vec.size) if idx != pivot]
+    B_tilde = Brect[keep, :] - (null_vec[keep, None] / null_vec[pivot]) * Brect[pivot : pivot + 1, :]
+    return (
+        np.asarray(B_tilde, dtype=dtype),
+        np.asarray(null_vec, dtype=dtype),
+        pivot,
+    )
 
 
 def _constant_mode_elimination_matrix(n_reduced: int) -> np.ndarray:
@@ -213,6 +289,49 @@ def traced_bdet_log_f1(ribbon_graph, ell_list) -> mp.mpf:
     return mp.mpf(2.0 * logabsdet) - mp.mpf(data["L"]) * _LOG64_MP
 
 
+def traced_psi1_logabsdet_f1(
+    ribbon_graph,
+    ell_list,
+    *,
+    normalize_by_lattice: bool = False,
+    pivot: int | None = None,
+) -> mp.mpf:
+    """
+    Log of |det(B_tilde)| for the sewn identity-wavefunctional Psi_1 ghost matrix.
+
+    The square quotient representative B_tilde is obtained by solving the bilinear
+    null constraint v^T c = 0 for a stable pivot variable, where v is a left null
+    vector of the rectangular Psi_1 matrix with the m=1 column removed.
+
+    The Berezin measure on the quotient contributes an extra Jacobian |v_p| from
+    the eliminated null direction, so the pivot-invariant quantity is
+
+        |v_p| * |det(B_tilde,p)|.
+
+    Parameters
+    ----------
+    normalize_by_lattice:
+        If True, subtract L log 8 so that the returned quantity is the natural
+        square-root analogue of the old Bdet normalization |det(B)|^2 / 64^L.
+        The default False returns the raw log |det(B_tilde)|.
+    pivot:
+        Optional reduced-site index used for the elimination. If None, choose the
+        stable pivot with largest |v_p|. The final value should be pivot-independent
+        up to numerical precision.
+    """
+    data = _f1_boundary_site_pairs(ribbon_graph, ell_list)
+    B_tilde, null_vec, used_pivot = traced_bmat_psi1_quotient_f1(
+        ribbon_graph,
+        ell_list,
+        pivot=pivot,
+    )
+    _, logabsdet = np.linalg.slogdet(B_tilde)
+    out = mp.mpf(logabsdet + np.log(abs(null_vec[used_pivot])))
+    if normalize_by_lattice:
+        out -= mp.mpf(data["L"]) * (_LOG64_MP / 2)
+    return out
+
+
 def traced_prime_det_log_f1(ribbon_graph, ell_list) -> mp.mpf:
     """
     Generic log(primeDet) for an F=1 ribbon graph, matching prime_det_log in genus 1.
@@ -253,6 +372,34 @@ def traced_matter_bc_log_f1(ribbon_graph, ell_list, *, matter_power: int = -13) 
         ribbon_graph, ell_list, matter_power=matter_power
     )
     return log_bdet + weighted_log_prime
+
+
+def traced_numeric_amplitude_log_psi1_f1(
+    ribbon_graph,
+    ell_list,
+    *,
+    matter_power: int = 2,
+    normalize_ghost: bool = False,
+    pivot: int | None = None,
+) -> mp.mpf:
+    """
+    Log of the higher-genus numerical amplitude built from Psi_1 and A'.
+
+    By default this returns
+        log |det(B_tilde)| + 2 log(det A'),
+    which is the object currently used in the genus-2 matter+bc note.
+
+    If normalize_ghost=True, the ghost factor is replaced by its lattice-normalized
+    version log(|det(B_tilde)| / 8^L).
+    """
+    logabsdet = traced_psi1_logabsdet_f1(
+        ribbon_graph,
+        ell_list,
+        normalize_by_lattice=normalize_ghost,
+        pivot=pivot,
+    )
+    log_prime = traced_prime_det_log_f1(ribbon_graph, ell_list)
+    return logabsdet + mp.mpf(matter_power) * log_prime
 
 
 
@@ -365,6 +512,29 @@ def logdet_cholesky(M: np.ndarray, symmetrize: bool = False) -> float:
         raise np.linalg.LinAlgError("Cholesky failed: matrix not positive definite.") from e
 
     return 2.0 * np.sum(np.log(np.diag(L)))
+
+
+def logdet_hermitian_cholesky(M: np.ndarray, symmetrize: bool = True) -> float:
+    """
+    Stable log(det(M)) for Hermitian positive-definite real or complex matrices.
+    """
+    M = np.asarray(M)
+    if symmetrize:
+        M = 0.5 * (M + M.conj().T)
+
+    try:
+        L = np.linalg.cholesky(M)
+    except np.linalg.LinAlgError as e:
+        raise np.linalg.LinAlgError(
+            "Cholesky failed: Hermitian matrix is not positive definite."
+        ) from e
+
+    diag = np.real(np.diag(L))
+    if np.any(diag <= 0.0):
+        raise np.linalg.LinAlgError(
+            "Cholesky produced a non-positive diagonal entry for a supposed positive matrix."
+        )
+    return 2.0 * np.sum(np.log(diag))
 
 def bmat(L: int, l1: int, l2: int, dtype=np.complex128) -> np.ndarray:
     """
