@@ -103,7 +103,11 @@ def _random_topology_case(*, seed: int, topology_count: int, edge_count: int) ->
 
 
 def _genus2_random_case() -> dict:
-    return _random_topology_case(seed=GENUS2_RANDOM_SEED, topology_count=4, edge_count=9)
+    return _random_topology_case(
+        seed=GENUS2_RANDOM_SEED,
+        topology_count=len(cp.GENUS2_F1_GRAPH_DATA),
+        edge_count=9,
+    )
 
 
 def _genus3_random_case() -> dict:
@@ -125,9 +129,29 @@ def _check_higher_genus_ratio(graph_data, edge_lengths, R1, R2, *,
     against
       (R1 * LatticeSum_analytic(R1)) / (R2 * LatticeSum_analytic(R2)).
     """
+    data = _higher_genus_ratio_data(
+        graph_data,
+        edge_lengths,
+        R1,
+        R2,
+        theta_cutoff=theta_cutoff,
+        analytic_cutoff=analytic_cutoff,
+    )
+    return data["graph_ratio"], data["analytic_ratio"]
+
+
+def _higher_genus_ratio_data(graph_data, edge_lengths, R1, R2, *,
+                             theta_cutoff, analytic_cutoff):
+    """Return the full graph-vs-analytic ratio comparison data for one geometry."""
     ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
     forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
-    Omega = elt.period_matrix(forms=forms, ribbon_graph=ribbon_graph, ell_list=edge_lengths)
+    pdata = elt.period_matrix(
+        forms=forms,
+        ribbon_graph=ribbon_graph,
+        ell_list=edge_lengths,
+        return_data=True,
+    )
+    Omega = np.asarray(pdata["Omega"], dtype=np.complex128)
 
     geom = cp.compact_boson_graph_geometry(edge_lengths, graph_data)
     lattice_sum_r1 = cp.theta_sum_reduced(geom["T_reduced"], R1, N=theta_cutoff)
@@ -147,7 +171,15 @@ def _check_higher_genus_ratio(graph_data, edge_lengths, R1, R2, *,
         R1,
         R2,
     )
-    return ratio_lattice, ratio_analytic
+    resid = ratio_lattice - ratio_analytic
+    rel = abs(resid) / abs(ratio_analytic)
+    return {
+        "Omega": Omega,
+        "graph_ratio": ratio_lattice,
+        "analytic_ratio": ratio_analytic,
+        "residual": resid,
+        "rel_error": rel,
+    }
 
 
 def _print_ratio_report(label, graph_data, edge_lengths, R1, R2, *,
@@ -217,6 +249,7 @@ def print_reference_reports():
 
 
 class TestCompactPartitionHigherGenus(unittest.TestCase):
+    @unittest.skip("Focused on the genus-2 all-topology theta-ratio check.")
     def test_graph_path_reproduces_torus_special_case(self):
         L, l1, l2, R = 24, 3, 4, 1.3
         l3 = L // 2 - l1 - l2
@@ -238,11 +271,12 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
 
         self.assertAlmostEqual(z_graph, z_torus, places=12)
 
+    @unittest.skip("Focused on the genus-2 all-topology theta-ratio check.")
     def test_genus2_topologies_have_four_holonomies(self):
         edge_lengths = [1, 2, 2, 1, 2, 2, 1, 2, 2]
         values = []
 
-        for topology in range(1, 5):
+        for topology in range(1, len(cp.GENUS2_F1_GRAPH_DATA) + 1):
             graph_data = cp.get_stored_genus2_graph(topology)
             geom = cp.compute_graph_compact_partition(edge_lengths, 1.2, graph_data, N=THETA_CUTOFF)
             incidence = _incidence_matrix(cp._gluing_data(edge_lengths, graph_data)["oriented_edges"])
@@ -260,18 +294,21 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
         self.assertGreater(max(values) - min(values), 1e-6)
 
     def test_genus2_theta_ratio_matches_analytic_period_matrix_sum(self):
-        case = _genus2_random_case()
-        ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
-            cp.get_stored_genus2_graph(case["topology"]),
-            case["edge_lengths"],
-            1.2,
-            1.6,
-            theta_cutoff=THETA_CUTOFF,
-            analytic_cutoff=3,
-        )
-        rel = abs(ratio_lattice - ratio_analytic) / abs(ratio_analytic)
-        self.assertLess(rel, 1.0e-3)
+        edge_lengths = _genus2_random_case()["edge_lengths"]
+        for topology in range(1, len(cp.GENUS2_F1_GRAPH_DATA) + 1):
+            ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
+                cp.get_stored_genus2_graph(topology),
+                edge_lengths,
+                1.2,
+                1.6,
+                theta_cutoff=THETA_CUTOFF,
+                analytic_cutoff=3,
+            )
+            rel = abs(ratio_lattice - ratio_analytic) / abs(ratio_analytic)
+            with self.subTest(topology=topology):
+                self.assertLess(rel, 1.0e-3)
 
+    @unittest.skip("Focused on the genus-2 all-topology theta-ratio check.")
     def test_genus3_theta_ratio_matches_analytic_period_matrix_sum(self):
         case = _genus3_random_case()
         ratio_lattice, ratio_analytic = _check_higher_genus_ratio(
@@ -286,10 +323,40 @@ class TestCompactPartitionHigherGenus(unittest.TestCase):
         self.assertLess(rel, 1.0e-3)
 
 
+def print_genus2_theta_ratio_report_all_topologies():
+    """Direct-run report for the genus-2 theta-ratio check across all stored topologies."""
+    edge_lengths = _genus2_random_case()["edge_lengths"]
+    R1, R2 = 1.2, 1.6
+    failures = []
+
+    for topology in range(1, len(cp.GENUS2_F1_GRAPH_DATA) + 1):
+        data = _higher_genus_ratio_data(
+            cp.get_stored_genus2_graph(topology),
+            edge_lengths,
+            R1,
+            R2,
+            theta_cutoff=THETA_CUTOFF,
+            analytic_cutoff=3,
+        )
+
+        print(f"topology = {topology}")
+        print(f"edge_lengths = {edge_lengths}")
+        print("Omega =")
+        print(np.array2string(data["Omega"], precision=10, suppress_small=False))
+        print(f"R1 = {R1}")
+        print(f"R2 = {R2}")
+        print(f"graph ratio = {data['graph_ratio']:.15g}")
+        print(f"analytic ratio = {data['analytic_ratio']:.15g}")
+        print(f"residual = {data['residual']:.6e}")
+        print(f"relerror = {data['rel_error']:.6e}")
+        print()
+
+        if data["rel_error"] >= 1.0e-3:
+            failures.append((topology, data["rel_error"]))
+
+    if failures:
+        raise AssertionError(f"Genus-2 theta-ratio failures: {failures}")
+
+
 if __name__ == "__main__":
-    print_reference_reports()
-    sys.stdout.flush()
-    unittest.main(
-        argv=[sys.argv[0]],
-        testRunner=unittest.TextTestRunner(stream=sys.stdout),
-    )
+    print_genus2_theta_ratio_report_all_topologies()

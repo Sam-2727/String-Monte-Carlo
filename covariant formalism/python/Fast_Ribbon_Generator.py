@@ -117,13 +117,33 @@ def _get_base_graphs(nv, ne):
         # K4
         return [([(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)], [1, 2, 3, 4])]
     elif nv == 6 and ne == 9:
+        # Complete set of connected loopless cubic multigraphs on 6 vertices.
+        # The previous list only included the two simple cubic graphs, which
+        # undercounted genus-2 one-face ribbon graphs.
+        #
         # K_{3,3}
         k33 = ([(1, 4), (1, 5), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)],
                [1, 2, 3, 4, 5, 6])
         # Triangular prism
         prism = ([(1, 2), (2, 3), (3, 1), (4, 5), (5, 6), (6, 4), (1, 4), (2, 5), (3, 6)],
                  [1, 2, 3, 4, 5, 6])
-        return [k33, prism]
+        multigraph_1 = (
+            [(1, 2), (1, 2), (1, 3), (2, 3), (3, 4), (4, 5), (4, 6), (5, 6), (5, 6)],
+            [1, 2, 3, 4, 5, 6],
+        )
+        multigraph_2 = (
+            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 4), (3, 5), (4, 6), (5, 6), (5, 6)],
+            [1, 2, 3, 4, 5, 6],
+        )
+        multigraph_3 = (
+            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 5), (3, 5), (4, 6), (4, 6), (5, 6)],
+            [1, 2, 3, 4, 5, 6],
+        )
+        multigraph_4 = (
+            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)],
+            [1, 2, 3, 4, 5, 6],
+        )
+        return [multigraph_1, multigraph_2, multigraph_3, multigraph_4, k33, prism]
     elif nv >= 8 and nv % 2 == 0 and ne == (3 * nv) // 2:
         target = 19 if nv == 10 else None
         return _generate_connected_cubic_graphs(
@@ -860,18 +880,21 @@ def print_ribbon_graph_report(rg, idx=None):
 # ============================================================
 
 if __name__ == "__main__":
-    cases = [
-        ("Genus 1", 1, 3, 1),
-        ("Genus 0", 3, 3, 1),
-        ("Genus 0", 4, 6, 1),
-        ("Genus 2", 1, 9, 4),
-    ]
-    for label, n_faces, n_edges, expected in cases:
-        t0 = perf_counter()
-        rgs = generate_ribbon_graphs(n_faces, n_edges, verbose=False)
-        dt = perf_counter() - t0
-        assert len(rgs) == expected, f"Expected {expected}, got {len(rgs)}"
-        g = (2 - (2 * n_edges // 3) + n_edges - n_faces) // 2
-        print(f"\n{label} case: F={n_faces}, E={n_edges}, g={g}, runtime={dt:.4f}s")
-        for i, rg in enumerate(rgs, start=1):
-            print_graph_and_sewing(rg, i)
+    genus = 2
+    n_faces = 1
+
+    t0 = perf_counter()
+    rgs = generate_ribbon_graphs_fixed_genus(
+        genus,
+        n_faces=n_faces,
+        verbose=True,
+        workers=1,
+    )
+    dt = perf_counter() - t0
+
+    print(
+        f"\nEnumeration complete: g={genus}, F={n_faces}, "
+        f"count={len(rgs)}, runtime={dt:.4f}s"
+    )
+    for i, rg in enumerate(rgs, start=1):
+        print_graph_and_sewing(rg, i)

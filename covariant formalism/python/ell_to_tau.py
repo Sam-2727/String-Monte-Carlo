@@ -727,7 +727,13 @@ def edge_chord_intersection_matrix(ribbon_graph):
 
 
 def _find_edge_homology_basis_from_chord_data(chord_data):
-    """Internal backtracking search for a raw-edge symplectic basis."""
+    """
+    Internal symplectic-basis search from boundary chords.
+
+    The search first tries to find a symplectic basis made from raw edge-chords.
+    If that fails, it falls back to a bounded search over small integer
+    combinations of those edge-chords.
+    """
     J = chord_data["intersection_matrix"]
     genus = int(chord_data["genus"])
     n_edges = J.shape[0]
@@ -808,14 +814,19 @@ def _find_edge_homology_basis_from_chord_data(chord_data):
 
         return False
 
-    if not backtrack():
-        raise ValueError(
-            "No raw-edge symplectic basis was found from the boundary chords. "
-            "This graph may require integer combinations of edge-cycles."
+    if backtrack():
+        out = dict(chord_data)
+        out["basis_pairs"] = validate_edge_homology_basis(
+            chord_data,
+            basis_pairs,
+            expected_genus=genus,
         )
+        out["basis_algorithm"] = "raw_edge"
+        return out
 
     out = dict(chord_data)
-    out["basis_pairs"] = basis_pairs
+    out["basis_pairs"] = _find_combination_homology_basis_from_chord_data(chord_data)
+    out["basis_algorithm"] = "small_integer_combination"
     return out
 
 
@@ -825,7 +836,9 @@ def find_edge_homology_basis(ribbon_graph):
 
     The algorithm uses only the F=1 boundary word. Each edge gives an oriented
     chord joining its two boundary occurrences. It then searches for raw edges
-    whose chord intersection matrix is already in symplectic form.
+    whose chord intersection matrix is already in symplectic form. If that
+    fails, it falls back to a bounded search over small integer combinations
+    of the raw edge-chords.
 
     Returns
     -------
@@ -835,6 +848,7 @@ def find_edge_homology_basis(ribbon_graph):
             "boundary_word": (...),
             "edge_positions": {edge_idx: (p, q)},
             "intersection_matrix": J,
+            "basis_algorithm": "raw_edge" or "small_integer_combination",
             "basis_pairs": [
                 {"alpha": [(edge_idx, coeff)], "beta": [(edge_idx, coeff)]},
                 ...
@@ -843,9 +857,10 @@ def find_edge_homology_basis(ribbon_graph):
 
     Notes
     -----
-    The coefficient is +/- 1 and records whether the raw chord orientation
-    (first boundary occurrence to second) is used as-is or reversed. The ith
-    dictionary pairs alpha_i with its dual beta_i.
+    In the raw-edge case, the coefficient is +/- 1 and records whether the raw
+    chord orientation (first boundary occurrence to second) is used as-is or
+    reversed. In the fallback case, the returned cycles may be short integer
+    combinations of raw edge-chords.
     """
     chord_data = edge_chord_intersection_matrix(ribbon_graph)
     return _find_edge_homology_basis_from_chord_data(chord_data)
@@ -981,6 +996,162 @@ def validate_edge_homology_basis(chord_data, basis_pairs, *, expected_genus: int
         )
 
     return canonical_pairs
+
+
+def _cycle_terms_from_vector(vec: np.ndarray) -> list[tuple[int, int]]:
+    """Convert an integer edge vector into the cycle-term format used by the API."""
+    arr = np.asarray(vec, dtype=int)
+    return [
+        (edge_idx, int(coeff))
+        for edge_idx, coeff in enumerate(arr)
+        if coeff != 0
+    ]
+
+
+def _small_integer_cycle_candidates(n_edges: int, *, max_support: int = 3) -> list[np.ndarray]:
+    """
+    Enumerate short integer combinations of raw edge-chords.
+
+    Candidates use coefficients in {-1, +1} and support size up to max_support,
+    canonicalized up to an overall sign so v and -v are treated as the same
+    underlying cycle.
+    """
+    max_support = max(1, min(int(max_support), int(n_edges)))
+    seen: set[tuple[int, ...]] = set()
+    candidates: list[np.ndarray] = []
+
+    for support in range(1, max_support + 1):
+        for edges in combinations(range(n_edges), support):
+            for coeffs in product((-1, 1), repeat=support):
+                vec = np.zeros(n_edges, dtype=int)
+                for edge_idx, coeff in zip(edges, coeffs):
+                    vec[edge_idx] = int(coeff)
+
+                if vec[edges[0]] < 0:
+                    vec = -vec
+
+                key = tuple(int(x) for x in vec)
+                if key in seen:
+                    continue
+                seen.add(key)
+                candidates.append(vec)
+
+    candidates.sort(
+        key=lambda vec: (
+            int(np.count_nonzero(vec)),
+            tuple(int(i) for i in np.flatnonzero(vec)),
+            tuple(int(x) for x in vec[np.flatnonzero(vec)]),
+        )
+    )
+    return candidates
+
+
+def _find_combination_homology_basis_from_chord_data(chord_data, *, max_support: int = 3):
+    """
+    Fallback symplectic-basis search using short integer combinations of chords.
+
+    The search is bounded: it uses coefficients in {-1, +1} with support size
+    up to max_support, and then backtracks over those candidates to find a
+    symplectic basis.
+    """
+    J = np.asarray(chord_data["intersection_matrix"], dtype=int)
+    genus = int(chord_data["genus"])
+    n_edges = J.shape[0]
+
+    candidates = _small_integer_cycle_candidates(n_edges, max_support=max_support)
+    alpha_vectors: list[np.ndarray] = []
+    beta_vectors: list[np.ndarray] = []
+
+    def intersection(lhs: np.ndarray, rhs: np.ndarray) -> int:
+        return int(lhs @ J @ rhs)
+
+    def same_cycle(lhs: np.ndarray, rhs: np.ndarray) -> bool:
+        return np.array_equal(lhs, rhs) or np.array_equal(lhs, -rhs)
+
+    def already_selected(vec: np.ndarray) -> bool:
+        return any(same_cycle(vec, prev) for prev in alpha_vectors + beta_vectors)
+
+    def alpha_candidates() -> list[np.ndarray]:
+        ranked = []
+        for idx, alpha in enumerate(candidates):
+            if already_selected(alpha):
+                continue
+            if any(intersection(alpha, prev) != 0 for prev in alpha_vectors):
+                continue
+            if any(intersection(alpha, prev) != 0 for prev in beta_vectors):
+                continue
+
+            partner_count = 0
+            for beta in candidates:
+                if already_selected(beta) or same_cycle(alpha, beta):
+                    continue
+                pairing = intersection(alpha, beta)
+                if abs(pairing) != 1:
+                    continue
+                beta_oriented = beta * pairing
+                if any(intersection(prev, beta_oriented) != 0 for prev in alpha_vectors):
+                    continue
+                if any(intersection(prev, beta_oriented) != 0 for prev in beta_vectors):
+                    continue
+                partner_count += 1
+
+            if partner_count > 0:
+                ranked.append((np.count_nonzero(alpha), partner_count, idx))
+
+        ranked.sort()
+        return [candidates[idx] for _, _, idx in ranked]
+
+    def beta_candidates(alpha: np.ndarray) -> list[np.ndarray]:
+        ranked = []
+        for idx, beta in enumerate(candidates):
+            if already_selected(beta) or same_cycle(alpha, beta):
+                continue
+            pairing = intersection(alpha, beta)
+            if abs(pairing) != 1:
+                continue
+            beta_oriented = beta * pairing
+            if any(intersection(prev, beta_oriented) != 0 for prev in alpha_vectors[:-1]):
+                continue
+            if any(intersection(prev, beta_oriented) != 0 for prev in beta_vectors):
+                continue
+            ranked.append((np.count_nonzero(beta), idx, beta_oriented))
+
+        ranked.sort(key=lambda item: (item[0], item[1]))
+        return [beta_oriented for _, _, beta_oriented in ranked]
+
+    def backtrack() -> bool:
+        if len(alpha_vectors) == genus:
+            return True
+
+        for alpha in alpha_candidates():
+            alpha_vectors.append(alpha)
+            for beta in beta_candidates(alpha):
+                beta_vectors.append(beta)
+                if backtrack():
+                    return True
+                beta_vectors.pop()
+            alpha_vectors.pop()
+        return False
+
+    if not backtrack():
+        raise ValueError(
+            "No symplectic basis was found from the boundary chords, even after "
+            "searching small integer combinations of raw edge-chords. "
+            "Pass custom_cycles=... if you want to specify a basis manually."
+        )
+
+    basis_pairs = [
+        {
+            "alpha": _cycle_terms_from_vector(alpha),
+            "beta": _cycle_terms_from_vector(beta),
+        }
+        for alpha, beta in zip(alpha_vectors, beta_vectors)
+    ]
+    return validate_edge_homology_basis(
+        chord_data,
+        basis_pairs,
+        expected_genus=genus,
+    )
 
 
 def _build_starts_from_boundary(boundary, ell_list):
