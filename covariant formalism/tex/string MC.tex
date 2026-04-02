@@ -871,7 +871,6 @@ The R/R sector should evaluate to zero without an insertion of the Ramond sector
 \section{Higher Genus}
 
 \subsection{Compact boson at higher genus}
-
 For genus 2 surface with 1 puncture, the ribbon graph has 1 face, 6 vertices and 9 edges. There are 4 different topologies of graphs that covers different region of $\mathcal{M}_{2,1}$. Given a ribbon graph, we now describe the algorithm of computing the compact boson partition function on the Riemann surface associated with that ribbon graph. Although we use genus 2 as example, this can be trivially generalized to the case of arbitrary genera.
 
 In order to write down the identification map, Let's label the segments $S_i\ (i=1,...,18)$ from $k=1$ with increasing $k$. The edges can be written as $E_a\ (a=1,...,9)$, where each $E_a$ pairs 2 segments $S_{i_1(a)}, S_{i_2(a)}$ (we always take $i_1(a)<i_2(a)$) and glue them in the opposite orientation. We denote the edge associated with segment $S_i$ by $E_{a(i)}$ and its length $\ell_{a(i)}$. The identification map of compact boson on edge $E_a$ is then:
@@ -887,8 +886,30 @@ i_1(A)=i_0(A)+1,\quad  i_2(A)=p(i_1(A))+1,\quad i_3(A)=p(i_2(A))+1
 where $S_{p(i)}$ is the edge paired with $S_i$. The constraints are given by:
 \ie
 \text{sgn}(i_1(A)) s_{a(i_1(A))}+\text{sgn}(i_2(A)) s_{a(i_2(A))}+\text{sgn}(i_3(A)) s_{a(i_3(A))}=0
+\label{constraint}
 \fe
-where $\text{sgn}(i)$ is defined such that $\text{sgn}(i)=1$ if $i<p(i)$ and $-1$ if $i>p(i)$. Among the 6 constraints, only 5 of them are independent. This reduces the independent number of shifts from 9 to 4, which corresponds to the holonomies around the 4 non-contractible 1-cycles. 
+where $\text{sgn}(i)$ is defined such that $\text{sgn}(i)=1$ if $i<p(i)$ and $-1$ if $i>p(i)$. In a graph theory way, this can be repacked into a matrix equation
+\ie
+D_{A,a}s_a=0
+\fe
+where $s\in \mathbb{Z}^9$ is the vector of 9 shifts and $D\in \mathbb{Z}^{6\times 9}$. The independent shifts then lives in the kernel $\text{ker}_\mathbb{Z}(D)$. If we orient each edge $E_a$ in the counter-clockwise direction of $S_{i_1(a)}$, then the matrix $D$ is then given by the oriented incidence matrix:
+\ie
+D_{A,a}=\begin{cases}
+ 1 & \text{if edge } a \text{ into vertex } $A$\\
+ -1 & \text{if edge } a \text{ out of vertex } $A$
+\end{cases}
+\fe
+and the dimension of $\text{ker}(D)$ is given by $E-V+1=2g$. Namely, among the 6 constraints, only 5 of them are independent. This reduces the independent number of shifts from 9 to 4, which corresponds to the holonomies around the 4 non-contractible 1-cycles.
+
+A basis of $\text{ker}(D)$ can be built in the following way: One first choose a spanning tree of the oriented graph, which contains $V-1=5$ edges. For each of the 4 edges $e=(A_1(e), A_2(e))$ that's not in the spanning tree, one can find a cycle $C_e$ by starting from $A_1(e)$, going through $e$ to get to $A_2(e)$, then take the unique path in the spanning tree from $A_2(e)$ back to $A_1(e)$. From this cycle $C_e$, one then define a vector
+\ie
+(b_e)_a=\begin{cases}
+ 1 & \text{if edge } a \text{ is traversed with same orientation in } C_e\\
+ -1 & \text{if edge } a \text{ is traversed with opposite orientation in } C_e\\
+ 0 & \text{if edge } a \text{ not in } C_e
+\end{cases}
+\fe
+and the 4 $b_e$'s will form a integral basis of $\text{ker}(D)$. If we define the matrix $B\in \mathbb{Z}^{9\times 4}$ by $B_{a,e}=(b_e)_a$, then an arbitrary vector in $\text{ker}(D)$ can be represented by $Bn$, where $n\in \mathbb{Z}^4$ is a lattice vector in the 4-dimensional integral lattice.
 
 The genus-2 compact boson partition function can be discretized as:
 \ie
@@ -897,20 +918,25 @@ Z^{(2)}(\ell_a;R)=2\pi R \int \prod_{k\in \mathcal{K}} dX(k)\exp\left[-\frac{1}{
 where, similar to \eqref{AvC},
 \ie
 & A_{kl}=M_{kl}+M_{k'l}+M_{kl'}+M_{k'l'}\\
-& A^{'}_{kl}=A_{kl}-A_{1,l}-A_{k,1}-A_{1,1} \\
+& A^{'}_{kl}=A_{kl}-A_{1,l}-A_{k,1}-A_{1,1}\\
 & v_k=2\pi R\sum_{a=1}^9 s_a \sum_{l\in S_{i_1(a)}}(M_{kl'}+M_{k'l'})\\
-& v_{k}^{'}=v_{k}-v_1\\
+v_{k}^{'}=v_{k}-v_1\\
 & C=4\pi^2 R^2\sum_{a,b=1}^9 s_a s_b \sum_{k\in S_{i_1(a)}}\sum_{l\in S_{i_1(b)}}M_{k'm'}
 \fe
 Following the same procedure with the genus-1 case, the partition function can be computed as:
 \ie
 Z^{(2)}(\ell_a;R)=2\pi R(\det A')^{-1/2}\Theta(4iR^2 T')
 \fe
-where $T'$ is the following matrix $T_{ab}$, restricted to the 4-dimensional subspace.
+where $T'$ is the following matrix $T_{ab}$ restricted to the 4-dimensional subspace.
 \ie
 T_{ab}&=\sum_{k\in S_{i_1}(a)}\sum_{l\in S_{i_1}(b)}\left(M_{k'l'}-\sum_{m,n\in \mathcal{K}'}(A')^{-1}_{mn}W_{mk}W_{nl}\right)\\
 W_{km}&= M_{km'}+M_{k'm'}-M_{1,m'}-M_{1',m'}
 \fe
+The restriction from $T$ to $T'$ can be performed by simply taking
+\ie
+T'=B^T T B
+\fe
+where the matrix $B^T$ is the one that maps $\mathbb{Z}^9$ to the constrained subspace $\text{ker}(D)$.
 
 At genus $g$, the T-duality transformation of compact boson partition function is given by
 \ie
