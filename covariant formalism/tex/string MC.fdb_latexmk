@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1775062947 "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" "string MC.pdf" "string MC" 1775062948
-  "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" 1775062946 62509 1247be753e4c2c21a2e1cc350ffc9fb8 ""
+["pdflatex"] 1775086826 "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" "string MC.pdf" "string MC" 1775086827
+  "/Users/yuchenwang/Desktop/String MC/String-Monte-Carlo/covariant formalism/tex/string MC.tex" 1775086825 63064 7e68d47d605bf5ca1421d384349bc925 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -134,9 +134,9 @@
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
   "draft.sty" 1774887426 3101 b2101cd70e599fb000b7a44dbb94ae90 ""
   "figures/mapping_diagram.pdf" 1774887426 85536 242efa15f291a79f8e4b50714b22907c ""
-  "string MC.aux" 1775062948 5682 4173d13eb0b6e2cd89ddefadfa60e599 "pdflatex"
-  "string MC.out" 1775062948 4307 6ee340807058d85e67f5d9ede8a8ce40 "pdflatex"
-  "string MC.tex" 1775062946 62509 1247be753e4c2c21a2e1cc350ffc9fb8 ""
+  "string MC.aux" 1775086827 5783 29500b4b1d2c163bf21d5b7a6cd965c1 "pdflatex"
+  "string MC.out" 1775086827 4307 6ee340807058d85e67f5d9ede8a8ce40 "pdflatex"
+  "string MC.tex" 1775086825 63064 7e68d47d605bf5ca1421d384349bc925 ""
   (generated)
   "string MC.aux"
   "string MC.log"
