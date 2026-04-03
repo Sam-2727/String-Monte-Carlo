@@ -75,6 +75,26 @@ class TestRibbonGraphGenerator(unittest.TestCase):
         print(f"Segments (seg, from, to, edge): {segments}")
         print(f"Sewing pairs (edge, seg1, seg2): {sewing_pairs}")
 
+    @staticmethod
+    def _canonical_edge_word_oriented(word):
+        """Canonicalize a boundary word up to cyclic rotation and relabeling."""
+        def relabel_first_occurrence(seq):
+            mapping = {}
+            nxt = 1
+            out = []
+            for x in seq:
+                if x not in mapping:
+                    mapping[x] = nxt
+                    nxt += 1
+                out.append(mapping[x])
+            return tuple(out)
+
+        n = len(word)
+        return min(
+            relabel_first_occurrence(word[i:] + word[:i])
+            for i in range(n)
+        )
+
     def test_expected_counts_for_known_cases(self):
         # Content: benchmark cardinalities for known small cases.
         # Expected/cross-check: counts match documented production values.
@@ -82,15 +102,33 @@ class TestRibbonGraphGenerator(unittest.TestCase):
         self._start_test(
             "test_expected_counts_for_known_cases",
             "Check known non-isomorphic graph counts for (F,E) in {(1,3),(3,3),(4,6),(1,9)}.",
-            "Expected counts are {1,1,1,4}; cross-check against current generator output.",
+            "Expected counts are {1,1,1,9}; cross-check against current generator output.",
         )
         # Cases documented in ribbon_graph_generator.py main block.
         self._label("PRODUCTION", "Running generate_ribbon_graphs on known benchmark cases.")
         self.assertEqual(len(rgg.generate_ribbon_graphs(1, 3)), 1)
         self.assertEqual(len(rgg.generate_ribbon_graphs(3, 3)), 1)
         self.assertEqual(len(rgg.generate_ribbon_graphs(4, 6)), 1)
-        self.assertEqual(len(rgg.generate_ribbon_graphs(1, 9)), 4)
+        self.assertEqual(len(rgg.generate_ribbon_graphs(1, 9)), 9)
         self._pass_test("test_expected_counts_for_known_cases")
+
+    def test_genus2_enumeration_includes_parallel_edge_family(self):
+        # Content: genus-2 F=1 generation should include the missing multigraph family.
+        # Expected/cross-check: the user-provided boundary word appears among generated outputs.
+        # Pass condition: its oriented cyclic/relabeling class is present.
+        self._start_test(
+            "test_genus2_enumeration_includes_parallel_edge_family",
+            "Check that a valid genus-2 one-face boundary word from a parallel-edge cubic graph is generated.",
+            "Cross-check the proposed boundary word appears among generate_ribbon_graphs(1, 9) outputs.",
+        )
+        proposed = [1, 2, 3, 4, 2, 5, 3, 4, 5, 1, 6, 7, 8, 6, 9, 7, 8, 9]
+        target = self._canonical_edge_word_oriented(proposed)
+        generated = {
+            self._canonical_edge_word_oriented(rgg.get_disc_boundary(rg)["edge_sequence"])
+            for rg in rgg.generate_ribbon_graphs(1, 9)
+        }
+        self.assertIn(target, generated)
+        self._pass_test("test_genus2_enumeration_includes_parallel_edge_family")
 
     def test_face_count_matches_request(self):
         # Content: every generated ribbon graph should realize requested face count.

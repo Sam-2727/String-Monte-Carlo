@@ -117,13 +117,42 @@ def _get_base_graphs(nv, ne):
         # K4
         return [([(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)], [1, 2, 3, 4])]
     elif nv == 6 and ne == 9:
-        # K_{3,3}
-        k33 = ([(1, 4), (1, 5), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)],
-               [1, 2, 3, 4, 5, 6])
-        # Triangular prism
-        prism = ([(1, 2), (2, 3), (3, 1), (4, 5), (5, 6), (6, 4), (1, 4), (2, 5), (3, 6)],
-                 [1, 2, 3, 4, 5, 6])
-        return [k33, prism]
+        # All connected cubic multigraphs on 6 vertices, up to graph isomorphism.
+        # Restricting to the two simple graphs K_{3,3} and the triangular prism
+        # misses valid F=1 genus-2 ribbon graphs whose underlying cubic graph has
+        # parallel edges.
+        return [
+            ([
+                (1, 2), (1, 2), (1, 3),
+                (2, 4), (3, 4), (3, 5),
+                (4, 6), (5, 6), (5, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+            ([
+                (1, 2), (1, 2), (1, 3),
+                (2, 4), (3, 5), (3, 5),
+                (4, 6), (4, 6), (5, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+            ([
+                (1, 2), (1, 2), (1, 3),
+                (2, 4), (3, 5), (3, 6),
+                (4, 5), (4, 6), (5, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+            ([
+                (1, 2), (1, 2), (1, 3),
+                (2, 3), (3, 4), (4, 5),
+                (4, 6), (5, 6), (5, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+            ([
+                (1, 4), (1, 5), (1, 6),
+                (2, 4), (2, 5), (2, 6),
+                (3, 4), (3, 5), (3, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+            ([
+                (1, 2), (2, 3), (3, 1),
+                (4, 5), (5, 6), (6, 4),
+                (1, 4), (2, 5), (3, 6),
+            ], [1, 2, 3, 4, 5, 6]),
+        ]
     elif nv >= 8 and nv % 2 == 0 and ne == (3 * nv) // 2:
         target = 19 if nv == 10 else None
         return _generate_connected_cubic_graphs(
@@ -864,7 +893,7 @@ if __name__ == "__main__":
         ("Genus 1", 1, 3, 1),
         ("Genus 0", 3, 3, 1),
         ("Genus 0", 4, 6, 1),
-        ("Genus 2", 1, 9, 4),
+        ("Genus 2", 1, 9, 9),
     ]
     for label, n_faces, n_edges, expected in cases:
         t0 = perf_counter()
