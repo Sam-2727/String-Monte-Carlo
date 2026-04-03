@@ -28,6 +28,7 @@ except ImportError:  # pragma: no cover
 # ============================================================
 
 _CUBIC_GRAPH_CACHE = {}
+_CUBIC_MULTIGRAPH_CACHE = {}
 
 
 def _generate_connected_cubic_graphs(
@@ -108,6 +109,220 @@ def _generate_connected_cubic_graphs(
     _CUBIC_GRAPH_CACHE[nv] = base_graphs
     return _CUBIC_GRAPH_CACHE[nv]
 
+
+def _edge_multiplicity_counts(edges):
+    """Count multiplicities of unordered edges."""
+    counts = defaultdict(int)
+    for a, b in edges:
+        p = (a, b) if a < b else (b, a)
+        counts[p] += 1
+    return counts
+
+
+def _weighted_graph_from_edges(edges, verts):
+    """Encode a multigraph as a simple weighted graph with multiplicity attributes."""
+    g = nx.Graph()
+    g.add_nodes_from(verts)
+    for (a, b), mult in _edge_multiplicity_counts(edges).items():
+        g.add_edge(a, b, mult=mult)
+    return g
+
+
+def _canonicalize_multigraph_suffix(adj, deg, start):
+    """Canonically sort the unprocessed suffix by its processed adjacency profile."""
+    n = len(deg)
+    prefix = list(range(start))
+    suffix = list(range(start, n))
+    suffix.sort(
+        key=lambda j: (deg[j], tuple(adj[k][j] for k in range(start))),
+        reverse=True,
+    )
+    perm = prefix + suffix
+    new_adj = [[adj[perm[a]][perm[b]] for b in range(n)] for a in range(n)]
+    new_deg = [deg[p] for p in perm]
+    return new_adj, new_deg
+
+
+def _candidate_loopless_cubic_multigraph_matrices(nv):
+    """Generate a compact candidate set for cubic loopless multigraphs on nv vertices.
+
+    Candidates are produced by a symmetry-reduced row-by-row search over
+    adjacency matrices with off-diagonal entries in {0, 1, 2}. Final exact
+    isomorphism removal happens in `_generate_connected_loopless_cubic_multigraphs`.
+    """
+    if nv == 2:
+        return [((0, 3), (3, 0))]
+
+    adj = [[0] * nv for _ in range(nv)]
+    deg = [3] * nv
+    candidates = []
+    seen_states = set()
+
+    def rec(i, cur_adj, cur_deg):
+        cur_adj, cur_deg = _canonicalize_multigraph_suffix(cur_adj, cur_deg, i)
+        key = (i, tuple(cur_deg), tuple(tuple(row) for row in cur_adj))
+        if key in seen_states:
+            return
+        seen_states.add(key)
+
+        while i < nv and cur_deg[i] == 0:
+            i += 1
+            cur_adj, cur_deg = _canonicalize_multigraph_suffix(cur_adj, cur_deg, i)
+            key = (i, tuple(cur_deg), tuple(tuple(row) for row in cur_adj))
+            if key in seen_states:
+                return
+            seen_states.add(key)
+
+        if i == nv:
+            candidates.append(tuple(tuple(row) for row in cur_adj))
+            return
+
+        required = cur_deg[i]
+        blocks = []
+        j = i + 1
+        while j < nv:
+            sig = (cur_deg[j], tuple(cur_adj[k][j] for k in range(i)))
+            k = j + 1
+            while k < nv and (
+                cur_deg[k],
+                tuple(cur_adj[t][k] for t in range(i)),
+            ) == sig:
+                k += 1
+            blocks.append((j, k))
+            j = k
+
+        options = []
+
+        def pick_singles(pos, need, chosen):
+            if need == 0:
+                options.append(tuple(chosen))
+                return
+            if pos == len(blocks):
+                return
+            start, end = blocks[pos]
+            max_take = min(end - start, need)
+            for take in range(max_take + 1):
+                for offset in range(take):
+                    chosen.append((start + offset, 1))
+                pick_singles(pos + 1, need - take, chosen)
+                for _ in range(take):
+                    chosen.pop()
+
+        pick_singles(0, required, [])
+
+        if required >= 2:
+            for start, end in blocks:
+                for u in range(start, end):
+                    if cur_deg[u] < 2:
+                        continue
+                    chosen = [(u, 2)]
+
+                    def pick_more(pos, need):
+                        if need == 0:
+                            options.append(tuple(chosen))
+                            return
+                        if pos == len(blocks):
+                            return
+                        blk_start, blk_end = blocks[pos]
+                        avail = [
+                            idx
+                            for idx in range(blk_start, blk_end)
+                            if idx != u
+                        ]
+                        max_take = min(len(avail), need)
+                        for take in range(max_take + 1):
+                            for offset in range(take):
+                                chosen.append((avail[offset], 1))
+                            pick_more(pos + 1, need - take)
+                            for _ in range(take):
+                                chosen.pop()
+
+                    pick_more(0, required - 2)
+
+        uniq_options = []
+        seen_options = set()
+        for opt in options:
+            opt = tuple(sorted(opt))
+            if opt in seen_options:
+                continue
+            seen_options.add(opt)
+            uniq_options.append(opt)
+
+        for opt in uniq_options:
+            if sum(mult for _, mult in opt) != required:
+                continue
+            next_adj = [row[:] for row in cur_adj]
+            next_deg = cur_deg[:]
+            ok = True
+            for u, mult in opt:
+                if next_deg[u] < mult or next_adj[i][u] + mult > 2:
+                    ok = False
+                    break
+                next_adj[i][u] += mult
+                next_adj[u][i] += mult
+                next_deg[i] -= mult
+                next_deg[u] -= mult
+            if ok and next_deg[i] == 0 and all(d >= 0 for d in next_deg):
+                rec(i + 1, next_adj, next_deg)
+
+    rec(0, adj, deg)
+    return candidates
+
+
+def _matrix_to_multiedges(mult_mat):
+    """Expand an adjacency-multiplicity matrix into a repeated-edge list."""
+    n = len(mult_mat)
+    edges = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            mult = mult_mat[i][j]
+            for _ in range(mult):
+                edges.append((i + 1, j + 1))
+    return edges
+
+
+def _generate_connected_loopless_cubic_multigraphs(nv):
+    """Generate connected non-isomorphic loopless cubic multigraphs on nv vertices."""
+    if nv in _CUBIC_MULTIGRAPH_CACHE:
+        return _CUBIC_MULTIGRAPH_CACHE[nv]
+
+    if nx is None or weisfeiler_lehman_graph_hash is None:
+        raise RuntimeError(
+            "networkx is required for exact loopless cubic multigraph generation"
+        )
+
+    if nv == 2:
+        base_graphs = [([(1, 2), (1, 2), (1, 2)], [1, 2])]
+        _CUBIC_MULTIGRAPH_CACHE[nv] = base_graphs
+        return base_graphs
+
+    verts = list(range(1, nv + 1))
+    edge_match = nx.algorithms.isomorphism.categorical_edge_match("mult", 1)
+    reps_by_hash = defaultdict(list)
+    base_graphs = []
+
+    for mult_mat in _candidate_loopless_cubic_multigraph_matrices(nv):
+        edges = _matrix_to_multiedges(mult_mat)
+        g = _weighted_graph_from_edges(edges, verts)
+        if not nx.is_connected(g):
+            continue
+        h = weisfeiler_lehman_graph_hash(g, edge_attr="mult", iterations=5)
+        bucket = reps_by_hash[h]
+        if any(
+            nx.algorithms.isomorphism.GraphMatcher(
+                g,
+                rep,
+                edge_match=edge_match,
+            ).is_isomorphic()
+            for rep in bucket
+        ):
+            continue
+        bucket.append(g)
+        base_graphs.append((edges, verts))
+
+    _CUBIC_MULTIGRAPH_CACHE[nv] = base_graphs
+    return _CUBIC_MULTIGRAPH_CACHE[nv]
+
 def _get_base_graphs(nv, ne):
     """Known cubic graphs for small vertex counts."""
     if nv == 2 and ne == 3:
@@ -144,6 +359,8 @@ def _get_base_graphs(nv, ne):
             [1, 2, 3, 4, 5, 6],
         )
         return [multigraph_1, multigraph_2, multigraph_3, multigraph_4, k33, prism]
+    elif nv == 10 and ne == 15:
+        return _generate_connected_loopless_cubic_multigraphs(nv)
     elif nv >= 8 and nv % 2 == 0 and ne == (3 * nv) // 2:
         target = 19 if nv == 10 else None
         return _generate_connected_cubic_graphs(
@@ -304,10 +521,9 @@ def _compute_automorphisms(edges, verts):
     """Compute graph automorphisms by brute force (fine for small graphs)."""
     n = len(verts)
     if nx is not None and n >= 8:
-        g = nx.Graph()
-        g.add_nodes_from(verts)
-        g.add_edges_from(edges)
-        gm = nx.algorithms.isomorphism.GraphMatcher(g, g)
+        edge_match = nx.algorithms.isomorphism.categorical_edge_match("mult", 1)
+        g = _weighted_graph_from_edges(edges, verts)
+        gm = nx.algorithms.isomorphism.GraphMatcher(g, g, edge_match=edge_match)
         return [dict(m) for m in gm.isomorphisms_iter()]
 
     edge_ms = sorted(tuple(sorted(e)) for e in edges)
