@@ -1,17 +1,21 @@
-"""Render stored genus-2 one-face ribbon graph data as SVG diagrams.
+"""Render stored one-face ribbon graph data as SVG diagrams.
 
 Usage examples:
     PYTHONPATH='covariant formalism/python' ./.venv/bin/python \
         'covariant formalism/python/visualize_genus2_ribbon_graph.py' \
-        --topology 1 --output '/tmp/genus2_topology_1_boundary.svg'
+        --genus 2 --topology 1 --output '/tmp/genus2_topology_1_boundary.svg'
 
     PYTHONPATH='covariant formalism/python' ./.venv/bin/python \
         'covariant formalism/python/visualize_genus2_ribbon_graph.py' \
-        --all --output-dir '/tmp/genus2_svgs'
+        --genus 3 --topology 1683 --output '/tmp/genus3_topology_1683_boundary.svg'
 
-The picture shows the traced disc boundary as 18 colored segments. Segments
-with the same edge label belong to the same sewn edge, and the optional chords
-show the sewing pairs inside the disc.
+    PYTHONPATH='covariant formalism/python' ./.venv/bin/python \
+        'covariant formalism/python/visualize_genus2_ribbon_graph.py' \
+        --genus 2 --all --output-dir '/tmp/genus2_svgs'
+
+The picture shows the traced disc boundary as colored segments. Segments with
+the same edge label belong to the same sewn edge, and the optional chords show
+the sewing pairs inside the disc.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ import math
 from pathlib import Path
 
 import compact_partition as cp
+import genus3_t_duality as g3
 
 
 def _svg_escape(text: str) -> str:
@@ -90,6 +95,22 @@ def _build_legend_entries(graph_data: dict) -> list[tuple[int, int, int]]:
         (int(edge), int(seg1), int(seg2))
         for edge, seg1, seg2 in graph_data["sewing_pairs"]
     ]
+
+
+def _topology_count(genus: int) -> int:
+    if genus == 2:
+        return len(cp.GENUS2_F1_GRAPH_DATA)
+    if genus == 3:
+        return int(g3.GENUS3_GRAPH_COUNT)
+    raise ValueError(f"Unsupported genus {genus}; expected 2 or 3.")
+
+
+def _get_graph_data(genus: int, topology: int) -> dict:
+    if genus == 2:
+        return cp.get_stored_genus2_graph(topology)
+    if genus == 3:
+        return g3.get_stored_genus3_graph(topology)
+    raise ValueError(f"Unsupported genus {genus}; expected 2 or 3.")
 
 
 def _append_topology_sheet_panel(
@@ -175,6 +196,7 @@ def _append_topology_sheet_panel(
 
 def _write_svg_for_topology(
     *,
+    genus: int,
     topology: int,
     graph_data: dict,
     output_path: Path,
@@ -187,7 +209,11 @@ def _write_svg_for_topology(
     n_edges = len(graph_data["edges"])
 
     width = 1200
-    height = 980
+    legend_left = 810
+    legend_top = 155
+    row_gap = 36
+    info_top = legend_top + n_edges * row_gap + 44
+    height = max(980, int(info_top + 28 + n_segments * 21 + 60))
     cx = 410.0
     cy = 450.0
     outer_radius = 300.0
@@ -209,7 +235,7 @@ def _write_svg_for_topology(
         "  .frame { fill: #fbfbfd; stroke: #d8d8e0; stroke-width: 1.5; }",
         "</style>",
         f'<rect class="frame" x="18" y="18" width="{width - 36}" height="{height - 36}" rx="18" ry="18"/>',
-        f'<text class="title" x="56" y="68">Stored genus-2 topology {topology}</text>',
+        f'<text class="title" x="56" y="68">Stored genus-{genus} topology {topology}</text>',
         f'<text class="subtitle" x="56" y="96">Boundary segments are ordered counterclockwise. Matching edge labels share a color.</text>',
     ]
 
@@ -265,15 +291,12 @@ def _write_svg_for_topology(
         f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{inner_radius - 20.0:.2f}" fill="#ffffff" fill-opacity="0.94"/>'
     )
     lines.append(
-        f'<text class="subtitle" x="{cx:.2f}" y="{cy - 8.0:.2f}" text-anchor="middle">18 boundary segments</text>'
+        f'<text class="subtitle" x="{cx:.2f}" y="{cy - 8.0:.2f}" text-anchor="middle">{n_segments} boundary segments</text>'
     )
     lines.append(
-        f'<text class="subtitle" x="{cx:.2f}" y="{cy + 18.0:.2f}" text-anchor="middle">9 sewn edges</text>'
+        f'<text class="subtitle" x="{cx:.2f}" y="{cy + 18.0:.2f}" text-anchor="middle">{n_edges} sewn edges</text>'
     )
 
-    legend_left = 810
-    legend_top = 155
-    row_gap = 36
     lines.append(f'<text class="legend-title" x="{legend_left}" y="{legend_top - 24}">Edge Legend</text>')
     for idx, (edge_label, seg1, seg2) in enumerate(_build_legend_entries(graph_data)):
         y = legend_top + idx * row_gap
@@ -287,12 +310,9 @@ def _write_svg_for_topology(
             f'e{edge_label}: s{seg1} ↔ s{seg2}</text>'
         )
 
-    info_top = legend_top + n_edges * row_gap + 44
     lines.append(f'<text class="legend-title" x="{legend_left}" y="{info_top}">Boundary Data</text>')
     for idx, (frm, to, edge_label) in enumerate(boundary, start=1):
         y = info_top + 28 + (idx - 1) * 21
-        if y > height - 40:
-            break
         lines.append(
             f'<text class="legend-text" x="{legend_left}" y="{y}" dominant-baseline="middle">'
             f's{idx}: ({frm} → {to}, e{edge_label})</text>'
@@ -307,12 +327,14 @@ def _write_svg_for_topology(
 
 def _write_svg_sheet(
     *,
+    genus: int,
     output_path: Path,
     with_chords: bool,
 ) -> Path:
-    topologies = range(1, len(cp.GENUS2_F1_GRAPH_DATA) + 1)
+    total_topologies = _topology_count(genus)
+    topologies = range(1, total_topologies + 1)
     cols = 3
-    rows = math.ceil(len(cp.GENUS2_F1_GRAPH_DATA) / cols)
+    rows = math.ceil(total_topologies / cols)
     panel_width = 500.0
     panel_height = 500.0
     gap_x = 28.0
@@ -341,7 +363,7 @@ def _write_svg_sheet(
         _append_topology_sheet_panel(
             lines,
             topology=topology,
-            graph_data=cp.get_stored_genus2_graph(topology),
+            graph_data=_get_graph_data(genus, topology),
             left=left,
             top=top,
             panel_width=panel_width,
@@ -355,8 +377,8 @@ def _write_svg_sheet(
     return output_path
 
 
-def _default_output(topology: int, output_dir: Path) -> Path:
-    return output_dir / f"genus2_topology_{topology}_boundary.svg"
+def _default_output(genus: int, topology: int, output_dir: Path) -> Path:
+    return output_dir / f"genus{genus}_topology_{topology}_boundary.svg"
 
 
 def main() -> None:
@@ -365,19 +387,26 @@ def main() -> None:
     # --sheet combines all stored topologies into a single summary SVG.
     parser = argparse.ArgumentParser(
         description=(
-            "Visualize stored genus-2 one-face ribbon graph data as a segmented disc boundary."
+            "Visualize stored one-face ribbon graph data as a segmented disc boundary."
         )
+    )
+    parser.add_argument(
+        "--genus",
+        type=int,
+        choices=(2, 3),
+        default=2,
+        help="Stored topology family to render.",
     )
     parser.add_argument(
         "--topology",
         type=int,
         default=1,
-        help="Stored genus-2 topology index from compact_partition.py.",
+        help="Stored topology index within the chosen genus.",
     )
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Render all stored genus-2 one-face topologies.",
+        help="Render all stored one-face topologies for the chosen genus.",
     )
     parser.add_argument(
         "--sheet",
@@ -410,9 +439,10 @@ def main() -> None:
         output_path = (
             args.output
             if args.output is not None
-            else args.output_dir / "genus2_topology_sheet.svg"
+            else args.output_dir / f"genus{args.genus}_topology_sheet.svg"
         )
         written = _write_svg_sheet(
+            genus=args.genus,
             output_path=output_path,
             with_chords=not args.no_chords,
         )
@@ -420,21 +450,22 @@ def main() -> None:
         return
 
     topologies = (
-        range(1, len(cp.GENUS2_F1_GRAPH_DATA) + 1)
+        range(1, _topology_count(args.genus) + 1)
         if args.all
         else [int(args.topology)]
     )
 
     for topology in topologies:
-        graph_data = cp.get_stored_genus2_graph(topology)
+        graph_data = _get_graph_data(args.genus, topology)
         # In single-topology mode, --output lets you choose an exact filename.
         # Otherwise we generate a descriptive default name in the output dir.
         output_path = (
             args.output
             if (not args.all and args.output is not None)
-            else _default_output(topology, args.output_dir)
+            else _default_output(args.genus, topology, args.output_dir)
         )
         written = _write_svg_for_topology(
+            genus=args.genus,
             topology=topology,
             graph_data=graph_data,
             output_path=output_path,
