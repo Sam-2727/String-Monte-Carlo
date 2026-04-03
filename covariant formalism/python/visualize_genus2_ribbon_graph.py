@@ -11,6 +11,11 @@ Usage examples:
 
     PYTHONPATH='covariant formalism/python' ./.venv/bin/python \
         'covariant formalism/python/visualize_genus2_ribbon_graph.py' \
+        --genus 3 --topology 1683 --show-basis \
+        --output '/tmp/genus3_topology_1683_with_basis.svg'
+
+    PYTHONPATH='covariant formalism/python' ./.venv/bin/python \
+        'covariant formalism/python/visualize_genus2_ribbon_graph.py' \
         --genus 2 --all --output-dir '/tmp/genus2_svgs'
 
 The picture shows the traced disc boundary as colored segments. Segments with
@@ -26,7 +31,12 @@ import math
 from pathlib import Path
 
 import compact_partition as cp
+import ell_to_tau as et
 import genus3_t_duality as g3
+
+SEGMENT_FILL_OPACITY = 0.82
+SEWING_CHORD_OPACITY = 0.88
+BASIS_CHORD_OPACITY = 1.00
 
 
 def _svg_escape(text: str) -> str:
@@ -59,6 +69,18 @@ def _hex_color(edge_label: int, n_edges: int) -> str:
         int(round(255 * red)),
         int(round(255 * green)),
         int(round(255 * blue)),
+    )
+
+
+def _darken_hex(color: str, factor: float = 0.55) -> str:
+    color = color.lstrip("#")
+    red = int(color[0:2], 16)
+    green = int(color[2:4], 16)
+    blue = int(color[4:6], 16)
+    return "#{:02x}{:02x}{:02x}".format(
+        int(round(red * factor)),
+        int(round(green * factor)),
+        int(round(blue * factor)),
     )
 
 
@@ -95,6 +117,70 @@ def _build_legend_entries(graph_data: dict) -> list[tuple[int, int, int]]:
         (int(edge), int(seg1), int(seg2))
         for edge, seg1, seg2 in graph_data["sewing_pairs"]
     ]
+
+
+def _basis_cycle_name(kind: str, pair_idx: int) -> str:
+    prefix = "a" if kind == "alpha" else "b"
+    return f"{prefix}{pair_idx}"
+
+
+def _basis_cycle_color(kind: str, pair_idx: int) -> str:
+    alpha_palette = ["#d73027", "#f46d43", "#fdae61", "#f46d43"]
+    beta_palette = ["#4575b4", "#3288bd", "#66c2a5", "#5e4fa2"]
+    palette = alpha_palette if kind == "alpha" else beta_palette
+    return palette[(pair_idx - 1) % len(palette)]
+
+
+def _format_basis_terms(cycle: dict) -> str:
+    parts: list[str] = []
+    for term_idx, term in enumerate(cycle["terms"]):
+        sign = "-" if term["coeff"] < 0 else "+"
+        atom = f"e{term['edge_label']}"
+        if term_idx == 0:
+            parts.append(atom if sign == "+" else f"-{atom}")
+        else:
+            parts.append(f" {sign} {atom}")
+    return "".join(parts)
+
+
+def _basis_overlay_data(genus: int, graph_data: dict) -> dict:
+    boundary_zero = tuple(
+        (int(frm), int(to), int(edge_label) - 1)
+        for frm, to, edge_label in graph_data["boundary"]
+    )
+    chord_data = et._edge_chord_data_from_boundary(boundary_zero, genus=genus)
+    basis_data = et._find_edge_homology_basis_from_chord_data(chord_data)
+
+    cycles: list[dict] = []
+    for pair_idx, pair in enumerate(basis_data["basis_pairs"], start=1):
+        for kind in ("alpha", "beta"):
+            terms: list[dict] = []
+            for edge_idx, coeff in pair[kind]:
+                pos0, pos1 = chord_data["edge_positions"][edge_idx]
+                seg_start = int(pos0 + 1) if coeff > 0 else int(pos1 + 1)
+                seg_end = int(pos1 + 1) if coeff > 0 else int(pos0 + 1)
+                terms.append(
+                    {
+                        "edge_label": int(edge_idx + 1),
+                        "coeff": int(coeff),
+                        "seg_start": seg_start,
+                        "seg_end": seg_end,
+                    }
+                )
+            cycles.append(
+                {
+                    "name": _basis_cycle_name(kind, pair_idx),
+                    "kind": kind,
+                    "pair_idx": pair_idx,
+                    "color": _basis_cycle_color(kind, pair_idx),
+                    "terms": terms,
+                }
+            )
+
+    return {
+        "basis_algorithm": basis_data["basis_algorithm"],
+        "cycles": cycles,
+    }
 
 
 def _topology_count(genus: int) -> int:
@@ -144,17 +230,17 @@ def _append_topology_sheet_panel(
         f'<text class="sheet-title" x="{cx:.2f}" y="{top + 34.0:.2f}" text-anchor="middle">'
         f'Topology {topology}</text>'
     )
-
+    chord_lines: list[str] = []
     if with_chords:
         for edge_label, seg1, seg2 in graph_data["sewing_pairs"]:
             theta1 = sum(_segment_angles(seg1 - 1, n_segments)) / 2.0
             theta2 = sum(_segment_angles(seg2 - 1, n_segments)) / 2.0
             x1, y1 = _point(cx, cy, chord_radius, theta1)
             x2, y2 = _point(cx, cy, chord_radius, theta2)
-            color = _hex_color(edge_label, n_edges)
-            lines.append(
+            color = _darken_hex(_hex_color(edge_label, n_edges), 0.52)
+            chord_lines.append(
                 f'<path d="M {x1:.2f} {y1:.2f} Q {cx:.2f} {cy:.2f} {x2:.2f} {y2:.2f}" '
-                f'fill="none" stroke="{color}" stroke-width="2.2" stroke-opacity="0.72"/>'
+                f'fill="none" stroke="{color}" stroke-width="2.8" stroke-opacity="{SEWING_CHORD_OPACITY:.2f}"/>'
             )
 
     for segment_idx, (_, _, edge_label) in enumerate(boundary):
@@ -171,7 +257,7 @@ def _append_topology_sheet_panel(
             samples=14,
         )
         lines.append(
-            f'<polygon points="{polygon}" fill="{color}" fill-opacity="0.88" '
+            f'<polygon points="{polygon}" fill="{color}" fill-opacity="{SEGMENT_FILL_OPACITY:.2f}" '
             'stroke="#ffffff" stroke-width="1.5"/>'
         )
 
@@ -192,6 +278,7 @@ def _append_topology_sheet_panel(
     lines.append(
         f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{inner_radius - 16.0:.2f}" fill="#ffffff" fill-opacity="0.95"/>'
     )
+    lines.extend(chord_lines)
 
 
 def _write_svg_for_topology(
@@ -201,18 +288,23 @@ def _write_svg_for_topology(
     graph_data: dict,
     output_path: Path,
     with_chords: bool,
+    show_basis: bool,
 ) -> Path:
     # Draw one stored topology as a segmented boundary circle plus a legend that
     # spells out the sewing data used elsewhere in the codebase.
     boundary = tuple(graph_data["boundary"])
     n_segments = len(boundary)
     n_edges = len(graph_data["edges"])
+    basis_overlay = _basis_overlay_data(genus, graph_data) if show_basis else None
+    basis_rows = 0 if basis_overlay is None else len(basis_overlay["cycles"])
 
     width = 1200
     legend_left = 810
     legend_top = 155
     row_gap = 36
-    info_top = legend_top + n_edges * row_gap + 44
+    basis_top = legend_top + n_edges * row_gap + 44
+    basis_row_gap = 30
+    info_top = basis_top + (34 + basis_rows * basis_row_gap if show_basis else 0)
     height = max(980, int(info_top + 28 + n_segments * 21 + 60))
     cx = 410.0
     cy = 450.0
@@ -238,18 +330,37 @@ def _write_svg_for_topology(
         f'<text class="title" x="56" y="68">Stored genus-{genus} topology {topology}</text>',
         f'<text class="subtitle" x="56" y="96">Boundary segments are ordered counterclockwise. Matching edge labels share a color.</text>',
     ]
+    if show_basis and basis_overlay is not None:
+        lines.append(
+            f'<text class="subtitle" x="56" y="120">Highlighted a_i / b_i chords show one symplectic basis of 1-cycles ({_svg_escape(basis_overlay["basis_algorithm"])}).</text>'
+        )
 
+    sewing_chord_lines: list[str] = []
     if with_chords:
         for edge_label, seg1, seg2 in graph_data["sewing_pairs"]:
             theta1 = sum(_segment_angles(seg1 - 1, n_segments)) / 2.0
             theta2 = sum(_segment_angles(seg2 - 1, n_segments)) / 2.0
             x1, y1 = _point(cx, cy, chord_radius, theta1)
             x2, y2 = _point(cx, cy, chord_radius, theta2)
-            color = _hex_color(edge_label, n_edges)
-            lines.append(
+            color = _darken_hex(_hex_color(edge_label, n_edges), 0.52)
+            sewing_chord_lines.append(
                 f'<path d="M {x1:.2f} {y1:.2f} Q {cx:.2f} {cy:.2f} {x2:.2f} {y2:.2f}" '
-                f'fill="none" stroke="{color}" stroke-width="3.0" stroke-opacity="0.70"/>'
+                f'fill="none" stroke="{color}" stroke-width="3.8" stroke-opacity="{SEWING_CHORD_OPACITY:.2f}"/>'
             )
+
+    basis_chord_lines: list[str] = []
+    if show_basis and basis_overlay is not None:
+        for cycle in basis_overlay["cycles"]:
+            dash = "" if cycle["kind"] == "alpha" else ' stroke-dasharray="11 7"'
+            for term in cycle["terms"]:
+                theta1 = sum(_segment_angles(term["seg_start"] - 1, n_segments)) / 2.0
+                theta2 = sum(_segment_angles(term["seg_end"] - 1, n_segments)) / 2.0
+                x1, y1 = _point(cx, cy, chord_radius - 18.0, theta1)
+                x2, y2 = _point(cx, cy, chord_radius - 18.0, theta2)
+                basis_chord_lines.append(
+                    f'<path d="M {x1:.2f} {y1:.2f} Q {cx:.2f} {cy:.2f} {x2:.2f} {y2:.2f}" '
+                    f'fill="none" stroke="{cycle["color"]}" stroke-width="6.0" stroke-opacity="{BASIS_CHORD_OPACITY:.2f}"{dash}/>'
+                )
 
     for segment_idx, (frm, to, edge_label) in enumerate(boundary):
         theta0, theta1 = _segment_angles(segment_idx, n_segments)
@@ -264,7 +375,7 @@ def _write_svg_for_topology(
             theta1,
         )
         lines.append(
-            f'<polygon points="{polygon}" fill="{color}" fill-opacity="0.88" '
+            f'<polygon points="{polygon}" fill="{color}" fill-opacity="{SEGMENT_FILL_OPACITY:.2f}" '
             'stroke="#ffffff" stroke-width="2.0"/>'
         )
 
@@ -290,6 +401,8 @@ def _write_svg_for_topology(
     lines.append(
         f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{inner_radius - 20.0:.2f}" fill="#ffffff" fill-opacity="0.94"/>'
     )
+    lines.extend(sewing_chord_lines)
+    lines.extend(basis_chord_lines)
     lines.append(
         f'<text class="subtitle" x="{cx:.2f}" y="{cy - 8.0:.2f}" text-anchor="middle">{n_segments} boundary segments</text>'
     )
@@ -309,6 +422,20 @@ def _write_svg_for_topology(
             f'<text class="legend-text" x="{legend_left + 34}" y="{y + 1}" dominant-baseline="middle">'
             f'e{edge_label}: s{seg1} ↔ s{seg2}</text>'
         )
+
+    if show_basis and basis_overlay is not None:
+        lines.append(f'<text class="legend-title" x="{legend_left}" y="{basis_top}">Symplectic Basis</text>')
+        for idx, cycle in enumerate(basis_overlay["cycles"], start=1):
+            y = basis_top + 28 + (idx - 1) * basis_row_gap
+            dash = "" if cycle["kind"] == "alpha" else ' stroke-dasharray="11 7"'
+            lines.append(
+                f'<line x1="{legend_left}" y1="{y:.2f}" x2="{legend_left + 24}" y2="{y:.2f}" '
+                f'stroke="{cycle["color"]}" stroke-width="5.0"{dash}/>'
+            )
+            lines.append(
+                f'<text class="legend-text" x="{legend_left + 34}" y="{y + 1:.2f}" dominant-baseline="middle">'
+                f'{_svg_escape(cycle["name"])} = {_svg_escape(_format_basis_terms(cycle))}</text>'
+            )
 
     lines.append(f'<text class="legend-title" x="{legend_left}" y="{info_top}">Boundary Data</text>')
     for idx, (frm, to, edge_label) in enumerate(boundary, start=1):
@@ -430,10 +557,17 @@ def main() -> None:
         action="store_true",
         help="Do not draw interior sewing chords.",
     )
+    parser.add_argument(
+        "--show-basis",
+        action="store_true",
+        help="Overlay one symplectic a_i/b_i basis of 1-cycles on top of the sewing chords.",
+    )
     args = parser.parse_args()
 
     if (not args.sheet) and args.all and args.output is not None:
         raise ValueError("Use either --all with --output-dir, or --output for a single topology.")
+    if args.sheet and args.show_basis:
+        raise ValueError("--show-basis is only supported for single-topology or --all renders, not --sheet.")
 
     if args.sheet:
         output_path = (
@@ -470,6 +604,7 @@ def main() -> None:
             graph_data=graph_data,
             output_path=output_path,
             with_chords=not args.no_chords,
+            show_basis=args.show_basis,
         )
         print(f"Wrote {written}")
 

@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1671" viewBox="0 0 1200 1671">
+<style>
+  .title { font: 700 28px serif; fill: #222; }
+  .subtitle { font: 500 16px serif; fill: #555; }
+  .edge-label { font: 700 18px monospace; fill: #1f1f1f; }
+  .segment-number { font: 500 13px monospace; fill: #444; }
+  .legend-title { font: 700 18px serif; fill: #222; }
+  .legend-text { font: 500 15px monospace; fill: #2a2a2a; }
+  .frame { fill: #fbfbfd; stroke: #d8d8e0; stroke-width: 1.5; }
+</style>
+<rect class="frame" x="18" y="18" width="1164" height="1635" rx="18" ry="18"/>
+<text class="title" x="56" y="68">Stored genus-3 topology 1683</text>
+<text class="subtitle" x="56" y="96">Boundary segments are ordered counterclockwise. Matching edge labels share a color.</text>
+<text class="subtitle" x="56" y="120">Highlighted a_i / b_i chords show one symplectic basis of 1-cycles (raw_edge).</text>
+<polygon points="410.00,150.00 406.30,150.02 402.61,150.09 398.91,150.20 395.22,150.36 391.53,150.57 387.84,150.82 384.16,151.11 380.48,151.46 376.80,151.84 373.13,152.27 369.47,152.75 365.81,153.27 362.16,153.84 358.51,154.45 354.88,155.11 351.25,155.81 347.63,156.56 363.22,229.92 365.93,229.36 368.66,228.83 371.38,228.34 374.12,227.88 376.86,227.45 379.60,227.06 382.35,226.71 385.10,226.38 387.86,226.09 390.62,225.84 393.38,225.61 396.15,225.43 398.92,225.27 401.69,225.15 404.46,225.07 407.23,225.02 410.00,225.00" fill="#f26d6d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="382.61" y="189.44" text-anchor="middle" dominant-baseline="middle">e1</text>
+<text class="segment-number" x="373.94" y="106.89" text-anchor="middle" dominant-baseline="middle">s1</text>
+<circle cx="377.60" cy="141.70" r="2.7" fill="#f26d6d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="347.63,156.56 344.02,157.35 340.42,158.18 336.83,159.06 333.25,159.98 329.68,160.95 326.13,161.96 322.58,163.02 319.05,164.12 315.54,165.26 312.04,166.44 308.55,167.67 305.08,168.94 301.63,170.26 298.19,171.61 294.77,173.01 291.36,174.45 287.98,175.94 318.48,244.45 321.02,243.34 323.58,242.26 326.14,241.21 328.72,240.19 331.31,239.21 333.91,238.25 336.53,237.33 339.15,236.44 341.79,235.59 344.44,234.76 347.09,233.97 349.76,233.21 352.44,232.49 355.12,231.80 357.81,231.14 360.51,230.51 363.22,229.92" fill="#6da2f2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="329.04" y="200.82" text-anchor="middle" dominant-baseline="middle">e10</text>
+<text class="segment-number" x="303.39" y="121.89" text-anchor="middle" dominant-baseline="middle">s2</text>
+<circle cx="314.20" cy="155.17" r="2.7" fill="#6da2f2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="287.98,175.94 284.61,177.46 281.26,179.03 277.94,180.63 274.63,182.28 271.34,183.97 268.07,185.70 264.83,187.46 261.60,189.27 258.40,191.12 255.22,193.01 252.07,194.93 248.94,196.90 245.83,198.90 242.75,200.94 239.70,203.02 236.67,205.14 233.66,207.29 277.75,267.97 280.00,266.36 282.27,264.77 284.56,263.21 286.88,261.68 289.21,260.17 291.55,258.70 293.92,257.26 296.30,255.84 298.70,254.45 301.12,253.10 303.55,251.77 306.00,250.48 308.47,249.21 310.95,247.97 313.45,246.77 315.96,245.60 318.48,244.45" fill="#6d6df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="279.00" y="223.10" text-anchor="middle" dominant-baseline="middle">e11</text>
+<text class="segment-number" x="237.50" y="151.22" text-anchor="middle" dominant-baseline="middle">s3</text>
+<circle cx="255.00" cy="181.53" r="2.7" fill="#6d6df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="233.66,207.29 230.69,209.49 227.74,211.71 224.82,213.98 221.92,216.28 219.06,218.61 216.22,220.98 213.41,223.39 210.64,225.82 207.89,228.30 205.18,230.80 202.49,233.34 199.84,235.92 197.22,238.52 194.63,241.16 192.07,243.83 189.55,246.53 187.06,249.26 242.79,299.45 244.66,297.40 246.55,295.37 248.47,293.37 250.41,291.39 252.38,289.44 254.37,287.51 256.38,285.60 258.42,283.72 260.48,281.87 262.56,280.04 264.67,278.24 266.79,276.46 268.94,274.71 271.11,272.98 273.30,271.28 275.52,269.61 277.75,267.97" fill="#f26d6d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="234.69" y="255.30" text-anchor="middle" dominant-baseline="middle">e1</text>
+<text class="segment-number" x="179.15" y="193.62" text-anchor="middle" dominant-baseline="middle">s4</text>
+<circle cx="202.57" cy="219.63" r="2.7" fill="#f26d6d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="187.06,249.26 184.60,252.02 182.18,254.81 179.79,257.64 177.44,260.49 175.12,263.37 172.84,266.27 170.59,269.21 168.39,272.17 166.21,275.16 164.08,278.18 161.98,281.22 159.92,284.29 157.90,287.38 155.91,290.50 153.97,293.64 152.06,296.81 150.19,300.00 215.14,337.50 216.55,335.11 217.98,332.73 219.43,330.38 220.92,328.04 222.44,325.72 223.98,323.42 225.56,321.13 227.16,318.87 228.79,316.63 230.45,314.41 232.13,312.21 233.84,310.02 235.58,307.87 237.34,305.73 239.13,303.61 240.95,301.52 242.79,299.45" fill="#f2a26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="198.04" y="296.00" text-anchor="middle" dominant-baseline="middle">e2</text>
+<text class="segment-number" x="130.89" y="247.21" text-anchor="middle" dominant-baseline="middle">s5</text>
+<circle cx="159.20" cy="267.79" r="2.7" fill="#f2a26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="150.19,300.00 148.36,303.21 146.58,306.45 144.83,309.70 143.12,312.98 141.45,316.28 139.82,319.60 138.24,322.94 136.69,326.29 135.19,329.67 133.73,333.06 132.31,336.48 130.93,339.91 129.60,343.35 128.30,346.82 127.05,350.29 125.85,353.79 124.68,357.29 196.01,380.47 196.89,377.84 197.79,375.22 198.73,372.61 199.70,370.01 200.70,367.43 201.73,364.86 202.80,362.30 203.89,359.75 205.02,357.22 206.18,354.70 207.37,352.20 208.59,349.71 209.84,347.24 211.12,344.78 212.43,342.33 213.77,339.91 215.14,337.50" fill="#a2f26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="170.65" y="343.43" text-anchor="middle" dominant-baseline="middle">e5</text>
+<text class="segment-number" x="94.83" y="309.68" text-anchor="middle" dominant-baseline="middle">s6</text>
+<circle cx="126.80" cy="323.91" r="2.7" fill="#a2f26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="124.68,357.29 123.56,360.82 122.49,364.35 121.45,367.90 120.46,371.46 119.52,375.04 118.62,378.62 117.76,382.21 116.95,385.82 116.18,389.44 115.45,393.06 114.77,396.69 114.14,400.33 113.55,403.98 113.01,407.64 112.51,411.30 112.05,414.97 111.64,418.64 186.23,426.48 186.54,423.73 186.88,420.98 187.25,418.23 187.66,415.49 188.10,412.75 188.58,410.02 189.09,407.29 189.63,404.58 190.21,401.87 190.82,399.16 191.46,396.46 192.14,393.78 192.85,391.10 193.59,388.43 194.36,385.76 195.17,383.11 196.01,380.47" fill="#6df26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="153.73" y="395.53" text-anchor="middle" dominant-baseline="middle">e6</text>
+<text class="segment-number" x="72.54" y="378.27" text-anchor="middle" dominant-baseline="middle">s7</text>
+<circle cx="106.77" cy="385.55" r="2.7" fill="#6df26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="111.64,418.64 111.28,422.32 110.96,426.00 110.69,429.69 110.46,433.38 110.28,437.07 110.14,440.76 110.05,444.46 110.01,448.15 110.01,451.85 110.05,455.54 110.14,459.24 110.28,462.93 110.46,466.62 110.69,470.31 110.96,474.00 111.28,477.68 111.64,481.36 186.23,473.52 185.96,470.76 185.72,468.00 185.52,465.23 185.35,462.47 185.21,459.70 185.11,456.93 185.04,454.16 185.00,451.39 185.00,448.61 185.04,445.84 185.11,443.07 185.21,440.30 185.35,437.53 185.52,434.77 185.72,432.00 185.96,429.24 186.23,426.48" fill="#a26df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="148.00" y="450.00" text-anchor="middle" dominant-baseline="middle">e12</text>
+<text class="segment-number" x="65.00" y="450.00" text-anchor="middle" dominant-baseline="middle">s8</text>
+<circle cx="100.00" cy="450.00" r="2.7" fill="#a26df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="111.64,481.36 112.05,485.03 112.51,488.70 113.01,492.36 113.55,496.02 114.14,499.67 114.77,503.31 115.45,506.94 116.18,510.56 116.95,514.18 117.76,517.79 118.62,521.38 119.52,524.96 120.46,528.54 121.45,532.10 122.49,535.65 123.56,539.18 124.68,542.71 196.01,519.53 195.17,516.89 194.36,514.24 193.59,511.57 192.85,508.90 192.14,506.22 191.46,503.54 190.82,500.84 190.21,498.13 189.63,495.42 189.09,492.71 188.58,489.98 188.10,487.25 187.66,484.51 187.25,481.77 186.88,479.02 186.54,476.27 186.23,473.52" fill="#d86df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="153.73" y="504.47" text-anchor="middle" dominant-baseline="middle">e13</text>
+<text class="segment-number" x="72.54" y="521.73" text-anchor="middle" dominant-baseline="middle">s9</text>
+<circle cx="106.77" cy="514.45" r="2.7" fill="#d86df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="124.68,542.71 125.85,546.21 127.05,549.71 128.30,553.18 129.60,556.65 130.93,560.09 132.31,563.52 133.73,566.94 135.19,570.33 136.69,573.71 138.24,577.06 139.82,580.40 141.45,583.72 143.12,587.02 144.83,590.30 146.58,593.55 148.36,596.79 150.19,600.00 215.14,562.50 213.77,560.09 212.43,557.67 211.12,555.22 209.84,552.76 208.59,550.29 207.37,547.80 206.18,545.30 205.02,542.78 203.89,540.25 202.80,537.70 201.73,535.14 200.70,532.57 199.70,529.99 198.73,527.39 197.79,524.78 196.89,522.16 196.01,519.53" fill="#6df26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="170.65" y="556.57" text-anchor="middle" dominant-baseline="middle">e6</text>
+<text class="segment-number" x="94.83" y="590.32" text-anchor="middle" dominant-baseline="middle">s10</text>
+<circle cx="126.80" cy="576.09" r="2.7" fill="#6df26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="150.19,600.00 152.06,603.19 153.97,606.36 155.91,609.50 157.90,612.62 159.92,615.71 161.98,618.78 164.08,621.82 166.21,624.84 168.39,627.83 170.59,630.79 172.84,633.73 175.12,636.63 177.44,639.51 179.79,642.36 182.18,645.19 184.60,647.98 187.06,650.74 242.79,600.55 240.95,598.48 239.13,596.39 237.34,594.27 235.58,592.13 233.84,589.98 232.13,587.79 230.45,585.59 228.79,583.37 227.16,581.13 225.56,578.87 223.98,576.58 222.44,574.28 220.92,571.96 219.43,569.62 217.98,567.27 216.55,564.89 215.14,562.50" fill="#d8f26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="198.04" y="604.00" text-anchor="middle" dominant-baseline="middle">e4</text>
+<text class="segment-number" x="130.89" y="652.79" text-anchor="middle" dominant-baseline="middle">s11</text>
+<circle cx="159.20" cy="632.21" r="2.7" fill="#d8f26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="187.06,650.74 189.55,653.47 192.07,656.17 194.63,658.84 197.22,661.48 199.84,664.08 202.49,666.66 205.18,669.20 207.89,671.70 210.64,674.18 213.41,676.61 216.22,679.02 219.06,681.39 221.92,683.72 224.82,686.02 227.74,688.29 230.69,690.51 233.66,692.71 277.75,632.03 275.52,630.39 273.30,628.72 271.11,627.02 268.94,625.29 266.79,623.54 264.67,621.76 262.56,619.96 260.48,618.13 258.42,616.28 256.38,614.40 254.37,612.49 252.38,610.56 250.41,608.61 248.47,606.63 246.55,604.63 244.66,602.60 242.79,600.55" fill="#a26df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="234.69" y="644.70" text-anchor="middle" dominant-baseline="middle">e12</text>
+<text class="segment-number" x="179.15" y="706.38" text-anchor="middle" dominant-baseline="middle">s12</text>
+<circle cx="202.57" cy="680.37" r="2.7" fill="#a26df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="233.66,692.71 236.67,694.86 239.70,696.98 242.75,699.06 245.83,701.10 248.94,703.10 252.07,705.07 255.22,706.99 258.40,708.88 261.60,710.73 264.83,712.54 268.07,714.30 271.34,716.03 274.63,717.72 277.94,719.37 281.26,720.97 284.61,722.54 287.98,724.06 318.48,655.55 315.96,654.40 313.45,653.23 310.95,652.03 308.47,650.79 306.00,649.52 303.55,648.23 301.12,646.90 298.70,645.55 296.30,644.16 293.92,642.74 291.55,641.30 289.21,639.83 286.88,638.32 284.56,636.79 282.27,635.23 280.00,633.64 277.75,632.03" fill="#d86df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="279.00" y="676.90" text-anchor="middle" dominant-baseline="middle">e13</text>
+<text class="segment-number" x="237.50" y="748.78" text-anchor="middle" dominant-baseline="middle">s13</text>
+<circle cx="255.00" cy="718.47" r="2.7" fill="#d86df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="287.98,724.06 291.36,725.55 294.77,726.99 298.19,728.39 301.63,729.74 305.08,731.06 308.55,732.33 312.04,733.56 315.54,734.74 319.05,735.88 322.58,736.98 326.13,738.04 329.68,739.05 333.25,740.02 336.83,740.94 340.42,741.82 344.02,742.65 347.63,743.44 363.22,670.08 360.51,669.49 357.81,668.86 355.12,668.20 352.44,667.51 349.76,666.79 347.09,666.03 344.44,665.24 341.79,664.41 339.15,663.56 336.53,662.67 333.91,661.75 331.31,660.79 328.72,659.81 326.14,658.79 323.58,657.74 321.02,656.66 318.48,655.55" fill="#d8f26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="329.04" y="699.18" text-anchor="middle" dominant-baseline="middle">e4</text>
+<text class="segment-number" x="303.39" y="778.11" text-anchor="middle" dominant-baseline="middle">s14</text>
+<circle cx="314.20" cy="744.83" r="2.7" fill="#d8f26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="347.63,743.44 351.25,744.19 354.88,744.89 358.51,745.55 362.16,746.16 365.81,746.73 369.47,747.25 373.13,747.73 376.80,748.16 380.48,748.54 384.16,748.89 387.84,749.18 391.53,749.43 395.22,749.64 398.91,749.80 402.61,749.91 406.30,749.98 410.00,750.00 410.00,675.00 407.23,674.98 404.46,674.93 401.69,674.85 398.92,674.73 396.15,674.57 393.38,674.39 390.62,674.16 387.86,673.91 385.10,673.62 382.35,673.29 379.60,672.94 376.86,672.55 374.12,672.12 371.38,671.66 368.66,671.17 365.93,670.64 363.22,670.08" fill="#a2f26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="382.61" y="710.56" text-anchor="middle" dominant-baseline="middle">e5</text>
+<text class="segment-number" x="373.94" y="793.11" text-anchor="middle" dominant-baseline="middle">s15</text>
+<circle cx="377.60" cy="758.30" r="2.7" fill="#a2f26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="410.00,750.00 413.70,749.98 417.39,749.91 421.09,749.80 424.78,749.64 428.47,749.43 432.16,749.18 435.84,748.89 439.52,748.54 443.20,748.16 446.87,747.73 450.53,747.25 454.19,746.73 457.84,746.16 461.49,745.55 465.12,744.89 468.75,744.19 472.37,743.44 456.78,670.08 454.07,670.64 451.34,671.17 448.62,671.66 445.88,672.12 443.14,672.55 440.40,672.94 437.65,673.29 434.90,673.62 432.14,673.91 429.38,674.16 426.62,674.39 423.85,674.57 421.08,674.73 418.31,674.85 415.54,674.93 412.77,674.98 410.00,675.00" fill="#6df2d8" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="437.39" y="710.56" text-anchor="middle" dominant-baseline="middle">e8</text>
+<text class="segment-number" x="446.06" y="793.11" text-anchor="middle" dominant-baseline="middle">s16</text>
+<circle cx="442.40" cy="758.30" r="2.7" fill="#6df2d8" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="472.37,743.44 475.98,742.65 479.58,741.82 483.17,740.94 486.75,740.02 490.32,739.05 493.87,738.04 497.42,736.98 500.95,735.88 504.46,734.74 507.96,733.56 511.45,732.33 514.92,731.06 518.37,729.74 521.81,728.39 525.23,726.99 528.64,725.55 532.02,724.06 501.52,655.55 498.98,656.66 496.42,657.74 493.86,658.79 491.28,659.81 488.69,660.79 486.09,661.75 483.47,662.67 480.85,663.56 478.21,664.41 475.56,665.24 472.91,666.03 470.24,666.79 467.56,667.51 464.88,668.20 462.19,668.86 459.49,669.49 456.78,670.08" fill="#6dd8f2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="490.96" y="699.18" text-anchor="middle" dominant-baseline="middle">e9</text>
+<text class="segment-number" x="516.61" y="778.11" text-anchor="middle" dominant-baseline="middle">s17</text>
+<circle cx="505.80" cy="744.83" r="2.7" fill="#6dd8f2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="532.02,724.06 535.39,722.54 538.74,720.97 542.06,719.37 545.37,717.72 548.66,716.03 551.93,714.30 555.17,712.54 558.40,710.73 561.60,708.88 564.78,706.99 567.93,705.07 571.06,703.10 574.17,701.10 577.25,699.06 580.30,696.98 583.33,694.86 586.34,692.71 542.25,632.03 540.00,633.64 537.73,635.23 535.44,636.79 533.12,638.32 530.79,639.83 528.45,641.30 526.08,642.74 523.70,644.16 521.30,645.55 518.88,646.90 516.45,648.23 514.00,649.52 511.53,650.79 509.05,652.03 506.55,653.23 504.04,654.40 501.52,655.55" fill="#f26dd8" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="541.00" y="676.90" text-anchor="middle" dominant-baseline="middle">e14</text>
+<text class="segment-number" x="582.50" y="748.78" text-anchor="middle" dominant-baseline="middle">s18</text>
+<circle cx="565.00" cy="718.47" r="2.7" fill="#f26dd8" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="586.34,692.71 589.31,690.51 592.26,688.29 595.18,686.02 598.08,683.72 600.94,681.39 603.78,679.02 606.59,676.61 609.36,674.18 612.11,671.70 614.82,669.20 617.51,666.66 620.16,664.08 622.78,661.48 625.37,658.84 627.93,656.17 630.45,653.47 632.94,650.74 577.21,600.55 575.34,602.60 573.45,604.63 571.53,606.63 569.59,608.61 567.62,610.56 565.63,612.49 563.62,614.40 561.58,616.28 559.52,618.13 557.44,619.96 555.33,621.76 553.21,623.54 551.06,625.29 548.89,627.02 546.70,628.72 544.48,630.39 542.25,632.03" fill="#f26da2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="585.31" y="644.70" text-anchor="middle" dominant-baseline="middle">e15</text>
+<text class="segment-number" x="640.85" y="706.38" text-anchor="middle" dominant-baseline="middle">s19</text>
+<circle cx="617.43" cy="680.37" r="2.7" fill="#f26da2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="632.94,650.74 635.40,647.98 637.82,645.19 640.21,642.36 642.56,639.51 644.88,636.63 647.16,633.73 649.41,630.79 651.61,627.83 653.79,624.84 655.92,621.82 658.02,618.78 660.08,615.71 662.10,612.62 664.09,609.50 666.03,606.36 667.94,603.19 669.81,600.00 604.86,562.50 603.45,564.89 602.02,567.27 600.57,569.62 599.08,571.96 597.56,574.28 596.02,576.58 594.44,578.87 592.84,581.13 591.21,583.37 589.55,585.59 587.87,587.79 586.16,589.98 584.42,592.13 582.66,594.27 580.87,596.39 579.05,598.48 577.21,600.55" fill="#6dd8f2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="621.96" y="604.00" text-anchor="middle" dominant-baseline="middle">e9</text>
+<text class="segment-number" x="689.11" y="652.79" text-anchor="middle" dominant-baseline="middle">s20</text>
+<circle cx="660.80" cy="632.21" r="2.7" fill="#6dd8f2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="669.81,600.00 671.64,596.79 673.42,593.55 675.17,590.30 676.88,587.02 678.55,583.72 680.18,580.40 681.76,577.06 683.31,573.71 684.81,570.33 686.27,566.94 687.69,563.52 689.07,560.09 690.40,556.65 691.70,553.18 692.95,549.71 694.15,546.21 695.32,542.71 623.99,519.53 623.11,522.16 622.21,524.78 621.27,527.39 620.30,529.99 619.30,532.57 618.27,535.14 617.20,537.70 616.11,540.25 614.98,542.78 613.82,545.30 612.63,547.80 611.41,550.29 610.16,552.76 608.88,555.22 607.57,557.67 606.23,560.09 604.86,562.50" fill="#6df2a2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="649.35" y="556.57" text-anchor="middle" dominant-baseline="middle">e7</text>
+<text class="segment-number" x="725.17" y="590.32" text-anchor="middle" dominant-baseline="middle">s21</text>
+<circle cx="693.20" cy="576.09" r="2.7" fill="#6df2a2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="695.32,542.71 696.44,539.18 697.51,535.65 698.55,532.10 699.54,528.54 700.48,524.96 701.38,521.38 702.24,517.79 703.05,514.18 703.82,510.56 704.55,506.94 705.23,503.31 705.86,499.67 706.45,496.02 706.99,492.36 707.49,488.70 707.95,485.03 708.36,481.36 633.77,473.52 633.46,476.27 633.12,479.02 632.75,481.77 632.34,484.51 631.90,487.25 631.42,489.98 630.91,492.71 630.37,495.42 629.79,498.13 629.18,500.84 628.54,503.54 627.86,506.22 627.15,508.90 626.41,511.57 625.64,514.24 624.83,516.89 623.99,519.53" fill="#f26dd8" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="666.27" y="504.47" text-anchor="middle" dominant-baseline="middle">e14</text>
+<text class="segment-number" x="747.46" y="521.73" text-anchor="middle" dominant-baseline="middle">s22</text>
+<circle cx="713.23" cy="514.45" r="2.7" fill="#f26dd8" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="708.36,481.36 708.72,477.68 709.04,474.00 709.31,470.31 709.54,466.62 709.72,462.93 709.86,459.24 709.95,455.54 709.99,451.85 709.99,448.15 709.95,444.46 709.86,440.76 709.72,437.07 709.54,433.38 709.31,429.69 709.04,426.00 708.72,422.32 708.36,418.64 633.77,426.48 634.04,429.24 634.28,432.00 634.48,434.77 634.65,437.53 634.79,440.30 634.89,443.07 634.96,445.84 635.00,448.61 635.00,451.39 634.96,454.16 634.89,456.93 634.79,459.70 634.65,462.47 634.48,465.23 634.28,468.00 634.04,470.76 633.77,473.52" fill="#f26da2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="672.00" y="450.00" text-anchor="middle" dominant-baseline="middle">e15</text>
+<text class="segment-number" x="755.00" y="450.00" text-anchor="middle" dominant-baseline="middle">s23</text>
+<circle cx="720.00" cy="450.00" r="2.7" fill="#f26da2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="708.36,418.64 707.95,414.97 707.49,411.30 706.99,407.64 706.45,403.98 705.86,400.33 705.23,396.69 704.55,393.06 703.82,389.44 703.05,385.82 702.24,382.21 701.38,378.62 700.48,375.04 699.54,371.46 698.55,367.90 697.51,364.35 696.44,360.82 695.32,357.29 623.99,380.47 624.83,383.11 625.64,385.76 626.41,388.43 627.15,391.10 627.86,393.78 628.54,396.46 629.18,399.16 629.79,401.87 630.37,404.58 630.91,407.29 631.42,410.02 631.90,412.75 632.34,415.49 632.75,418.23 633.12,420.98 633.46,423.73 633.77,426.48" fill="#6df2a2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="666.27" y="395.53" text-anchor="middle" dominant-baseline="middle">e7</text>
+<text class="segment-number" x="747.46" y="378.27" text-anchor="middle" dominant-baseline="middle">s24</text>
+<circle cx="713.23" cy="385.55" r="2.7" fill="#6df2a2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="695.32,357.29 694.15,353.79 692.95,350.29 691.70,346.82 690.40,343.35 689.07,339.91 687.69,336.48 686.27,333.06 684.81,329.67 683.31,326.29 681.76,322.94 680.18,319.60 678.55,316.28 676.88,312.98 675.17,309.70 673.42,306.45 671.64,303.21 669.81,300.00 604.86,337.50 606.23,339.91 607.57,342.33 608.88,344.78 610.16,347.24 611.41,349.71 612.63,352.20 613.82,354.70 614.98,357.22 616.11,359.75 617.20,362.30 618.27,364.86 619.30,367.43 620.30,370.01 621.27,372.61 622.21,375.22 623.11,377.84 623.99,380.47" fill="#6df2d8" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="649.35" y="343.43" text-anchor="middle" dominant-baseline="middle">e8</text>
+<text class="segment-number" x="725.17" y="309.68" text-anchor="middle" dominant-baseline="middle">s25</text>
+<circle cx="693.20" cy="323.91" r="2.7" fill="#6df2d8" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="669.81,300.00 667.94,296.81 666.03,293.64 664.09,290.50 662.10,287.38 660.08,284.29 658.02,281.22 655.92,278.18 653.79,275.16 651.61,272.17 649.41,269.21 647.16,266.27 644.88,263.37 642.56,260.49 640.21,257.64 637.82,254.81 635.40,252.02 632.94,249.26 577.21,299.45 579.05,301.52 580.87,303.61 582.66,305.73 584.42,307.87 586.16,310.02 587.87,312.21 589.55,314.41 591.21,316.63 592.84,318.87 594.44,321.13 596.02,323.42 597.56,325.72 599.08,328.04 600.57,330.38 602.02,332.73 603.45,335.11 604.86,337.50" fill="#f2a26d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="621.96" y="296.00" text-anchor="middle" dominant-baseline="middle">e2</text>
+<text class="segment-number" x="689.11" y="247.21" text-anchor="middle" dominant-baseline="middle">s26</text>
+<circle cx="660.80" cy="267.79" r="2.7" fill="#f2a26d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="632.94,249.26 630.45,246.53 627.93,243.83 625.37,241.16 622.78,238.52 620.16,235.92 617.51,233.34 614.82,230.80 612.11,228.30 609.36,225.82 606.59,223.39 603.78,220.98 600.94,218.61 598.08,216.28 595.18,213.98 592.26,211.71 589.31,209.49 586.34,207.29 542.25,267.97 544.48,269.61 546.70,271.28 548.89,272.98 551.06,274.71 553.21,276.46 555.33,278.24 557.44,280.04 559.52,281.87 561.58,283.72 563.62,285.60 565.63,287.51 567.62,289.44 569.59,291.39 571.53,293.37 573.45,295.37 575.34,297.40 577.21,299.45" fill="#f2d86d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="585.31" y="255.30" text-anchor="middle" dominant-baseline="middle">e3</text>
+<text class="segment-number" x="640.85" y="193.62" text-anchor="middle" dominant-baseline="middle">s27</text>
+<circle cx="617.43" cy="219.63" r="2.7" fill="#f2d86d" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="586.34,207.29 583.33,205.14 580.30,203.02 577.25,200.94 574.17,198.90 571.06,196.90 567.93,194.93 564.78,193.01 561.60,191.12 558.40,189.27 555.17,187.46 551.93,185.70 548.66,183.97 545.37,182.28 542.06,180.63 538.74,179.03 535.39,177.46 532.02,175.94 501.52,244.45 504.04,245.60 506.55,246.77 509.05,247.97 511.53,249.21 514.00,250.48 516.45,251.77 518.88,253.10 521.30,254.45 523.70,255.84 526.08,257.26 528.45,258.70 530.79,260.17 533.12,261.68 535.44,263.21 537.73,264.77 540.00,266.36 542.25,267.97" fill="#6da2f2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="541.00" y="223.10" text-anchor="middle" dominant-baseline="middle">e10</text>
+<text class="segment-number" x="582.50" y="151.22" text-anchor="middle" dominant-baseline="middle">s28</text>
+<circle cx="565.00" cy="181.53" r="2.7" fill="#6da2f2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="532.02,175.94 528.64,174.45 525.23,173.01 521.81,171.61 518.37,170.26 514.92,168.94 511.45,167.67 507.96,166.44 504.46,165.26 500.95,164.12 497.42,163.02 493.87,161.96 490.32,160.95 486.75,159.98 483.17,159.06 479.58,158.18 475.98,157.35 472.37,156.56 456.78,229.92 459.49,230.51 462.19,231.14 464.88,231.80 467.56,232.49 470.24,233.21 472.91,233.97 475.56,234.76 478.21,235.59 480.85,236.44 483.47,237.33 486.09,238.25 488.69,239.21 491.28,240.19 493.86,241.21 496.42,242.26 498.98,243.34 501.52,244.45" fill="#6d6df2" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="490.96" y="200.82" text-anchor="middle" dominant-baseline="middle">e11</text>
+<text class="segment-number" x="516.61" y="121.89" text-anchor="middle" dominant-baseline="middle">s29</text>
+<circle cx="505.80" cy="155.17" r="2.7" fill="#6d6df2" stroke="#ffffff" stroke-width="0.8"/>
+<polygon points="472.37,156.56 468.75,155.81 465.12,155.11 461.49,154.45 457.84,153.84 454.19,153.27 450.53,152.75 446.87,152.27 443.20,151.84 439.52,151.46 435.84,151.11 432.16,150.82 428.47,150.57 424.78,150.36 421.09,150.20 417.39,150.09 413.70,150.02 410.00,150.00 410.00,225.00 412.77,225.02 415.54,225.07 418.31,225.15 421.08,225.27 423.85,225.43 426.62,225.61 429.38,225.84 432.14,226.09 434.90,226.38 437.65,226.71 440.40,227.06 443.14,227.45 445.88,227.88 448.62,228.34 451.34,228.83 454.07,229.36 456.78,229.92" fill="#f2d86d" fill-opacity="0.82" stroke="#ffffff" stroke-width="2.0"/>
+<text class="edge-label" x="437.39" y="189.44" text-anchor="middle" dominant-baseline="middle">e3</text>
+<text class="segment-number" x="446.06" y="106.89" text-anchor="middle" dominant-baseline="middle">s30</text>
+<circle cx="442.40" cy="141.70" r="2.7" fill="#f2d86d" stroke="#ffffff" stroke-width="0.8"/>
+<circle cx="410.00" cy="450.00" r="205.00" fill="#ffffff" fill-opacity="0.94"/>
+<path d="M 390.45 264.02 Q 410.00 450.00 284.87 311.03" fill="none" stroke="#d73027" stroke-width="6.0" stroke-opacity="1.00"/>
+<path d="M 352.21 272.15 Q 410.00 450.00 503.50 288.05" fill="none" stroke="#4575b4" stroke-width="6.0" stroke-opacity="1.00" stroke-dasharray="11 7"/>
+<path d="M 258.71 559.92 Q 410.00 450.00 352.21 627.85" fill="none" stroke="#f46d43" stroke-width="6.0" stroke-opacity="1.00"/>
+<path d="M 284.87 588.97 Q 410.00 450.00 223.00 450.00" fill="none" stroke="#3288bd" stroke-width="6.0" stroke-opacity="1.00" stroke-dasharray="11 7"/>
+<path d="M 580.83 526.06 Q 410.00 450.00 592.91 411.12" fill="none" stroke="#fdae61" stroke-width="6.0" stroke-opacity="1.00"/>
+<path d="M 592.91 488.88 Q 410.00 450.00 503.50 611.95" fill="none" stroke="#66c2a5" stroke-width="6.0" stroke-opacity="1.00" stroke-dasharray="11 7"/>
+<text class="subtitle" x="410.00" y="442.00" text-anchor="middle">30 boundary segments</text>
+<text class="subtitle" x="410.00" y="468.00" text-anchor="middle">15 sewn edges</text>
+<text class="legend-title" x="810" y="131">Edge Legend</text>
+<rect x="810" y="141" width="22" height="22" rx="4" ry="4" fill="#f26d6d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="156" dominant-baseline="middle">e1: s1 ↔ s4</text>
+<rect x="810" y="177" width="22" height="22" rx="4" ry="4" fill="#f2a26d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="192" dominant-baseline="middle">e2: s5 ↔ s26</text>
+<rect x="810" y="213" width="22" height="22" rx="4" ry="4" fill="#f2d86d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="228" dominant-baseline="middle">e3: s27 ↔ s30</text>
+<rect x="810" y="249" width="22" height="22" rx="4" ry="4" fill="#d8f26d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="264" dominant-baseline="middle">e4: s11 ↔ s14</text>
+<rect x="810" y="285" width="22" height="22" rx="4" ry="4" fill="#a2f26d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="300" dominant-baseline="middle">e5: s6 ↔ s15</text>
+<rect x="810" y="321" width="22" height="22" rx="4" ry="4" fill="#6df26d" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="336" dominant-baseline="middle">e6: s7 ↔ s10</text>
+<rect x="810" y="357" width="22" height="22" rx="4" ry="4" fill="#6df2a2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="372" dominant-baseline="middle">e7: s21 ↔ s24</text>
+<rect x="810" y="393" width="22" height="22" rx="4" ry="4" fill="#6df2d8" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="408" dominant-baseline="middle">e8: s16 ↔ s25</text>
+<rect x="810" y="429" width="22" height="22" rx="4" ry="4" fill="#6dd8f2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="444" dominant-baseline="middle">e9: s17 ↔ s20</text>
+<rect x="810" y="465" width="22" height="22" rx="4" ry="4" fill="#6da2f2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="480" dominant-baseline="middle">e10: s2 ↔ s28</text>
+<rect x="810" y="501" width="22" height="22" rx="4" ry="4" fill="#6d6df2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="516" dominant-baseline="middle">e11: s3 ↔ s29</text>
+<rect x="810" y="537" width="22" height="22" rx="4" ry="4" fill="#a26df2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="552" dominant-baseline="middle">e12: s8 ↔ s12</text>
+<rect x="810" y="573" width="22" height="22" rx="4" ry="4" fill="#d86df2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="588" dominant-baseline="middle">e13: s9 ↔ s13</text>
+<rect x="810" y="609" width="22" height="22" rx="4" ry="4" fill="#f26dd8" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="624" dominant-baseline="middle">e14: s18 ↔ s22</text>
+<rect x="810" y="645" width="22" height="22" rx="4" ry="4" fill="#f26da2" stroke="#ffffff" stroke-width="1.0"/>
+<text class="legend-text" x="844" y="660" dominant-baseline="middle">e15: s19 ↔ s23</text>
+<text class="legend-title" x="810" y="739">Symplectic Basis</text>
+<line x1="810" y1="767.00" x2="834" y2="767.00" stroke="#d73027" stroke-width="5.0"/>
+<text class="legend-text" x="844" y="768.00" dominant-baseline="middle">a1 = e1</text>
+<line x1="810" y1="797.00" x2="834" y2="797.00" stroke="#4575b4" stroke-width="5.0" stroke-dasharray="11 7"/>
+<text class="legend-text" x="844" y="798.00" dominant-baseline="middle">b1 = e10</text>
+<line x1="810" y1="827.00" x2="834" y2="827.00" stroke="#f46d43" stroke-width="5.0"/>
+<text class="legend-text" x="844" y="828.00" dominant-baseline="middle">a2 = e4</text>
+<line x1="810" y1="857.00" x2="834" y2="857.00" stroke="#3288bd" stroke-width="5.0" stroke-dasharray="11 7"/>
+<text class="legend-text" x="844" y="858.00" dominant-baseline="middle">b2 = -e12</text>
+<line x1="810" y1="887.00" x2="834" y2="887.00" stroke="#fdae61" stroke-width="5.0"/>
+<text class="legend-text" x="844" y="888.00" dominant-baseline="middle">a3 = e7</text>
+<line x1="810" y1="917.00" x2="834" y2="917.00" stroke="#66c2a5" stroke-width="5.0" stroke-dasharray="11 7"/>
+<text class="legend-text" x="844" y="918.00" dominant-baseline="middle">b3 = -e14</text>
+<text class="legend-title" x="810" y="953">Boundary Data</text>
+<text class="legend-text" x="810" y="981" dominant-baseline="middle">s1: (1 → 4, e1)</text>
+<text class="legend-text" x="810" y="1002" dominant-baseline="middle">s2: (4 → 8, e10)</text>
+<text class="legend-text" x="810" y="1023" dominant-baseline="middle">s3: (8 → 4, e11)</text>
+<text class="legend-text" x="810" y="1044" dominant-baseline="middle">s4: (4 → 1, e1)</text>
+<text class="legend-text" x="810" y="1065" dominant-baseline="middle">s5: (1 → 7, e2)</text>
+<text class="legend-text" x="810" y="1086" dominant-baseline="middle">s6: (7 → 2, e5)</text>
+<text class="legend-text" x="810" y="1107" dominant-baseline="middle">s7: (2 → 9, e6)</text>
+<text class="legend-text" x="810" y="1128" dominant-baseline="middle">s8: (9 → 5, e12)</text>
+<text class="legend-text" x="810" y="1149" dominant-baseline="middle">s9: (5 → 9, e13)</text>
+<text class="legend-text" x="810" y="1170" dominant-baseline="middle">s10: (9 → 2, e6)</text>
+<text class="legend-text" x="810" y="1191" dominant-baseline="middle">s11: (2 → 5, e4)</text>
+<text class="legend-text" x="810" y="1212" dominant-baseline="middle">s12: (5 → 9, e12)</text>
+<text class="legend-text" x="810" y="1233" dominant-baseline="middle">s13: (9 → 5, e13)</text>
+<text class="legend-text" x="810" y="1254" dominant-baseline="middle">s14: (5 → 2, e4)</text>
+<text class="legend-text" x="810" y="1275" dominant-baseline="middle">s15: (2 → 7, e5)</text>
+<text class="legend-text" x="810" y="1296" dominant-baseline="middle">s16: (7 → 3, e8)</text>
+<text class="legend-text" x="810" y="1317" dominant-baseline="middle">s17: (3 → 10, e9)</text>
+<text class="legend-text" x="810" y="1338" dominant-baseline="middle">s18: (10 → 6, e14)</text>
+<text class="legend-text" x="810" y="1359" dominant-baseline="middle">s19: (6 → 10, e15)</text>
+<text class="legend-text" x="810" y="1380" dominant-baseline="middle">s20: (10 → 3, e9)</text>
+<text class="legend-text" x="810" y="1401" dominant-baseline="middle">s21: (3 → 6, e7)</text>
+<text class="legend-text" x="810" y="1422" dominant-baseline="middle">s22: (6 → 10, e14)</text>
+<text class="legend-text" x="810" y="1443" dominant-baseline="middle">s23: (10 → 6, e15)</text>
+<text class="legend-text" x="810" y="1464" dominant-baseline="middle">s24: (6 → 3, e7)</text>
+<text class="legend-text" x="810" y="1485" dominant-baseline="middle">s25: (3 → 7, e8)</text>
+<text class="legend-text" x="810" y="1506" dominant-baseline="middle">s26: (7 → 1, e2)</text>
+<text class="legend-text" x="810" y="1527" dominant-baseline="middle">s27: (1 → 8, e3)</text>
+<text class="legend-text" x="810" y="1548" dominant-baseline="middle">s28: (8 → 4, e10)</text>
+<text class="legend-text" x="810" y="1569" dominant-baseline="middle">s29: (4 → 8, e11)</text>
+<text class="legend-text" x="810" y="1590" dominant-baseline="middle">s30: (8 → 1, e3)</text>
+</svg>
