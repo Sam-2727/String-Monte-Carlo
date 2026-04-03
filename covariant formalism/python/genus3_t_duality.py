@@ -38,6 +38,24 @@ GENUS3_DEFAULT_R_VALUES = tuple(round(1.0 + 0.1 * i, 1) for i in range(1, 11))
 GENUS3_DEFAULT_THETA_CUTOFF = 4
 
 
+@lru_cache(maxsize=1)
+def _declared_genus3_topology_count() -> int:
+    if not os.path.exists(GENUS3_GRAPH_DATA_PATH):
+        raise FileNotFoundError(
+            f"Missing genus-3 graph data file: {GENUS3_GRAPH_DATA_PATH}"
+        )
+
+    with open(GENUS3_GRAPH_DATA_PATH, "r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("topology_count"):
+                return int(line.split("=", 1)[1].strip())
+
+    raise ValueError("genus3_ribbon_graph_data.txt does not declare topology_count")
+
+
 def _normalize_triples(value: object, *, name: str) -> tuple[tuple[int, int, int], ...]:
     if not isinstance(value, tuple):
         raise ValueError(f"{name} must be a tuple of triples")
@@ -119,7 +137,7 @@ def _load_stored_genus3_graphs() -> tuple[dict, ...]:
     finalize_current()
 
     if topology_count is None:
-        raise ValueError("genus3_ribbon_graph_data.txt does not declare topology_count")
+        topology_count = _declared_genus3_topology_count()
     if len(graphs) != topology_count:
         raise ValueError(
             f"Declared topology_count = {topology_count}, but parsed {len(graphs)} topologies"
@@ -128,7 +146,7 @@ def _load_stored_genus3_graphs() -> tuple[dict, ...]:
     return tuple(graphs)
 
 
-GENUS3_GRAPH_COUNT = len(_load_stored_genus3_graphs())
+GENUS3_GRAPH_COUNT = _declared_genus3_topology_count()
 
 
 def get_stored_genus3_graph(topology: int) -> dict:

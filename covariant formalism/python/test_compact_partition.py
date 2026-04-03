@@ -1,6 +1,8 @@
 import unittest
 import os
 import sys
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import numpy as np
 
@@ -13,6 +15,7 @@ import genus3_t_duality as g3
 THETA_CUTOFF = 4
 GENUS2_RANDOM_SEED = 20260402
 GENUS3_RANDOM_SEED = 20260403
+GENUS3_RANDOM_SAMPLE_SIZE = 5
 
 
 def _incidence_matrix(oriented_edges):
@@ -179,6 +182,95 @@ def _higher_genus_ratio_data(graph_data, edge_lengths, R1, R2, *,
         "analytic_ratio": ratio_analytic,
         "residual": resid,
         "rel_error": rel,
+    }
+
+
+def _genus3_ratio_worker(task):
+    topology, edge_lengths, R1, R2, theta_cutoff, analytic_cutoff = task
+    data = _higher_genus_ratio_data(
+        g3.get_stored_genus3_graph(topology),
+        edge_lengths,
+        R1,
+        R2,
+        theta_cutoff=theta_cutoff,
+        analytic_cutoff=analytic_cutoff,
+    )
+    return {
+        "topology": int(topology),
+        "graph_ratio": float(data["graph_ratio"]),
+        "analytic_ratio": float(data["analytic_ratio"]),
+        "residual": float(data["residual"]),
+        "rel_error": float(data["rel_error"]),
+    }
+
+
+def run_genus3_theta_ratio_all_topologies(*, edge_lengths=None, R1=1.2, R2=1.6,
+                                          theta_cutoff=THETA_CUTOFF, analytic_cutoff=3,
+                                          max_workers=None, progress_every=25,
+                                          topologies=None):
+    """
+    Check the genus-3 theta-function ratio test across all stored topologies.
+
+    This is intentionally separate from the lightweight unittest path because the
+    full 1726-topology analytic comparison is expensive. Run the file directly to
+    execute this sweep.
+    """
+    if edge_lengths is None:
+        edge_lengths = _genus3_random_case()["edge_lengths"]
+    edge_lengths = tuple(int(x) for x in edge_lengths)
+
+    topology_count = int(g3.GENUS3_GRAPH_COUNT) if topologies is None else len(topologies)
+    if max_workers is None:
+        max_workers = min(os.cpu_count() or 1, 12)
+    max_workers = max(1, int(max_workers))
+
+    topology_list = (
+        list(range(1, int(g3.GENUS3_GRAPH_COUNT) + 1))
+        if topologies is None
+        else [int(t) for t in topologies]
+    )
+    tasks = [
+        (topology, edge_lengths, float(R1), float(R2), int(theta_cutoff), int(analytic_cutoff))
+        for topology in topology_list
+    ]
+
+    start = time.time()
+    completed = 0
+    failures = []
+    worst = None
+    results = []
+
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_map = {executor.submit(_genus3_ratio_worker, task): task[0] for task in tasks}
+        for future in as_completed(future_map):
+            row = future.result()
+            completed += 1
+            results.append(row)
+            if row["rel_error"] >= 1.0e-3:
+                failures.append((row["topology"], row["rel_error"]))
+            if worst is None or row["rel_error"] > worst["rel_error"]:
+                worst = row
+
+            if progress_every and (completed % progress_every == 0 or completed == topology_count):
+                elapsed = time.time() - start
+                print(
+                    f"Processed {completed:>4d} / {topology_count} genus-3 topologies "
+                    f"in {elapsed:>7.2f} s"
+                )
+
+    results.sort(key=lambda row: row["topology"])
+    return {
+        "edge_lengths": edge_lengths,
+        "R1": float(R1),
+        "R2": float(R2),
+        "theta_cutoff": int(theta_cutoff),
+        "analytic_cutoff": int(analytic_cutoff),
+        "topology_count": topology_count,
+        "max_workers": max_workers,
+        "results": tuple(results),
+        "worst": worst,
+        "failures": tuple(failures),
+        "elapsed_seconds": time.time() - start,
     }
 
 
@@ -358,5 +450,83 @@ def print_genus2_theta_ratio_report_all_topologies():
         raise AssertionError(f"Genus-2 theta-ratio failures: {failures}")
 
 
+def print_genus3_theta_ratio_report_all_topologies():
+    """Direct-run report for the full genus-3 theta-ratio sweep."""
+    summary = run_genus3_theta_ratio_all_topologies()
+
+    print()
+    print("Genus-3 theta-ratio all-topology sweep")
+    print(f"edge_lengths = {list(summary['edge_lengths'])}")
+    print(f"R1 = {summary['R1']}")
+    print(f"R2 = {summary['R2']}")
+    print(f"theta_cutoff = {summary['theta_cutoff']}")
+    print(f"analytic_cutoff = {summary['analytic_cutoff']}")
+    print(f"workers = {summary['max_workers']}")
+    print(f"topology_count = {summary['topology_count']}")
+    print(f"elapsed_seconds = {summary['elapsed_seconds']:.2f}")
+    if summary["worst"] is not None:
+        worst = summary["worst"]
+        print(f"worst_topology = {worst['topology']}")
+        print(f"worst_graph_ratio = {worst['graph_ratio']:.15g}")
+        print(f"worst_analytic_ratio = {worst['analytic_ratio']:.15g}")
+        print(f"worst_residual = {worst['residual']:.6e}")
+        print(f"worst_relerror = {worst['rel_error']:.6e}")
+
+    if summary["failures"]:
+        raise AssertionError(f"Genus-3 theta-ratio failures: {summary['failures']}")
+
+
+def print_genus3_theta_ratio_random_sample():
+    """Direct-run report for a small reproducible random genus-3 sample."""
+    sample_size = min(GENUS3_RANDOM_SAMPLE_SIZE, int(g3.GENUS3_GRAPH_COUNT))
+    rng = np.random.default_rng(GENUS3_RANDOM_SEED)
+    topologies = sorted(
+        int(x)
+        for x in rng.choice(
+            np.arange(1, int(g3.GENUS3_GRAPH_COUNT) + 1),
+            size=sample_size,
+            replace=False,
+        )
+    )
+
+    edge_lengths = _genus3_random_case()["edge_lengths"]
+    R1, R2 = 1.2, 1.6
+    failures = []
+
+    print("Genus-3 theta-ratio random sample")
+    print(f"sample_seed = {GENUS3_RANDOM_SEED}")
+    print(f"sample_size = {sample_size}")
+    print(f"topologies = {topologies}")
+    print(f"edge_lengths = {edge_lengths}")
+    print(f"R1 = {R1}")
+    print(f"R2 = {R2}")
+    print()
+
+    for topology in topologies:
+        data = _higher_genus_ratio_data(
+            g3.get_stored_genus3_graph(topology),
+            edge_lengths,
+            R1,
+            R2,
+            theta_cutoff=THETA_CUTOFF,
+            analytic_cutoff=3,
+        )
+
+        print(f"topology = {topology}")
+        print("Omega =")
+        print(np.array2string(data["Omega"], precision=10, suppress_small=False))
+        print(f"graph ratio = {data['graph_ratio']:.15g}")
+        print(f"analytic ratio = {data['analytic_ratio']:.15g}")
+        print(f"residual = {data['residual']:.6e}")
+        print(f"relerror = {data['rel_error']:.6e}")
+        print()
+
+        if data["rel_error"] >= 1.0e-3:
+            failures.append((topology, data["rel_error"]))
+
+    if failures:
+        raise AssertionError(f"Genus-3 theta-ratio sample failures: {failures}")
+
+
 if __name__ == "__main__":
-    print_genus2_theta_ratio_report_all_topologies()
+    print_genus3_theta_ratio_random_sample()
