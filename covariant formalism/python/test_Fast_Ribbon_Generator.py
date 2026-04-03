@@ -5,6 +5,12 @@ import Fast_Ribbon_Generator as rgg
 
 class TestRibbonGraphGenerator(unittest.TestCase):
     @staticmethod
+    def _has_parallel_edge(rg):
+        edges, _, _ = rg
+        edge_pairs = {tuple(sorted(edge)) for edge in edges}
+        return len(edge_pairs) < len(edges)
+
+    @staticmethod
     def _print_illustration_from_generator_data(rg, idx=1):
         edges, verts, rotation = rg
         n_faces = rgg._count_faces(edges, verts, rotation)  # noqa: SLF001
@@ -36,6 +42,25 @@ class TestRibbonGraphGenerator(unittest.TestCase):
 
         for idx, rg in enumerate(ribbon_graphs, start=1):
             self._print_illustration_from_generator_data(rg, idx=idx)
+
+    def test_genus2_two_face_graphs_include_multigraphs(self):
+        exact_rgs = rgg.generate_ribbon_graphs_fixed_genus(
+            2,
+            n_faces=2,
+            workers=1,
+        )
+        fallback_rgs = rgg.generate_ribbon_graphs_fixed_genus(
+            2,
+            n_faces=2,
+            workers=1,
+            max_exact_multigraph_vertices=6,
+        )
+
+        self.assertEqual(len(exact_rgs), 263)
+        self.assertTrue(any(self._has_parallel_edge(rg) for rg in exact_rgs))
+        self.assertTrue(all(rgg._count_faces(*rg) == 2 for rg in exact_rgs))  # noqa: SLF001
+        self.assertTrue(all(not self._has_parallel_edge(rg) for rg in fallback_rgs))
+        self.assertLess(len(fallback_rgs), len(exact_rgs))
 
 
 if __name__ == "__main__":

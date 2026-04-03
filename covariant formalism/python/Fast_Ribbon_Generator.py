@@ -29,6 +29,7 @@ except ImportError:  # pragma: no cover
 
 _CUBIC_GRAPH_CACHE = {}
 _CUBIC_MULTIGRAPH_CACHE = {}
+_DEFAULT_EXACT_MULTIGRAPH_VERTEX_LIMIT = 10
 
 
 def _generate_connected_cubic_graphs(
@@ -323,45 +324,38 @@ def _generate_connected_loopless_cubic_multigraphs(nv):
     _CUBIC_MULTIGRAPH_CACHE[nv] = base_graphs
     return _CUBIC_MULTIGRAPH_CACHE[nv]
 
-def _get_base_graphs(nv, ne):
-    """Known cubic graphs for small vertex counts."""
+def _normalize_exact_multigraph_vertex_limit(limit):
+    """Validate and normalize the exact-multigraph cutoff."""
+    if limit is None:
+        return None
+    limit = int(limit)
+    if limit < 0:
+        raise ValueError("max_exact_multigraph_vertices must be >= 0 or None")
+    return limit
+
+
+def _simple_cubic_base_graphs(nv, ne):
+    """Fallback simple cubic base graphs when exact multigraph search is skipped."""
     if nv == 2 and ne == 3:
-        # Theta graph: 2 vertices connected by 3 parallel edges
+        # Theta graph: 2 vertices connected by 3 parallel edges. Keep this base
+        # case available so genus-1 one-face generation still has a seed graph.
         return [([(1, 2), (1, 2), (1, 2)], [1, 2])]
-    elif nv == 4 and ne == 6:
+    if nv == 4 and ne == 6:
         # K4
         return [([(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)], [1, 2, 3, 4])]
-    elif nv == 6 and ne == 9:
-        # Complete set of connected loopless cubic multigraphs on 6 vertices.
-        # The previous list only included the two simple cubic graphs, which
-        # undercounted genus-2 one-face ribbon graphs.
-        #
+    if nv == 6 and ne == 9:
         # K_{3,3}
-        k33 = ([(1, 4), (1, 5), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)],
-               [1, 2, 3, 4, 5, 6])
+        k33 = (
+            [(1, 4), (1, 5), (1, 6), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)],
+            [1, 2, 3, 4, 5, 6],
+        )
         # Triangular prism
-        prism = ([(1, 2), (2, 3), (3, 1), (4, 5), (5, 6), (6, 4), (1, 4), (2, 5), (3, 6)],
-                 [1, 2, 3, 4, 5, 6])
-        multigraph_1 = (
-            [(1, 2), (1, 2), (1, 3), (2, 3), (3, 4), (4, 5), (4, 6), (5, 6), (5, 6)],
+        prism = (
+            [(1, 2), (2, 3), (3, 1), (4, 5), (5, 6), (6, 4), (1, 4), (2, 5), (3, 6)],
             [1, 2, 3, 4, 5, 6],
         )
-        multigraph_2 = (
-            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 4), (3, 5), (4, 6), (5, 6), (5, 6)],
-            [1, 2, 3, 4, 5, 6],
-        )
-        multigraph_3 = (
-            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 5), (3, 5), (4, 6), (4, 6), (5, 6)],
-            [1, 2, 3, 4, 5, 6],
-        )
-        multigraph_4 = (
-            [(1, 2), (1, 2), (1, 3), (2, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)],
-            [1, 2, 3, 4, 5, 6],
-        )
-        return [multigraph_1, multigraph_2, multigraph_3, multigraph_4, k33, prism]
-    elif nv == 10 and ne == 15:
-        return _generate_connected_loopless_cubic_multigraphs(nv)
-    elif nv >= 8 and nv % 2 == 0 and ne == (3 * nv) // 2:
+        return [k33, prism]
+    if nv >= 8 and nv % 2 == 0 and ne == (3 * nv) // 2:
         target = 19 if nv == 10 else None
         return _generate_connected_cubic_graphs(
             nv,
@@ -369,6 +363,22 @@ def _get_base_graphs(nv, ne):
             strict_isomorphism=False,
         )
     return []
+
+
+def _get_base_graphs(nv, ne, max_exact_multigraph_vertices=_DEFAULT_EXACT_MULTIGRAPH_VERTEX_LIMIT):
+    """Choose cubic base graphs, including exact multigraphs when tractable.
+
+    For connected cubic graphs on small even vertex counts, exact loopless
+    multigraph enumeration is fast enough to use by default. This is important
+    for multi-face runs, where simple-graph-only bases miss many valid ribbon
+    graph topologies. Larger cases still fall back to the heuristic simple-graph
+    generator unless the caller raises or removes the cutoff.
+    """
+    limit = _normalize_exact_multigraph_vertex_limit(max_exact_multigraph_vertices)
+    if nv >= 2 and nv % 2 == 0 and ne == (3 * nv) // 2:
+        if limit is None or nv <= limit:
+            return _generate_connected_loopless_cubic_multigraphs(nv)
+    return _simple_cubic_base_graphs(nv, ne)
 
 
 # ============================================================
@@ -727,12 +737,22 @@ def _remove_isomorphisms(ribbon_graphs, verbose=False):
 # Main generation function
 # ============================================================
 
-def generate_ribbon_graphs(n_faces, n_edges, verbose=False, workers=None):
+def generate_ribbon_graphs(
+    n_faces,
+    n_edges,
+    verbose=False,
+    workers=None,
+    max_exact_multigraph_vertices=_DEFAULT_EXACT_MULTIGRAPH_VERTEX_LIMIT,
+):
     """Generate non-isomorphic cubic ribbon graphs.
 
     Parameters:
         n_faces: number of faces
         n_edges: number of edges
+        max_exact_multigraph_vertices:
+            maximum even vertex count for which the base cubic multigraphs are
+            enumerated exactly. Use None to force exact multigraph bases at all
+            sizes (which can be slow).
 
     Returns:
         List of (edges, vertices, rotation) tuples.
@@ -742,7 +762,11 @@ def generate_ribbon_graphs(n_faces, n_edges, verbose=False, workers=None):
     if verbose:
         print(f"V={n_vertices}, E={n_edges}, F={n_faces}, g={genus}")
 
-    base_graphs = _get_base_graphs(n_vertices, n_edges)
+    base_graphs = _get_base_graphs(
+        n_vertices,
+        n_edges,
+        max_exact_multigraph_vertices=max_exact_multigraph_vertices,
+    )
     if not base_graphs:
         if verbose:
             print("No base cubic graphs available")
@@ -807,13 +831,25 @@ def genus_face_to_edges(genus, n_faces):
     return n_edges
 
 
-def generate_ribbon_graphs_fixed_genus(genus, n_faces=1, verbose=False, workers=None):
+def generate_ribbon_graphs_fixed_genus(
+    genus,
+    n_faces=1,
+    verbose=False,
+    workers=None,
+    max_exact_multigraph_vertices=_DEFAULT_EXACT_MULTIGRAPH_VERTEX_LIMIT,
+):
     """Optimized fixed-genus entry point.
 
     Returns non-isomorphic cubic ribbon graphs for the given genus and face count.
     """
     n_edges = genus_face_to_edges(genus, n_faces)
-    return generate_ribbon_graphs(n_faces, n_edges, verbose=verbose, workers=workers)
+    return generate_ribbon_graphs(
+        n_faces,
+        n_edges,
+        verbose=verbose,
+        workers=workers,
+        max_exact_multigraph_vertices=max_exact_multigraph_vertices,
+    )
 
 
 # ============================================================
@@ -938,10 +974,20 @@ def get_graph_and_sewing_data(rg):
     return get_graph_and_boundary_data(rg)
 
 
-def generate_essential_data_fixed_genus(genus, n_faces=1, verbose=False, workers=None):
+def generate_essential_data_fixed_genus(
+    genus,
+    n_faces=1,
+    verbose=False,
+    workers=None,
+    max_exact_multigraph_vertices=_DEFAULT_EXACT_MULTIGRAPH_VERTEX_LIMIT,
+):
     """Generate essential output data for arbitrary face count."""
     rgs = generate_ribbon_graphs_fixed_genus(
-        genus, n_faces=n_faces, verbose=verbose, workers=workers
+        genus,
+        n_faces=n_faces,
+        verbose=verbose,
+        workers=workers,
+        max_exact_multigraph_vertices=max_exact_multigraph_vertices,
     )
     return [get_graph_and_boundary_data(rg) for rg in rgs]
 
