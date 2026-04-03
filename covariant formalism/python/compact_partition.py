@@ -229,6 +229,227 @@ GENUS2_F1_GRAPH_DATA = (
             (9, 10, 14),
         ),
     },
+    # Additional genus-2 one-face topologies from the extended multigraph search.
+    {
+        "edges": (
+            (1, 1, 2),
+            (2, 1, 2),
+            (3, 1, 3),
+            (4, 2, 3),
+            (5, 3, 4),
+            (6, 4, 5),
+            (7, 4, 6),
+            (8, 5, 6),
+            (9, 5, 6),
+        ),
+        "boundary": (
+            (1, 2, 1),
+            (2, 1, 2),
+            (1, 3, 3),
+            (3, 2, 4),
+            (2, 1, 1),
+            (1, 2, 2),
+            (2, 3, 4),
+            (3, 4, 5),
+            (4, 5, 6),
+            (5, 6, 8),
+            (6, 5, 9),
+            (5, 4, 6),
+            (4, 6, 7),
+            (6, 5, 8),
+            (5, 6, 9),
+            (6, 4, 7),
+            (4, 3, 5),
+            (3, 1, 3),
+        ),
+        "sewing_pairs": (
+            (1, 1, 5),
+            (2, 2, 6),
+            (3, 3, 18),
+            (4, 4, 7),
+            (5, 8, 17),
+            (6, 9, 12),
+            (7, 13, 16),
+            (8, 10, 14),
+            (9, 11, 15),
+        ),
+    },
+    {
+        "edges": (
+            (1, 1, 2),
+            (2, 1, 2),
+            (3, 1, 3),
+            (4, 2, 4),
+            (5, 3, 4),
+            (6, 3, 5),
+            (7, 4, 6),
+            (8, 5, 6),
+            (9, 5, 6),
+        ),
+        "boundary": (
+            (1, 2, 1),
+            (2, 1, 2),
+            (1, 3, 3),
+            (3, 4, 5),
+            (4, 6, 7),
+            (6, 5, 8),
+            (5, 6, 9),
+            (6, 4, 7),
+            (4, 2, 4),
+            (2, 1, 1),
+            (1, 2, 2),
+            (2, 4, 4),
+            (4, 3, 5),
+            (3, 5, 6),
+            (5, 6, 8),
+            (6, 5, 9),
+            (5, 3, 6),
+            (3, 1, 3),
+        ),
+        "sewing_pairs": (
+            (1, 1, 10),
+            (2, 2, 11),
+            (3, 3, 18),
+            (4, 9, 12),
+            (5, 4, 13),
+            (6, 14, 17),
+            (7, 5, 8),
+            (8, 6, 15),
+            (9, 7, 16),
+        ),
+    },
+    {
+        "edges": (
+            (1, 1, 2),
+            (2, 1, 2),
+            (3, 1, 3),
+            (4, 2, 4),
+            (5, 3, 4),
+            (6, 3, 5),
+            (7, 4, 6),
+            (8, 5, 6),
+            (9, 5, 6),
+        ),
+        "boundary": (
+            (1, 2, 1),
+            (2, 1, 2),
+            (1, 3, 3),
+            (3, 4, 5),
+            (4, 2, 4),
+            (2, 1, 1),
+            (1, 2, 2),
+            (2, 4, 4),
+            (4, 6, 7),
+            (6, 5, 8),
+            (5, 6, 9),
+            (6, 4, 7),
+            (4, 3, 5),
+            (3, 5, 6),
+            (5, 6, 8),
+            (6, 5, 9),
+            (5, 3, 6),
+            (3, 1, 3),
+        ),
+        "sewing_pairs": (
+            (1, 1, 6),
+            (2, 2, 7),
+            (3, 3, 18),
+            (4, 5, 8),
+            (5, 4, 13),
+            (6, 14, 17),
+            (7, 9, 12),
+            (8, 10, 15),
+            (9, 11, 16),
+        ),
+    },
+    {
+        "edges": (
+            (1, 1, 2),
+            (2, 1, 2),
+            (3, 1, 3),
+            (4, 2, 4),
+            (5, 3, 5),
+            (6, 3, 6),
+            (7, 4, 5),
+            (8, 4, 6),
+            (9, 5, 6),
+        ),
+        "boundary": (
+            (1, 2, 1),
+            (2, 1, 2),
+            (1, 3, 3),
+            (3, 5, 5),
+            (5, 4, 7),
+            (4, 6, 8),
+            (6, 5, 9),
+            (5, 3, 5),
+            (3, 6, 6),
+            (6, 4, 8),
+            (4, 2, 4),
+            (2, 1, 1),
+            (1, 2, 2),
+            (2, 4, 4),
+            (4, 5, 7),
+            (5, 6, 9),
+            (6, 3, 6),
+            (3, 1, 3),
+        ),
+        "sewing_pairs": (
+            (1, 1, 12),
+            (2, 2, 13),
+            (3, 3, 18),
+            (4, 11, 14),
+            (5, 4, 8),
+            (6, 9, 17),
+            (7, 5, 15),
+            (8, 6, 10),
+            (9, 7, 16),
+        ),
+    },
+    {
+        "edges": (
+            (1, 1, 2),
+            (2, 1, 2),
+            (3, 1, 3),
+            (4, 2, 4),
+            (5, 3, 5),
+            (6, 3, 6),
+            (7, 4, 5),
+            (8, 4, 6),
+            (9, 5, 6),
+        ),
+        "boundary": (
+            (1, 2, 1),
+            (2, 1, 2),
+            (1, 3, 3),
+            (3, 5, 5),
+            (5, 4, 7),
+            (4, 2, 4),
+            (2, 1, 1),
+            (1, 2, 2),
+            (2, 4, 4),
+            (4, 6, 8),
+            (6, 5, 9),
+            (5, 3, 5),
+            (3, 6, 6),
+            (6, 4, 8),
+            (4, 5, 7),
+            (5, 6, 9),
+            (6, 3, 6),
+            (3, 1, 3),
+        ),
+        "sewing_pairs": (
+            (1, 1, 7),
+            (2, 2, 8),
+            (3, 3, 18),
+            (4, 6, 9),
+            (5, 4, 12),
+            (6, 13, 17),
+            (7, 5, 15),
+            (8, 10, 14),
+            (9, 11, 16),
+        ),
+    },
 )
 
 
@@ -598,7 +819,7 @@ def partition_function_z(Aprime: np.ndarray, R: float, Tp: np.ndarray,
 # ── Graph-based higher-genus compact boson ────────────────────────────────────
 
 def get_stored_genus2_graph(topology: int) -> dict:
-    """Return one of the four stored genus-2, one-face ribbon graphs."""
+    """Return one of the stored genus-2, one-face ribbon graphs."""
     if not 1 <= topology <= len(GENUS2_F1_GRAPH_DATA):
         raise ValueError(
             f"topology must be in 1..{len(GENUS2_F1_GRAPH_DATA)}, got {topology}"
@@ -863,24 +1084,6 @@ def theta_sum_reduced(T_reduced: np.ndarray, R: float, N: int = 6) -> float:
     return float(np.sum(np.exp(-4.0 * np.pi * R ** 2 * quad)))
 
 
-def t_duality_residual_reduced(T_reduced: np.ndarray, R: float, N: int = 6) -> float:
-    """
-    T-duality residual for the reduced higher-genus theta form.
-
-    This checks the physical duality relation implied by
-      Z_R(Sigma) = Z_{1/R}(Sigma)
-    for the full compact-boson partition function when the same
-    normalization is used on both sides:
-
-      R * Theta(4 i R^2 T') - R^(-1) * Theta(4 i R^(-2) T').
-    """
-    inv_R = 1.0 / R
-    return (
-        R * theta_sum_reduced(T_reduced, R, N=N)
-        - inv_R * theta_sum_reduced(T_reduced, inv_R, N=N)
-    )
-
-
 def partition_function_graph(Aprime: np.ndarray, R: float, T_reduced: np.ndarray,
                              N: int = 6) -> float:
     """
@@ -1008,7 +1211,7 @@ if __name__ == "__main__":
 
     theta_cutoff = 5
     print(f"\n  theta cutoff N = {theta_cutoff}")
-    for topology in range(1, 5):
+    for topology in range(1, len(GENUS2_F1_GRAPH_DATA) + 1):
         graph_data = get_stored_genus2_graph(topology)
         geom = compact_boson_graph_geometry(edge_lengths_g2, graph_data)
         print(f"  topology {topology}")
