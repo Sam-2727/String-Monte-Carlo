@@ -1,0 +1,308 @@
+\documentclass[12pt]{article}
+\pdfoutput=1
+
+\usepackage{draft}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\wt}[1]{\widetilde{#1}}
+\newcommand{\ol}[1]{\overline{#1}}
+
+\begin{document}
+
+\begin{center}
+\LARGE Bosonized Interpretation of the Genus-One $bc$ Sewing Defect
+\end{center}
+
+\section{Goal}
+
+This note records a working picture of how the discretized $bc$ path integral of
+\[
+\Psi_c[c] \propto \prod_{n=1}^\infty c_n
+\]
+should be reproduced from a bosonized scalar with background charge on the \emph{sewn disk}. The main points are:
+\begin{enumerate}
+\item the \emph{global} zero-mode constraint coming from the singular sewn-disk metric,
+\item the identification of where the arc-dependent sewing data that selects concrete $b$-ghost functionals actually resides.
+\end{enumerate}
+
+A key finding is that the shifted field $\hat\phi(z) \equiv \phi(z) - \log z$ has a \emph{universal}, arc-independent jump $i\pi$ across every seam. Therefore:
+\begin{itemize}
+\item the $\hat\phi$ variable encodes only the sign flip $c(z')/z' = -c(z)/z$ and carries no arc-specific information;
+\item the arc-dependent data that determines the $b$-ghost insertions resides in the \emph{original} sewing rule for $\phi$, specifically in the interplay between the Jacobian piece $-2\log z$ and the identification geometry (which boundary points are paired);
+\item in the discretized path integral, this data manifests as a linear term in the Gaussian for $\phi$, whose singular behavior at the arc junctions (Strebel vertex positions) localizes the $b$ insertions.
+\end{itemize}
+
+\section{Bosonized Variables}
+
+For charge bookkeeping we use a chiral scalar $\phi$ such that
+\be
+j(z) = - \pa \phi(z), \qquad c(z) \sim e^{\phi(z)}, \qquad b(z) \sim e^{-\phi(z)}.
+\ee
+Thus a factor $e^{q\phi}$ carries ghost number $q$. We only need these relations and do not rely on a detailed oscillator construction in this note.
+
+The genus-one disk sewing rule for the $c$ ghost is
+\be
+\frac{c(z')}{z'} = - \frac{c(z)}{z},
+\qquad
+z'=\frac{q_i}{z},
+\qquad
+|q_i|=1,
+\label{eq:czglue}
+\ee
+on the $i$-th identified arc pair. Equivalently,
+\be
+c(z') = - \frac{z'}{z} c(z)
+= - \frac{q_i}{z^2} c(z).
+\ee
+Therefore the bosonized scalar obeys
+\be
+\phi(z') = \phi(z) + \Lambda_i(z),
+\qquad
+\Lambda_i(z) = i\pi + \log q_i - 2 \log z.
+\label{eq:phijump}
+\ee
+
+\section{Split into Jacobian and Endpoint Pieces}
+
+It is useful to separate
+\be
+\Lambda_i(z) = \Lambda_i^{\rm end} + \Lambda^{\rm jac}(z),
+\qquad
+\Lambda_i^{\rm end} = i\pi + \log q_i,
+\qquad
+\Lambda^{\rm jac}(z) = - 2 \log z.
+\label{eq:lambdasplit}
+\ee
+
+The piece $\Lambda^{\rm jac}$ is universal: it is the same on every sewn arc and comes entirely from the tensorial transformation law of $c$. The piece $\Lambda_i^{\rm end}$ is constant on each arc and carries the residual phase information.
+
+One might hope that introducing the shifted field
+\be
+\hat{\phi}(z) \equiv \phi(z) - \log z
+\label{eq:phihatdef}
+\ee
+would isolate the arc-dependent information in a simple constant jump. However, a careful calculation shows that the jump of $\hat\phi$ is in fact \emph{universal}. Using $z' = q_i/z$, so that $\log z' = \log q_i - \log z$:
+\ie
+\hat{\phi}(z')
+&= \phi(z') - \log z'
+= \bigl[\phi(z) + i\pi + \log q_i - 2\log z\bigr] - \bigl[\log q_i - \log z\bigr]
+\\
+&= \phi(z) + i\pi - \log z
+= \hat{\phi}(z) + i\pi.
+\label{eq:phihatjump}
+\fe
+The $\log q_i$ terms cancel because the definition of $\hat\phi$ subtracts $\log z$ at both $z$ and $z'$, and the difference $\log z' - \log z = \log q_i - 2\log z$ absorbs both the endpoint piece $\log q_i$ and one power of the Jacobian piece $-2\log z$.
+
+Physically, $e^{\hat\phi(z)} = c(z)/z$, and the universal jump $\hat\Lambda = i\pi$ simply states that $c(z')/z' = -c(z)/z$, which is the original sewing rule \eqref{eq:czglue}. The shifted field $\hat\phi$ therefore encodes no arc-dependent information; it merely restates the sign flip in logarithmic form.
+
+\section{Global Zero-Mode Constraint on the Sewn Disk}
+
+The robust statement is the zero-mode condition for the bosonized scalar on the \emph{singular sewn disk}. If operator insertions carry bosonized charges $q_a$, then integrating over the zero mode of $\phi$ imposes
+\be
+\sum_a q_a = Q(1-g)
+\label{eq:globalneutrality}
+\ee
+per chiral sector, with $Q=3$ for the bosonized $bc$ system. Equivalently,
+\be
+\sum_a q_a =
+\begin{cases}
+0, & g=1,\\
+-3, & g=2.
+\end{cases}
+\label{eq:g1g2neutrality}
+\ee
+
+This is the right way to phrase the genus dependence. The sewn disk knows the genus only through the singular Weyl factor produced by the sewing. Therefore the curvature concentrated at the puncture, the seam junctions, and any other singular loci created by the sewing must combine to reproduce \eqref{eq:globalneutrality}.
+
+\section{Local Decomposition of the Background Charge}
+
+The local distribution of the background charge on the sewn disk is a separate issue from the global condition \eqref{eq:globalneutrality}. It is natural to expect contributions from the singular points associated with the Strebel geometry.
+
+For genus one, the familiar disk-frame singularities are:
+\begin{enumerate}
+\item the puncture at the disk origin,
+\item the two triples of boundary points that sew to the two cubic Strebel vertices.
+\end{enumerate}
+In this case, a local split of the form
+\be
+-1 + \frac12 + \frac12 = 0
+\label{eq:g1localsplit}
+\ee
+at the level of the singular Weyl factor is plausible and consistent with the resulting genus-one neutrality condition.
+
+For genus two, however, a naive extrapolation using only one puncture and six cubic vertices is not sufficient. If one simply assigns $-1$ to the puncture and $+\frac12$ to each cubic vertex, one obtains
+\be
+-1 + 6\cdot \frac12 = 2,
+\ee
+which does \emph{not} reproduce the genus-two condition \eqref{eq:g1g2neutrality}. Therefore additional negative contributions must be present somewhere in the singular sewn-disk description.
+
+So the right conclusion at present is:
+\begin{itemize}
+\item the Strebel vertices very likely \emph{do} contribute to the local background-charge balance;
+\item but they cannot be the whole story in higher genus;
+\item only the \emph{total} singular curvature is fixed unambiguously by \eqref{eq:globalneutrality}.
+\end{itemize}
+
+\section{Operator Charges}
+
+The usual ghost insertions already match the global neutrality condition.
+
+For genus one, the relevant chiral correlator is
+\be
+\la c(p)\,\cL[b]\ra_{\Sigma_{1,1}},
+\ee
+whose bosonized charge is
+\be
+(+1)+(-1)=0.
+\label{eq:g1insertions}
+\ee
+Nonchirally this becomes
+\be
+c\wt c : +2,
+\qquad
+b\wt b : -2,
+\qquad
+\text{total }0.
+\ee
+
+For genus two, the relevant chiral correlator is
+\be
+\la c(p)\,\prod_{r=1}^4 \cL_r[b]\ra_{\Sigma_{2,1}},
+\ee
+whose bosonized charge is
+\be
+(+1)+4(-1)=-3,
+\label{eq:g2insertions}
+\ee
+exactly as required by \eqref{eq:g1g2neutrality}. Nonchirally this is
+\be
+c\wt c : +2,
+\qquad
+4\times b\wt b : -8,
+\qquad
+\text{total }-6.
+\ee
+
+Thus the role of the singular sewn-disk geometry is to reproduce the genus-dependent right-hand side of \eqref{eq:globalneutrality}, while the usual $c$ and $b$ insertions saturate that charge in the expected way.
+
+\section{Where the Arc-Dependent Data Lives}
+
+Since the $\hat\phi$ variable has a universal jump (Section~3), the arc-dependent information that selects the $b$-ghost functionals must reside elsewhere. It is encoded in the \emph{original} sewing rule for $\phi$ itself:
+\be
+\phi(k') = \phi(k) + \Delta_i(k),
+\qquad
+\Delta_i(k) = i\pi + \log q_i - 2\log z_k,
+\ee
+where $z_k = e^{2\pi i k/L}$ and the arc label $i$ depends on which segment $k$ belongs to.
+
+The shift $\Delta_i(k)$ has two qualitatively different parts:
+\begin{enumerate}
+\item a smooth piece $-2\log z_k = -4\pi i k/L$ that varies linearly around the circle (the Jacobian),
+\item a piecewise-constant piece $i\pi + \log q_i$ that \emph{jumps} at the arc junctions $k = \ell_1$, $k = \ell_1+\ell_2$, and $k = L/2$.
+\end{enumerate}
+These three junctions are the boundary preimages of the two cubic Strebel vertices.
+
+\subsection{Linear term in the Gaussian}
+
+Consider the bosonized wavefunctional for $\Psi_c$, which in the exponent is quadratic in $\phi$ plus a linear piece from the vertex operator $e^{\phi(0)}$ at the disk origin. After imposing the sewing rule $\phi(k') = \phi(k) + \Delta_i(k)$ for the dependent half of the variables, the exponent in the remaining $L/2$ independent variables $\phi(k)$ takes the form
+\be
+-\sum_{k,\ell=1}^{L/2} A_{k\ell}\,\phi(k)\phi(\ell)
+\;+\; \sum_{k=1}^{L/2} v_k\,\phi(k)
+\;+\; \text{const},
+\ee
+where $A_{k\ell}$ is the \emph{same} matrix as in the free boson sewing (since the quadratic form is insensitive to the shift), and $v_k$ is a linear term that arises from cross-terms between $\phi(k)$ and $\Delta_i(k)$, together with the contribution from $e^{\phi_0}$.
+
+The free boson has $v_k = 0$ and gives $(\det' A)^{-1/2}$. The bosonized ghost has $v_k \neq 0$, and the Gaussian integral gives
+\be
+(\det' \wt{A})^{-1/2}\,\exp\!\left(\tfrac14\,v^T \wt{A}^{-1} v\right)
+\times (\text{zero-mode factor}),
+\ee
+where $\wt{A}$ is the reduced matrix after removing the zero mode. The exponential factor is the ratio between the ghost and boson partition functions:
+\be
+\frac{|\det B|}{(\det' A)^{-1/2}} \sim \exp\!\left(\tfrac14\,v^T \wt{A}^{-1} v + \cdots\right).
+\ee
+
+\subsection{Localization at Strebel vertices}
+
+The linear coefficient $v_k$ inherits the discontinuities of $\Delta_i(k)$ at the arc junctions. In the continuum limit, these become delta-function-like contributions at the Strebel vertex positions $z_v$ on the boundary. When contracted against the Green's function $\wt{A}^{-1}$, these singular pieces produce vertex operator insertions at $z_v$.
+
+Because $e^{-\phi} \sim b$, the singular contributions to the exponential factor effectively insert $b$-ghost operators at the Strebel vertices. The renormalization factor $(1-z/z_v)^{2/3}$ found numerically in the discretized $\det B$ should emerge from the regularization of $\wt{A}^{-1}$ at the singular points, matching the Jacobian between disk and flat coordinates.
+
+This gives a concrete bosonized mechanism for the $b$-insertion localization: the $b$ insertions arise from the \emph{discontinuities in the sewing shift} $\Delta_i(k)$ at the arc junctions, propagated through the scalar Green's function.
+
+\subsection{Vertex functionals}
+
+The natural local functionals are the renormalized Strebel-vertex evaluations
+\be
+\beta_v[q]
+\equiv
+\lim_{z\to z_v}
+\left(1-\frac{z}{z_v}\right)^{2/3}
+q_{zz}(z),
+\label{eq:betavdef}
+\ee
+because near a cubic Strebel vertex one has
+\be
+\frac{du}{dz} \sim (z-z_v)^{-1/3},
+\qquad
+q_{zz}(z)=q_{uu}(u)\left(\frac{du}{dz}\right)^2
+\sim
+(z-z_v)^{-2/3}.
+\ee
+Hence $\beta_v$ is the finite part of the $b$ field at the vertex in a regular local coordinate.
+
+In punctured genus one the holomorphic zero-mode space is one-dimensional,
+\be
+H^0(\Sigma,K^2(p)) \cong \bC.
+\ee
+Therefore any nonzero linear functional is necessarily proportional to the Beltrami insertion:
+\be
+\beta_{v_+}[b]
+\propto
+\beta_{v_-}[b]
+\propto
+B[\mu][b].
+\label{eq:seampropto}
+\ee
+This is the precise sense in which the bosonized sewing data, once processed through the Green's function, must produce an effective $b$-ghost insertion at the Strebel vertices.
+
+In genus two, the six vertex functionals $\beta_v$ ($v=1,\dots,6$) live on a four-dimensional zero-mode space $H^0(\Sigma,K^2(p))$. Only four independent linear combinations survive:
+\be
+\cL_r = \sum_{v=1}^6 c_{rv}\,\beta_v,
+\qquad
+r=1,\dots,4.
+\label{eq:g2linearcomb}
+\ee
+The conversion from the vertex-functional basis to the Beltrami-dual basis is encoded in a $4\times 4$ Jacobian $|\det M|^2$.
+
+\section{Resulting Picture}
+
+The bosonized version of the discretized path integral should be organized as follows:
+\begin{enumerate}
+\item Start from the bosonized wavefunctional corresponding to the chosen ghost state, e.g.\ $\Psi_c$.
+\item Impose the $z$-dependent sewing rule \eqref{eq:phijump} for $\phi$ directly (not the shifted $\hat\phi$).
+\item The sewing produces a Gaussian with a linear term $v_k$ on top of the same quadratic form $A$ as the free boson.
+\item The linear term encodes the $b$-ghost insertions; its singularities at the arc junctions (Strebel vertices) localize the $b$ insertions there.
+\item The zero-mode integral enforces the global charge neutrality \eqref{eq:globalneutrality}.
+\item The resulting correlator is $\la c\wt c(p)\,\cL[b]\,\ol{\cL}[\wt b]\ra_\Sigma$ with vertex-supported $b$-ghost functionals such as \eqref{eq:seampropto} or, in higher genus, \eqref{eq:g2linearcomb}.
+\end{enumerate}
+
+Note that the shifted field $\hat\phi = \phi - \log z$ is \emph{not} the right variable for this analysis: it removes all arc-dependent information and reduces the sewing to a universal sign flip $e^{\hat\phi(z')} = -e^{\hat\phi(z)}$. The arc-dependent structure that determines the $b$ insertions lives in the interplay between the Jacobian factor $-2\log z$ and the identification geometry.
+
+\section{Practical Continuum Translation}
+
+In continuum notation, the discretized bosonized path integral is expected to have the schematic form
+\be
+\int [D\phi] \,
+\Psi_c^{(\phi)}[\phi]\,
+\delta_{\rm twisted\ sewing}
+\leadsto
+\left\langle
+c\wt{c}(p)\,
+\cL_{\rm vertex}[b]\,
+\ol{\cL_{\rm vertex}}[\wt{b}]
+\right\rangle_{\Sigma},
+\ee
+where $\Sigma$ is the punctured Riemann surface associated with the ribbon graph and $\cL_{\rm vertex}$ denotes the Strebel-vertex functional data selected by the sewing geometry. The global neutrality of this correlator is fixed by \eqref{eq:globalneutrality}, while the local form of $\cL_{\rm vertex}$ is controlled by the discontinuities of the sewing shift at the arc junctions, propagated through the bosonized Green's function.
+
+\end{document}
