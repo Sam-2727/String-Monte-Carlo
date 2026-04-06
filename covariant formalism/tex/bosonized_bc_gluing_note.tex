@@ -192,43 +192,122 @@ Since the $\hat\phi$ variable has a universal jump (Section~3), the arc-dependen
 \phi(k') = \phi(k) + \Delta_i(k),
 \qquad
 \Delta_i(k) = i\pi + \log q_i - 2\log z_k,
+\label{eq:phishift}
 \ee
 where $z_k = e^{2\pi i k/L}$ and the arc label $i$ depends on which segment $k$ belongs to.
 
-The shift $\Delta_i(k)$ has two qualitatively different parts:
-\begin{enumerate}
-\item a smooth piece $-2\log z_k = -4\pi i k/L$ that varies linearly around the circle (the Jacobian),
-\item a piecewise-constant piece $i\pi + \log q_i$ that \emph{jumps} at the arc junctions $k = \ell_1$, $k = \ell_1+\ell_2$, and $k = L/2$.
-\end{enumerate}
-These three junctions are the boundary preimages of the two cubic Strebel vertices.
+\subsection{The sewing shift and its structure}
+
+It is convenient to work with the spacelike bosonization $c = e^{i\varphi}$, where $\varphi$ is a real scalar with standard positive-definite kinetic term and $\phi = i\varphi$. The sewing rule $c(k') = -e^{2\pi i(k'-k)/L}c(k)$ then gives
+\be
+\varphi(k') = \varphi(k) + \delta_k,
+\qquad
+\delta_k = \pi + \frac{2\pi(k'-k)}{L},
+\label{eq:varphishift}
+\ee
+where $\delta_k$ is \emph{real} and $k'=s(k)-k$ is the partner of site $k$ under the identification.
+
+Within each of the three arcs, $k'-k$ decreases by 2 for each unit increase in $k$, so $\delta_k$ has a uniform slope:
+\be
+\delta_{k+1} - \delta_k = -\frac{4\pi}{L} \qquad\text{(within any arc)}.
+\ee
+At the three arc junctions ($k=\ell_1$, $k=\ell_1+\ell_2$, $k=L/2$), $\delta_k$ has \emph{discontinuous jumps}.
+
+\subsection{Explicit identification of the $b$-ghost insertions}
+\label{sec:explicitB}
+
+Define the normalized edge lengths $t_i = 2\ell_i/L$ with $t_1+t_2+t_3=1$. The discrete derivative $\delta_{k+1}-\delta_k$ can be decomposed as
+\be
+\delta_{k+1}-\delta_k = -\frac{4\pi}{L}
++ \sum_{v=1}^{3} J_v\,\delta_{k,k_v},
+\label{eq:jumpdecomp}
+\ee
+where $k_v$ are the three junction positions and $J_v$ are the jump magnitudes. The three junctions correspond to the boundary preimages of the two cubic Strebel vertices; at each junction, two of the three ribbon-graph edges meet.
+
+The jump magnitudes are determined exactly by the edge lengths:
+\be
+\begin{array}{c|c|c|c}
+\text{junction} & \text{position} & \text{edges meeting} & \text{jump magnitude} \\
+\hline
+v_1 & k=\ell_1 & \text{edges 1, 2} & J_1 = \pi(t_1+t_2) = \pi(1-t_3) \\
+v_2 & k=\ell_1+\ell_2 & \text{edges 2, 3} & J_2 = \pi(t_2+t_3) = \pi(1-t_1) \\
+v_3 & k=L/2 & \text{edges 3, 1} & J_3 = \pi(t_3+t_1) = \pi(1-t_2)
+\end{array}
+\label{eq:jumptable}
+\ee
+This has been verified numerically (see \texttt{bosonized\_ghost.py}) to machine precision ($\sim 10^{-16}$) for all $L$ tested. In addition, the jump signal is \emph{identically zero} away from the junctions: the discrete derivative $\delta_{k+1}-\delta_k + 4\pi/L$ vanishes to machine precision at every non-junction site.
+
+Therefore $\delta_k$ decomposes cleanly into
+\be
+\delta_k = \delta_k^{\rm smooth} + \delta_k^{\rm sing},
+\ee
+where $\delta^{\rm smooth}$ is strictly linear (extrapolating the within-arc slope from the first arc) and $\delta^{\rm sing}$ is a \emph{staircase} supported only at the three junctions. In the continuum limit,
+\be
+\frac{d\delta^{\rm sing}}{d\sigma} = \sum_{v=1}^{3} J_v\,\delta(\sigma - \sigma_v),
+\label{eq:deltasing}
+\ee
+which is a sum of delta functions localized at the Strebel vertex preimages, with magnitudes set by the edge lengths.
+
+This is the explicit identification of the $b$-ghost insertions: each junction contributes a delta-function source whose strength $J_v = \pi(1-t_v)$ is the fraction of the boundary perimeter subtended by the two edges meeting at that vertex.
 
 \subsection{Linear term in the Gaussian}
 
-Consider the bosonized wavefunctional for $\Psi_c$, which in the exponent is quadratic in $\phi$ plus a linear piece from the vertex operator $e^{\phi(0)}$ at the disk origin. After imposing the sewing rule $\phi(k') = \phi(k) + \Delta_i(k)$ for the dependent half of the variables, the exponent in the remaining $L/2$ independent variables $\phi(k)$ takes the form
+After imposing \eqref{eq:varphishift} for the dependent half of the variables, the bosonized wavefunctional for $\Psi_c$ takes the form (in the exponent)
 \be
--\sum_{k,\ell=1}^{L/2} A_{k\ell}\,\phi(k)\phi(\ell)
-\;+\; \sum_{k=1}^{L/2} v_k\,\phi(k)
+-\sum_{k,\ell=1}^{L/2} A_{k\ell}\,\varphi(k)\varphi(\ell)
+\;+\; \sum_{k=1}^{L/2} v_k\,\varphi(k)
 \;+\; \text{const},
 \ee
-where $A_{k\ell}$ is the \emph{same} matrix as in the free boson sewing (since the quadratic form is insensitive to the shift), and $v_k$ is a linear term that arises from cross-terms between $\phi(k)$ and $\Delta_i(k)$, together with the contribution from $e^{\phi_0}$.
-
-The free boson has $v_k = 0$ and gives $(\det' A)^{-1/2}$. The bosonized ghost has $v_k \neq 0$, and the Gaussian integral gives
+where $A_{k\ell}$ is the \emph{same} matrix as in the free boson sewing (the quadratic form is insensitive to the real shift $\delta$), and
 \be
-(\det' \wt{A})^{-1/2}\,\exp\!\left(\tfrac14\,v^T \wt{A}^{-1} v\right)
+v_k = -\omega_k + \frac{2i}{L},
+\qquad
+\omega_k = 2\sum_{s=1}^{L/2}\bigl(A^{(0)}_{k,p(s)} + A^{(0)}_{p(k),p(s)}\bigr)\delta_s,
+\label{eq:linearterm}
+\ee
+with the $2i/L$ piece from the vertex operator $e^{i\varphi_0}$. Here $A^{(0)}$ is the unsewed circulant matrix, $p(s)$ denotes the partner of site $s$, and $\omega_k$ is the cross-term from the sewing shifts.
+
+The vertex-operator piece $2i/L$ lies entirely in the zero-mode direction of $A$ (since $\sum_k (2i/L) = i$, while $\sum_k \omega_k = 0$). After projecting onto the subspace orthogonal to the zero mode, $v_k$ reduces to $-\omega_k$, which is real. The zero-mode piece enforces the global charge neutrality \eqref{eq:globalneutrality} (the $c$-ghost carrying charge $+1$).
+
+Since $\omega_k$ inherits the decomposition of $\delta_k$, the linear coefficient also separates into smooth and singular parts:
+\be
+\omega = \omega^{\rm smooth} + \omega^{\rm sing},
+\ee
+where $\omega^{\rm sing}$ is the convolution of the Green's function kernel with the jump sources \eqref{eq:deltasing}. In the continuum limit,
+\be
+\omega^{\rm sing}(\sigma) \sim \sum_{v=1}^3 J_v\,G(\sigma, \sigma_v),
+\ee
+where $G$ is the scalar propagator on the sewn boundary. This is the profile of a bosonized scalar sourced by vertex operators $e^{-\varphi(\sigma_v)}$ at the Strebel vertices, confirming that the $b$-ghost insertions arise from the jump discontinuities.
+
+\subsection{Relation to the combined matter+ghost amplitude}
+
+The Gaussian integral in $\varphi$ gives
+\be
+(\det' \wt{A})^{-1/2}\,\exp\!\left(\tfrac14\,\omega^T \wt{A}^{-1} \omega\right)
 \times (\text{zero-mode factor}),
 \ee
-where $\wt{A}$ is the reduced matrix after removing the zero mode. The exponential factor is the ratio between the ghost and boson partition functions:
+where $\wt{A}$ is the reduced matrix with the zero mode removed. The bilinear form $\omega^T \wt{A}^{-1}\omega$ captures the vertex-operator contribution: it is the scalar two-point function evaluated at the Strebel vertex positions.
+
+However, the full relationship
 \be
-\frac{|\det B|}{(\det' A)^{-1/2}} \sim \exp\!\left(\tfrac14\,v^T \wt{A}^{-1} v + \cdots\right).
+|\det B| \stackrel{?}{\propto} (\det' A)^{1/2}\,\exp\!\left(\tfrac14\,\omega^T \wt{A}^{-1}\omega\right)
 \ee
+does \emph{not} hold as stated at finite $L$: the residual is moduli-dependent. The missing piece is the \emph{Weyl anomaly} factor. The free boson ($c=1$) and the bosonized ghost ($c=-26$) have different Weyl anomalies on the singular Strebel metric, contributing a moduli-dependent correction proportional to the Liouville action $S_L = \frac{1}{12\pi}\int\partial\omega\bar\partial\omega$. In the combined matter+ghost system (26 bosons $+$ ghost), the Weyl anomaly cancels, consistent with the known result
+\be
+|\det B|\,(\det' A)^{-13} \propto \tau_2^{-13}\,|\eta(\tau)|^{-48}\,|\widehat{f}(0)|^2\,|\nu|^4.
+\ee
+The structural identification of the $b$-ghost insertion \emph{locations} is exact at any $L$; only the overall \emph{magnitude} of $\det B$ relative to $\det A$ receives the Weyl anomaly correction.
 
 \subsection{Localization at Strebel vertices}
 
-The linear coefficient $v_k$ inherits the discontinuities of $\Delta_i(k)$ at the arc junctions. In the continuum limit, these become delta-function-like contributions at the Strebel vertex positions $z_v$ on the boundary. When contracted against the Green's function $\wt{A}^{-1}$, these singular pieces produce vertex operator insertions at $z_v$.
+Combining the results above: the $b$-ghost insertions in $\det B$ arise from the discontinuities of the sewing shift $\delta_k$ at the three arc junctions. Specifically:
+\begin{enumerate}
+\item the smooth part $\delta^{\rm smooth}$ (constant slope $-4\pi/L$) encodes the Weyl anomaly / background-charge contribution from the Jacobian between the disk metric and the Strebel metric;
+\item the singular part $\delta^{\rm sing}$ (jumps at the junctions) sources the bosonized scalar at the Strebel vertex positions via the Green's function, generating the $b$-ghost vertex operators $b(z_v) \sim e^{-i\varphi(z_v)}$;
+\item the jump magnitude $J_v = \pi(1-t_v) = \pi(t_{v_1}+t_{v_2})$ at each junction is the fraction of the boundary perimeter subtended by the two edges meeting at the corresponding Strebel vertex.
+\end{enumerate}
 
-Because $e^{-\phi} \sim b$, the singular contributions to the exponential factor effectively insert $b$-ghost operators at the Strebel vertices. The renormalization factor $(1-z/z_v)^{2/3}$ found numerically in the discretized $\det B$ should emerge from the regularization of $\wt{A}^{-1}$ at the singular points, matching the Jacobian between disk and flat coordinates.
-
-This gives a concrete bosonized mechanism for the $b$-insertion localization: the $b$ insertions arise from the \emph{discontinuities in the sewing shift} $\Delta_i(k)$ at the arc junctions, propagated through the scalar Green's function.
+The renormalization factor $(1-z/z_v)^{2/3}$ found numerically in the discretized $\det B$ should emerge from the regularization of $\wt{A}^{-1}$ at the singular points, matching the Jacobian $\gamma_v$ between disk and flat coordinates near the vertex.
 
 \subsection{Vertex functionals}
 
