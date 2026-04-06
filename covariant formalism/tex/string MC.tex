@@ -687,6 +687,7 @@ S_L = {\log |b_1| + \log |b_2|\over 24} + {\rm universal ~divergence}.
 Here the cutoff is assumed to be $|u-u_i|>\delta$. But should we impose the cutoff on $z$ instead? Near $u=u_i$, we have $z-z_i \approx {2\over 3 b_i} (u-u_i)^{3\over 2}$, and $f(z) \approx b_i ({3b_i\over 2})^{-{1\over 3}} (z-z_i)^{-{1\over 3}} \equiv \nu_i (1-z/z_i)^{-\frac13}$. If we impose the cutoff in $z$, which would seem to be the more compatible with the discretization scheme on the disc, the moduli dependent part of the Weyl anomaly would be given by
 \ie
 S_L = {\log |b_1| + \log |b_2|\over 36} + {\rm universal ~divergence}.
+\label{Weylfactor}
 \fe
 
 \subsection{Special case: $\ell_3=0$}
@@ -989,11 +990,8 @@ The analytical value $Z_\text{comp}^{(g)}$ of the compact boson partition functi
 \frac{\exp(c(\tau)-S_L(\tau))}{Z_\text{comp}^{(1)}(\tau)} = \text{ Const. }
 \label{compactWeyltest}
 \fe
-where $S_L(\tau)$ is given by:
-\ie
-S_L(\tau) = \frac{\log |b_1|+\log |b_2|}{36}
-\fe
-and the term $|\oint_\alpha f(z)dz|$ comes from the fact that we want the flat coordinate to have period 1 around the $\alpha$-cycle.
+where $S_L(\tau)$ is given by \eqref{Weylfactor}.
+
 
 \section{Analytic construction}
 
