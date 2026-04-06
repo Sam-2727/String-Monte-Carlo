@@ -958,6 +958,32 @@ where the free boson partition function $Z_\text{bos}(\Omega)$ does not depend o
 \fe
 and this has been checked for genus 2 using codes in \texttt{compact\_partition.py} and \texttt{ell\_to\_tau.py}.
 
+\subsubsection*{$L$-dependent Renormalization of $Z(\ell_a;R)$}
+
+The lattice constructed provided us a \textit{regularization} scheme, and if we want to have a finite answer when taking the $L\rightarrow \infty$ limit, we need to further \textit{renormalize} the action by adding counterterms. For the theory at self-dual radius $R=1$, we found numerically that the large-$L$ behavior of $Z^{(g)}(\ell_a;R)$ is given by:
+\ie
+\log Z^{(g)}(L;\Omega;R=1) = c(\Omega) + \gamma L + \alpha(g) \log L
+\fe
+where $c(\Omega)$ is the moduli-dependent finite part, $\gamma, \alpha(g)$ are both independent of the moduli. $\gamma = \frac{1}{4} \log 2$ is a constant while $\alpha(g)$ is given by the following:
+\ie
+&\alpha(1)= -1.13889\\
+&\alpha(2)= -1.41667\\
+&\alpha(3)= -1.69445\\
+&\alpha(4)= -1.97222\\
+&\alpha(5)= -2.24993
+\fe
+which suggests that $\alpha(g)$ has a linear dependence in $g$:
+\ie
+\alpha(g)=\alpha_0+\alpha_1 g,\quad \alpha_0=-0.86112,\quad \alpha_1= - 0.27778
+\fe
+One can also compute the same large-$L$ dependence for theories with $R\neq 1$ and linear fit the parameters $\alpha(g)$. For theories with different $R$, both the slope and the intercept of $\alpha(g)$ depends on $R$, but $\gamma$ stays the same around $\frac{1}{4} \log 2$.
+
+In order to arrive at a finite partition function in the $L\rightarrow \infty$ limit, we choose the renormalization scheme by adding the following counterterms to the (Euclidean) compact boson action:
+\ie
+S_\text{counterterm} = \gamma L + (\alpha_0+\alpha_1)\log L- \frac{\alpha_1}{8\pi}\log L\int_\Sigma \mathrm{d}^2\sigma \sqrt{g}\, R(g)
+\fe
+and the partition function in this renormalization scheme is given by simply $\exp c(\Omega)$.
+
 \section{Analytic construction}
 
 \subsection{Trinion vertex}
