@@ -10,6 +10,7 @@ machinery already implemented in ell_to_tau.py. It provides:
 - Abel-Jacobi maps in the disc frame
 - Riemann theta functions with characteristics
 - The prime form built from an odd characteristic
+- Verlinde-Verlinde bc-system correlators built from these ingredients
 
 Conventions
 -----------
@@ -56,6 +57,31 @@ class RiemannSurfaceData:
         if self.genus == 1 and self.Omega.shape == (1, 1):
             return np.complex128(self.Omega[0, 0])
         return None
+
+
+@dataclass(frozen=True)
+class LargeLFitResult:
+    c: float
+    gamma: float
+    alpha: float
+    r2: float
+    max_abs_log_residual: float
+    total_lengths: tuple[int, ...]
+    log_values: tuple[float, ...]
+    edge_length_sets: tuple[tuple[int, ...], ...]
+
+    @property
+    def finite_part(self) -> float:
+        return float(np.exp(self.c))
+
+
+@dataclass(frozen=True)
+class RenormalizedZ1Data:
+    abs_z1_sq: float
+    normalization_factor: float
+    renormalized_det_factor: float
+    fit: LargeLFitResult
+    surface: RiemannSurfaceData
 
 
 def _evaluate_one_form(f, z: complex) -> np.complex128:
@@ -617,3 +643,886 @@ def sigma_value(
         quad_limit=quad_limit,
     )
     return np.complex128(normalization_value) * ratio
+
+
+def _ghost_number_selection_rule(
+    lambda_weight: float,
+    genus: int,
+    *,
+    n_b: int,
+    n_c: int,
+) -> int:
+    """
+    Return the expected value of n_c - n_b from the bc ghost-number anomaly.
+
+    In the notation of Strebel.tex,
+
+        n_c - n_b = (1 - 2 lambda) (g - 1),
+
+    equivalently
+
+        n_b - n_c = (2 lambda - 1) (g - 1).
+    """
+    expected = (1.0 - 2.0 * float(lambda_weight)) * float(genus - 1)
+    rounded = int(round(expected))
+    if abs(expected - rounded) > 1e-12:
+        raise ValueError(
+            "The bc selection rule is not integral for the supplied lambda and genus: "
+            f"(1 - 2 lambda)(g - 1) = {expected}."
+        )
+    actual = int(n_c) - int(n_b)
+    if actual != rounded:
+        raise ValueError(
+            "The bc correlator violates the ghost-number selection rule: "
+            f"need n_c - n_b = {rounded}, got {actual}."
+        )
+    return rounded
+
+
+def bc_correlator_geometric_factor(
+    b_points: Sequence[complex],
+    c_points: Sequence[complex],
+    surface: RiemannSurfaceData,
+    *,
+    lambda_weight: float,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Compute the Verlinde-Verlinde geometric factor for the bc correlator.
+
+    The returned value is
+
+        theta(sum_i zeta(z_i) - sum_j zeta(w_j) - (2 lambda - 1) Delta | Omega)
+        * prod_{i<i'} E(z_i, z_i')
+        * prod_{j<j'} E(w_j, w_j')
+        * prod_i sigma(z_i)^(2 lambda - 1)
+        /
+        [ prod_{i,j} E(z_i, w_j) * prod_j sigma(w_j)^(2 lambda - 1) ].
+
+    This is the full holomorphic correlator with the chiral prefactor
+    `Z_1^{-1/2}` stripped off.
+    """
+    b_points = tuple(np.complex128(point) for point in b_points)
+    c_points = tuple(np.complex128(point) for point in c_points)
+    _ghost_number_selection_rule(
+        lambda_weight,
+        surface.genus,
+        n_b=len(b_points),
+        n_c=len(c_points),
+    )
+
+    if Delta is None:
+        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+    Delta = np.asarray(Delta, dtype=np.complex128)
+    if Delta.shape != (surface.genus,):
+        raise ValueError(
+            f"Delta must have shape ({surface.genus},), got {Delta.shape}."
+        )
+
+    weight = np.complex128(2.0 * float(lambda_weight) - 1.0)
+    zeta_b = (
+        np.sum(
+            np.asarray([abel_map(point, surface) for point in b_points], dtype=np.complex128),
+            axis=0,
+        )
+        if b_points
+        else np.zeros(surface.genus, dtype=np.complex128)
+    )
+    zeta_c = (
+        np.sum(
+            np.asarray([abel_map(point, surface) for point in c_points], dtype=np.complex128),
+            axis=0,
+        )
+        if c_points
+        else np.zeros(surface.genus, dtype=np.complex128)
+    )
+    theta_arg = zeta_b - zeta_c - weight * Delta
+    theta_val = riemann_theta(
+        theta_arg,
+        surface.Omega,
+        nmax=nmax,
+        tol=tol,
+    )
+
+    prime_bb = np.complex128(1.0)
+    for idx, zi in enumerate(b_points):
+        for zj in b_points[idx + 1 :]:
+            prime_bb *= prime_form(zi, zj, surface, nmax=nmax, tol=tol)
+
+    prime_cc = np.complex128(1.0)
+    for idx, wi in enumerate(c_points):
+        for wj in c_points[idx + 1 :]:
+            prime_cc *= prime_form(wi, wj, surface, nmax=nmax, tol=tol)
+
+    prime_bc = np.complex128(1.0)
+    for zi in b_points:
+        for wj in c_points:
+            prime_bc *= prime_form(zi, wj, surface, nmax=nmax, tol=tol)
+    if b_points and c_points and abs(prime_bc) == 0.0:
+        raise ZeroDivisionError("prod_{i,j} E(z_i, w_j) vanished for the chosen insertion points.")
+
+    sigma_b = np.complex128(1.0)
+    for zi in b_points:
+        sigma_b *= sigma_value(
+            zi,
+            surface,
+            divisor_points=divisor_points,
+            normalization_point=normalization_point,
+            normalization_value=normalization_value,
+            Delta=Delta,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        ) ** weight
+
+    sigma_c = np.complex128(1.0)
+    for wj in c_points:
+        sigma_c *= sigma_value(
+            wj,
+            surface,
+            divisor_points=divisor_points,
+            normalization_point=normalization_point,
+            normalization_value=normalization_value,
+            Delta=Delta,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        ) ** weight
+    if c_points and abs(sigma_c) == 0.0:
+        raise ZeroDivisionError("prod_j sigma(w_j)^(2 lambda - 1) vanished for the chosen insertion points.")
+
+    return np.complex128(theta_val * prime_bb * prime_cc * sigma_b / (prime_bc * sigma_c))
+
+
+def bc_correlator(
+    b_points: Sequence[complex],
+    c_points: Sequence[complex],
+    surface: RiemannSurfaceData,
+    *,
+    lambda_weight: float,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    z1: complex | None = None,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Compute the holomorphic bc correlator on a Riemann surface.
+
+    If `z1` is supplied, this returns the full Verlinde-Verlinde correlator
+
+        Z_1^{-1/2} * geometric_factor.
+
+    If `z1` is omitted, the function returns only the geometric factor
+    `Z_1^{1/2} <prod b prod c>`, which is the part directly determined by the
+    Abel map, theta function, prime form, and sigma factors.
+    """
+    geometric = bc_correlator_geometric_factor(
+        b_points,
+        c_points,
+        surface,
+        lambda_weight=lambda_weight,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    if z1 is None:
+        return geometric
+
+    z1 = np.complex128(z1)
+    if abs(z1) == 0.0:
+        raise ZeroDivisionError("z1 must be nonzero to form the chiral prefactor Z_1^{-1/2}.")
+    return np.complex128(geometric / np.sqrt(z1))
+
+
+def _fit_large_l_behavior(
+    total_lengths,
+    log_values,
+    *,
+    edge_length_sets=None,
+) -> LargeLFitResult:
+    """Fit log Z(L) = c + gamma L + alpha log L to large-L data."""
+    total_lengths = tuple(int(L) for L in total_lengths)
+    log_values = tuple(float(value) for value in log_values)
+    if len(total_lengths) != len(log_values):
+        raise ValueError(
+            f"Need one log value per total length; got {len(total_lengths)} and {len(log_values)}."
+        )
+    if len(total_lengths) < 3:
+        raise ValueError("Need at least three large-L samples to fit c + gamma L + alpha log L.")
+    if any(L <= 0 for L in total_lengths):
+        raise ValueError("All total lengths must be positive.")
+
+    order = np.argsort(np.asarray(total_lengths, dtype=np.int64))
+    l_arr = np.asarray(total_lengths, dtype=np.float64)[order]
+    logz_arr = np.asarray(log_values, dtype=np.float64)[order]
+    design = np.column_stack([np.ones_like(l_arr), l_arr, np.log(l_arr)])
+    coef, *_ = np.linalg.lstsq(design, logz_arr, rcond=None)
+    predicted = design @ coef
+    residual = logz_arr - predicted
+    ss_res = float(np.sum(residual ** 2))
+    ss_tot = float(np.sum((logz_arr - np.mean(logz_arr)) ** 2))
+    c0, gamma, alpha = coef
+
+    if edge_length_sets is None:
+        sorted_edge_sets = tuple(() for _ in total_lengths)
+    else:
+        if len(edge_length_sets) != len(total_lengths):
+            raise ValueError(
+                "edge_length_sets must have the same length as total_lengths when provided."
+            )
+        sorted_edge_sets = tuple(
+            tuple(int(x) for x in edge_length_sets[idx])
+            for idx in order
+        )
+
+    return LargeLFitResult(
+        c=float(c0),
+        gamma=float(gamma),
+        alpha=float(alpha),
+        r2=1.0 - ss_res / ss_tot if ss_tot > 0.0 else 1.0,
+        max_abs_log_residual=float(np.max(np.abs(residual))),
+        total_lengths=tuple(int(x) for x in l_arr.astype(np.int64)),
+        log_values=tuple(float(x) for x in logz_arr),
+        edge_length_sets=sorted_edge_sets,
+    )
+
+
+def build_surface_from_ribbon_graph(
+    ribbon_graph,
+    edge_lengths,
+    *,
+    basis_pairs=None,
+    custom_cycles=None,
+) -> RiemannSurfaceData:
+    """
+    Build a surface directly from an F=1 ribbon graph and integer edge lengths.
+    """
+    edge_lengths = tuple(int(x) for x in edge_lengths)
+    forms = elt.make_cyl_eqn_improved_higher_genus(
+        ribbon_graph,
+        edge_lengths,
+    )
+    return build_surface_data(
+        forms=forms,
+        ribbon_graph=ribbon_graph,
+        ell_list=edge_lengths,
+        basis_pairs=basis_pairs,
+        custom_cycles=custom_cycles,
+    )
+
+
+def fit_renormalized_aprime_factor(
+    ribbon_graph,
+    base_edge_lengths,
+    *,
+    scales,
+    min_edge_length: int = 200,
+    kernel=None,
+) -> LargeLFitResult:
+    r"""
+    Fit the large-L behavior of -1/2 log(det A') at fixed ribbon-graph moduli.
+
+    This implements the same renormalization algorithm described in the
+    "Renormalization of Z(l_a, R)" subsection of Strebel.tex, but applied just
+    to the scheme-dependent determinant factor entering
+
+        |Z_1|^2 = N_1 [det Im(Omega)]^{1/2} (det A')^{-1/2}.
+
+    For edge lengths ell_a = scale * ell_a^(0) at fixed ratios, we fit
+
+        -1/2 log det A' = c(Omega) + gamma L + alpha log L,
+
+    where L = 2 sum_a ell_a is the total boundary lattice length. The
+    renormalized determinant factor feeding into |Z_1|^2 is then exp(c).
+    """
+    import partition_function as pf
+
+    base_edge_lengths = tuple(int(x) for x in base_edge_lengths)
+    if not base_edge_lengths:
+        raise ValueError("Need at least one base edge length.")
+    if any(edge <= 0 for edge in base_edge_lengths):
+        raise ValueError("All base edge lengths must be positive integers.")
+
+    scales = tuple(int(scale) for scale in scales)
+    if len(scales) < 3:
+        raise ValueError("Need at least three scales for the large-L fit.")
+    if any(scale <= 0 for scale in scales):
+        raise ValueError("All scales must be positive integers.")
+
+    sampled_edge_lengths: list[tuple[int, ...]] = []
+    total_lengths: list[int] = []
+    log_values: list[float] = []
+    for scale in scales:
+        edge_lengths = tuple(int(scale * edge) for edge in base_edge_lengths)
+        if min(edge_lengths) < int(min_edge_length):
+            raise ValueError(
+                "All sampled edge lengths must satisfy the large-L cutoff "
+                f"ell_a >= {int(min_edge_length)}; got {edge_lengths}."
+            )
+        A_prime = np.asarray(
+            pf.traced_matter_matrix_f1(ribbon_graph, edge_lengths, kernel=kernel),
+            dtype=np.float64,
+        )
+        A_prime = 0.5 * (A_prime + A_prime.T)
+        log_values.append(float(-0.5 * pf.logdet_cholesky(A_prime)))
+        total_lengths.append(int(2 * sum(edge_lengths)))
+        sampled_edge_lengths.append(edge_lengths)
+
+    return _fit_large_l_behavior(
+        total_lengths,
+        log_values,
+        edge_length_sets=sampled_edge_lengths,
+    )
+
+
+def lambda_one_geometric_z1_factor(
+    b_points: Sequence[complex],
+    c_point: complex,
+    surface: RiemannSurfaceData,
+    *,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Return the geometric factor whose 2/3 power gives Z_1 in the lambda=1 case.
+
+    For lambda=1 and (n,m)=(g,1), Strebel.tex writes
+
+        Z_1 det(omega_I(z_i))
+        =
+        Z_1^{-1/2}
+        theta(sum_i zeta(z_i) - zeta(w) - Delta | Omega)
+        * prod_{i<i'} E(z_i, z_i') * prod_i sigma(z_i)
+          / (prod_i E(z_i, w) sigma(w)).
+
+    Therefore the geometric ratio
+
+        A = [
+            theta(...) * prod_{i<i'} E(z_i, z_i') * prod_i sigma(z_i)
+            / (prod_i E(z_i, w) sigma(w))
+        ] / det(omega_I(z_i))
+
+    satisfies A = Z_1^{3/2}. This helper returns A.
+    """
+    b_points = tuple(np.complex128(point) for point in b_points)
+    if len(b_points) != surface.genus:
+        raise ValueError(
+            f"Need exactly g={surface.genus} b-insertion points, got {len(b_points)}."
+        )
+
+    if Delta is None:
+        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+    Delta = np.asarray(Delta, dtype=np.complex128)
+    if Delta.shape != (surface.genus,):
+        raise ValueError(
+            f"Delta must have shape ({surface.genus},), got {Delta.shape}."
+        )
+
+    zeta_sum = np.sum(
+        np.asarray([abel_map(point, surface) for point in b_points], dtype=np.complex128),
+        axis=0,
+    )
+    theta_arg = zeta_sum - abel_map(c_point, surface) - Delta
+    theta_val = riemann_theta(
+        theta_arg,
+        surface.Omega,
+        nmax=nmax,
+        tol=tol,
+    )
+
+    omega_matrix = np.asarray(
+        [
+            [_evaluate_one_form(form, point) for form in surface.normalized_forms]
+            for point in b_points
+        ],
+        dtype=np.complex128,
+    )
+    det_omega = np.complex128(np.linalg.det(omega_matrix))
+    if abs(det_omega) == 0.0:
+        raise ZeroDivisionError("det(omega_I(z_i)) vanished for the chosen b-insertion points.")
+
+    sigma_c = sigma_value(
+        c_point,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    if abs(sigma_c) == 0.0:
+        raise ZeroDivisionError("sigma(c_point) vanished for the chosen normalization data.")
+
+    prime_prod_bb = np.complex128(1.0)
+    for i, zi in enumerate(b_points):
+        for zj in b_points[i + 1 :]:
+            prime_prod_bb *= prime_form(zi, zj, surface, nmax=nmax, tol=tol)
+
+    prime_prod_bc = np.complex128(1.0)
+    sigma_prod_b = np.complex128(1.0)
+    for zi in b_points:
+        prime_prod_bc *= prime_form(zi, c_point, surface, nmax=nmax, tol=tol)
+        sigma_prod_b *= sigma_value(
+            zi,
+            surface,
+            divisor_points=divisor_points,
+            normalization_point=normalization_point,
+            normalization_value=normalization_value,
+            Delta=Delta,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
+
+    if abs(prime_prod_bc) == 0.0:
+        raise ZeroDivisionError("prod_i E(z_i, w) vanished for the chosen insertion points.")
+
+    return np.complex128(
+        theta_val * prime_prod_bb * sigma_prod_b / (prime_prod_bc * sigma_c * det_omega)
+    )
+
+
+def abs_z1_sq_from_lambda_one(
+    b_points: Sequence[complex],
+    c_point: complex,
+    surface: RiemannSurfaceData,
+    *,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> float:
+    r"""
+    Compute |Z_1|^2 from the lambda=1, (n,m)=(g,1) identity in Strebel.tex.
+
+    If A is the complex number returned by `lambda_one_geometric_z1_factor`,
+    then A = Z_1^{3/2}. Taking absolute values avoids branch choices and gives
+
+        |Z_1|^2 = |A|^{4/3}.
+    """
+    factor = lambda_one_geometric_z1_factor(
+        b_points,
+        c_point,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    return float(abs(factor) ** (4.0 / 3.0))
+
+
+def abs_z1_sq_from_renormalized_det(
+    surface: RiemannSurfaceData,
+    *,
+    normalization_factor: float = 1.0,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Evaluate
+
+        |Z_1|^2 = N_1 [det Im(Omega)]^{1/2} exp(c(Omega)),
+
+    where exp(c(Omega)) is the renormalized finite part extracted from the
+    large-L fit to -1/2 log(det A').
+
+    The default `normalization_factor=1.0` is the canonical convention where
+    the renormalized determinant formula itself defines `|Z_1|^2`, i.e.
+
+        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)).
+
+    In the notation of Strebel.tex this corresponds to choosing
+    `mathcal{N}_1 = 1` (equivalently `log mathcal{N}_1 = 0`).
+    """
+    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
+    det_im_omega = float(np.linalg.det(im_omega))
+    if det_im_omega <= 0.0:
+        raise ValueError("Need det(Im Omega) > 0 to evaluate |Z_1|^2.")
+    return float(normalization_factor) * np.sqrt(det_im_omega) * float(renormalized_det_factor)
+
+
+def canonical_abs_z1_sq(
+    surface: RiemannSurfaceData,
+    *,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Return the canonical `|Z_1|^2` defined by the renormalized determinant.
+
+    This is a thin wrapper for the convention
+
+        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)),
+
+    with no extra moduli-independent factor.
+    """
+    return abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+
+
+def canonical_chiral_z1(abs_z1_sq: float) -> np.complex128:
+    r"""
+    Return the naive chiral choice `Z_1 = +sqrt(|Z_1|^2)`.
+
+    This is a convention choice for the gravitational-anomaly phase: we take
+    the positive real square root of the canonically normalized `|Z_1|^2`.
+    """
+    abs_z1_sq = float(abs_z1_sq)
+    if abs_z1_sq < 0.0:
+        raise ValueError(f"Need |Z_1|^2 >= 0, got {abs_z1_sq}.")
+    return np.complex128(np.sqrt(abs_z1_sq))
+
+
+def _principal_nth_root(value: complex, n: int) -> np.complex128:
+    if n <= 0:
+        raise ValueError(f"Need n >= 1 for an nth root, got n={n}.")
+    value = np.complex128(value)
+    radius = float(abs(value))
+    if radius == 0.0:
+        return np.complex128(0.0)
+    angle = float(np.angle(value))
+    return np.complex128(radius ** (1.0 / n) * np.exp(1j * angle / n))
+
+
+def sigma_scale_from_z1(
+    anchor_b_points: Sequence[complex],
+    anchor_c_point: complex,
+    surface: RiemannSurfaceData,
+    *,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    z1: complex | None = None,
+    abs_z1_sq: float | None = None,
+    renormalized_det_factor: float | None = None,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Fix the overall sigma normalization from a chosen chiral `Z_1`.
+
+    Let `tilde_sigma` be the currently normalized sigma produced by
+    `sigma_value(...)`. If the canonically normalized sigma is
+
+        sigma(z) = C * tilde_sigma(z),
+
+    then for genus `g > 1` the `lambda=1`, `(n,m)=(g,1)` Strebel equation
+    determines `C` through
+
+        C^(g-1) = Z_1^(3/2) / A_tilde,
+
+    where `A_tilde` is the value returned by
+    `lambda_one_geometric_z1_factor(...)` computed with `tilde_sigma`.
+
+    This helper returns the principal `(g-1)`-st root `C`.
+
+    Notes
+    -----
+    - For genus 1 the overall sigma constant cancels out of the special
+      equation, so this procedure cannot determine sigma normalization.
+    - If `z1` is omitted, the function uses the naive chiral choice
+      `Z_1 = +sqrt(|Z_1|^2)`. You may supply `abs_z1_sq` directly or
+      `renormalized_det_factor`, in which case the canonical convention
+      `|Z_1|^2 = [det Im(Omega)]^(1/2) exp(c(Omega))` is used.
+    """
+    if surface.genus <= 1:
+        raise ValueError(
+            "sigma_scale_from_z1 only fixes an overall sigma constant for genus > 1; "
+            "at genus 1 the lambda=1 special equation is insensitive to sigma -> C sigma."
+        )
+
+    if z1 is None:
+        if abs_z1_sq is None:
+            if renormalized_det_factor is None:
+                raise ValueError(
+                    "Provide either z1, abs_z1_sq, or renormalized_det_factor "
+                    "to fix the sigma normalization."
+                )
+            abs_z1_sq = canonical_abs_z1_sq(
+                surface,
+                renormalized_det_factor=renormalized_det_factor,
+            )
+        z1 = canonical_chiral_z1(float(abs_z1_sq))
+    z1 = np.complex128(z1)
+    if abs(z1) == 0.0:
+        raise ZeroDivisionError("z1 must be nonzero to fix the sigma normalization.")
+
+    a_tilde = lambda_one_geometric_z1_factor(
+        anchor_b_points,
+        anchor_c_point,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    if abs(a_tilde) == 0.0:
+        raise ZeroDivisionError("lambda_one_geometric_z1_factor vanished for the chosen anchor data.")
+
+    z1_three_halves = z1 * np.sqrt(z1)
+    scale_power = np.complex128(z1_three_halves / a_tilde)
+    return _principal_nth_root(scale_power, surface.genus - 1)
+
+
+def canonical_sigma_value(
+    z: complex,
+    surface: RiemannSurfaceData,
+    *,
+    anchor_b_points: Sequence[complex],
+    anchor_c_point: complex,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    z1: complex | None = None,
+    abs_z1_sq: float | None = None,
+    renormalized_det_factor: float | None = None,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Return sigma(z) with its overall constant fixed by the chosen chiral `Z_1`.
+
+    This multiplies the existing normalized `sigma_value(...)` by the scale
+    returned from `sigma_scale_from_z1(...)`.
+    """
+    scale = sigma_scale_from_z1(
+        anchor_b_points,
+        anchor_c_point,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        z1=z1,
+        abs_z1_sq=abs_z1_sq,
+        renormalized_det_factor=renormalized_det_factor,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    return scale * sigma_value(
+        z,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+
+
+def normalization_factor_from_lambda_one(
+    b_points: Sequence[complex],
+    c_point: complex,
+    surface: RiemannSurfaceData,
+    *,
+    renormalized_det_factor: float,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> float:
+    r"""
+    Determine the moduli-independent normalization N_1 from the last Strebel
+    equation together with the renormalized determinant finite part.
+
+    This value is tied to the sigma normalization convention chosen through
+    `normalization_point` and `normalization_value`. The same convention must
+    then be used in any later bc-correlator evaluation.
+    """
+    abs_z1_sq = abs_z1_sq_from_lambda_one(
+        b_points,
+        c_point,
+        surface,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
+    det_im_omega = float(np.linalg.det(im_omega))
+    if det_im_omega <= 0.0:
+        raise ValueError("Need det(Im Omega) > 0 to determine the normalization factor.")
+    if renormalized_det_factor <= 0.0:
+        raise ValueError("renormalized_det_factor must be positive.")
+    return float(abs_z1_sq / (np.sqrt(det_im_omega) * float(renormalized_det_factor)))
+
+
+def estimate_abs_z1_sq(
+    ribbon_graph,
+    base_edge_lengths,
+    *,
+    scales,
+    b_points: Sequence[complex],
+    c_point: complex,
+    divisor_points: Sequence[complex],
+    normalization_point: complex,
+    normalization_value: complex = 1.0 + 0.0j,
+    surface_edge_lengths=None,
+    min_edge_length: int = 200,
+    basis_pairs=None,
+    custom_cycles=None,
+    kernel=None,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> RenormalizedZ1Data:
+    r"""
+    High-level helper to compute |Z_1|^2 together with the fitted N_1.
+
+    Steps:
+    1. Fit the large-L behavior of -1/2 log(det A') at fixed edge-length ratios.
+    2. Build a large surface at the chosen reference edge lengths.
+    3. Use the lambda=1, (n,m)=(g,1) identity to compute |Z_1|^2.
+    4. Convert that into the moduli-independent normalization N_1.
+
+    As in `normalization_factor_from_lambda_one`, the extracted N_1 is tied to
+    the sigma normalization convention supplied here.
+    """
+    fit = fit_renormalized_aprime_factor(
+        ribbon_graph,
+        base_edge_lengths,
+        scales=scales,
+        min_edge_length=min_edge_length,
+        kernel=kernel,
+    )
+
+    if surface_edge_lengths is None:
+        surface_edge_lengths = fit.edge_length_sets[-1]
+    surface_edge_lengths = tuple(int(x) for x in surface_edge_lengths)
+    if min(surface_edge_lengths) < int(min_edge_length):
+        raise ValueError(
+            "surface_edge_lengths should also lie in the trusted large-L regime; "
+            f"got {surface_edge_lengths} with min_edge_length={int(min_edge_length)}."
+        )
+
+    surface = build_surface_from_ribbon_graph(
+        ribbon_graph,
+        surface_edge_lengths,
+        basis_pairs=basis_pairs,
+        custom_cycles=custom_cycles,
+    )
+    normalization_factor = normalization_factor_from_lambda_one(
+        b_points,
+        c_point,
+        surface,
+        renormalized_det_factor=fit.finite_part,
+        divisor_points=divisor_points,
+        normalization_point=normalization_point,
+        normalization_value=normalization_value,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    abs_z1_sq = abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=normalization_factor,
+        renormalized_det_factor=fit.finite_part,
+    )
+    return RenormalizedZ1Data(
+        abs_z1_sq=float(abs_z1_sq),
+        normalization_factor=float(normalization_factor),
+        renormalized_det_factor=float(fit.finite_part),
+        fit=fit,
+        surface=surface,
+    )
+
+
+def estimate_canonical_abs_z1_sq(
+    ribbon_graph,
+    base_edge_lengths,
+    *,
+    scales,
+    surface_edge_lengths=None,
+    min_edge_length: int = 200,
+    basis_pairs=None,
+    custom_cycles=None,
+    kernel=None,
+) -> RenormalizedZ1Data:
+    r"""
+    High-level helper for the canonical convention `mathcal{N}_1 = 1`.
+
+    This uses the renormalized determinant formula itself as the definition of
+    `|Z_1|^2`, without trying to extract a separate normalization from the
+    `lambda=1`, `(n,m)=(g,1)` identity.
+    """
+    fit = fit_renormalized_aprime_factor(
+        ribbon_graph,
+        base_edge_lengths,
+        scales=scales,
+        min_edge_length=min_edge_length,
+        kernel=kernel,
+    )
+
+    if surface_edge_lengths is None:
+        surface_edge_lengths = fit.edge_length_sets[-1]
+    surface_edge_lengths = tuple(int(x) for x in surface_edge_lengths)
+    if min(surface_edge_lengths) < int(min_edge_length):
+        raise ValueError(
+            "surface_edge_lengths should also lie in the trusted large-L regime; "
+            f"got {surface_edge_lengths} with min_edge_length={int(min_edge_length)}."
+        )
+
+    surface = build_surface_from_ribbon_graph(
+        ribbon_graph,
+        surface_edge_lengths,
+        basis_pairs=basis_pairs,
+        custom_cycles=custom_cycles,
+    )
+    abs_z1_sq = canonical_abs_z1_sq(
+        surface,
+        renormalized_det_factor=fit.finite_part,
+    )
+    return RenormalizedZ1Data(
+        abs_z1_sq=float(abs_z1_sq),
+        normalization_factor=1.0,
+        renormalized_det_factor=float(fit.finite_part),
+        fit=fit,
+        surface=surface,
+    )

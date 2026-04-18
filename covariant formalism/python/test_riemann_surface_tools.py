@@ -7,6 +7,9 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import compact_partition as cp
+import ell_to_tau as elt
+from genus2_one_point import _stored_graph_to_ribbon_graph
 import riemann_surface_tools as rst
 
 
@@ -19,7 +22,63 @@ def _cycle_period(surface, cycle_terms, form_idx: int = 0) -> np.complex128:
     return np.complex128(total)
 
 
+def _cycle_vector(cycle_terms, n_edges: int) -> np.ndarray:
+    vec = np.zeros(n_edges, dtype=int)
+    for edge_idx, coeff in cycle_terms:
+        vec[int(edge_idx)] += int(coeff)
+    return vec
+
+
+def _identified_edge_jump_errors(surface, chord_intersection_matrix: np.ndarray) -> list[float]:
+    n_edges = chord_intersection_matrix.shape[0]
+    alpha_vecs = [
+        _cycle_vector(pair["alpha"], n_edges)
+        for pair in surface.basis_pairs
+    ]
+    beta_vecs = [
+        _cycle_vector(pair["beta"], n_edges)
+        for pair in surface.basis_pairs
+    ]
+    Omega = np.asarray(surface.Omega, dtype=np.complex128)
+
+    errors = []
+    for edge_idx, (z0, z1) in sorted(surface.edge_midpoints.items()):
+        raw_edge = np.zeros(n_edges, dtype=int)
+        raw_edge[int(edge_idx)] = 1
+
+        m = np.asarray(
+            [raw_edge @ chord_intersection_matrix @ beta for beta in beta_vecs],
+            dtype=np.int64,
+        )
+        n = np.asarray(
+            [-(raw_edge @ chord_intersection_matrix @ alpha) for alpha in alpha_vecs],
+            dtype=np.int64,
+        )
+
+        predicted = m.astype(np.complex128) + Omega @ n.astype(np.complex128)
+        actual = rst.abel_difference(z1, z0, surface)
+        errors.append(float(np.max(np.abs(actual - predicted))))
+    return errors
+
+
 class TestRiemannSurfaceTools(unittest.TestCase):
+    def test_large_l_fit_recovers_synthetic_coefficients(self):
+        total_lengths = [1200, 1600, 2000, 2600]
+        c0 = 1.25
+        gamma = 0.031
+        alpha = -1.375
+        log_values = [
+            c0 + gamma * L + alpha * np.log(L)
+            for L in total_lengths
+        ]
+
+        fit = rst._fit_large_l_behavior(total_lengths, log_values)
+
+        self.assertAlmostEqual(fit.c, c0, places=12)
+        self.assertAlmostEqual(fit.gamma, gamma, places=12)
+        self.assertAlmostEqual(fit.alpha, alpha, places=12)
+        self.assertAlmostEqual(fit.finite_part, np.exp(c0), places=11)
+
     def test_genus1_riemann_constant_matches_half_period_formula(self):
         surface = rst.build_surface_data(L=20, l1=3, l2=4)
         Delta = rst.riemann_constant_vector(surface)
@@ -109,6 +168,39 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         self.assertAlmostEqual(sigma.real, 1.0, places=12)
         self.assertAlmostEqual(sigma.imag, 0.0, places=12)
 
+    def test_genus1_identified_boundary_points_differ_by_period_lattice(self):
+        surface = rst.build_surface_data(L=3600, l1=500, l2=600)
+        ribbon_graph = (
+            [(1, 2), (1, 2), (1, 2)],
+            [1, 2],
+            {1: [0, 1, 2], 2: [0, 1, 2]},
+        )
+        chord_data = elt.edge_chord_intersection_matrix(ribbon_graph)
+        errors = _identified_edge_jump_errors(
+            surface,
+            np.asarray(chord_data["intersection_matrix"], dtype=int),
+        )
+
+        self.assertLess(max(errors), 1e-6)
+
+    def test_genus2_identified_boundary_points_differ_by_period_lattice(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        chord_data = elt.edge_chord_intersection_matrix(ribbon_graph)
+        errors = _identified_edge_jump_errors(
+            surface,
+            np.asarray(chord_data["intersection_matrix"], dtype=int),
+        )
+
+        self.assertLess(max(errors), 1e-5)
+
     def test_genus2_theta_constant_matches_existing_helper(self):
         Omega = np.array(
             [
@@ -130,6 +222,153 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         expected = elt.riemann_theta_constant_genus2(Omega, char, nmax=8)
         self.assertAlmostEqual(got.real, expected.real, places=12)
         self.assertAlmostEqual(got.imag, expected.imag, places=12)
+
+    def test_genus1_abs_z1_sq_pipeline_is_self_consistent(self):
+        ribbon_graph = (
+            [(1, 2), (1, 2), (1, 2)],
+            [1, 2],
+            {1: [0, 1, 2], 2: [0, 1, 2]},
+        )
+        result = rst.estimate_abs_z1_sq(
+            ribbon_graph,
+            (1, 1, 1),
+            scales=(200, 240, 300),
+            b_points=[0.21 + 0.17j],
+            c_point=-0.17 + 0.14j,
+            divisor_points=[0.23 + 0.11j],
+            normalization_point=-0.17 + 0.14j,
+            nmax=8,
+        )
+
+        direct = rst.abs_z1_sq_from_lambda_one(
+            [0.21 + 0.17j],
+            -0.17 + 0.14j,
+            result.surface,
+            divisor_points=[0.23 + 0.11j],
+            normalization_point=-0.17 + 0.14j,
+            nmax=8,
+        )
+        reconstructed = rst.abs_z1_sq_from_renormalized_det(
+            result.surface,
+            normalization_factor=result.normalization_factor,
+            renormalized_det_factor=result.renormalized_det_factor,
+        )
+
+        self.assertAlmostEqual(result.abs_z1_sq, direct, places=10)
+        self.assertAlmostEqual(result.abs_z1_sq, reconstructed, places=12)
+        self.assertGreater(result.normalization_factor, 0.0)
+        self.assertGreater(result.renormalized_det_factor, 0.0)
+
+    def test_canonical_abs_z1_sq_uses_n1_equal_one_convention(self):
+        ribbon_graph = (
+            [(1, 2), (1, 2), (1, 2)],
+            [1, 2],
+            {1: [0, 1, 2], 2: [0, 1, 2]},
+        )
+        result = rst.estimate_canonical_abs_z1_sq(
+            ribbon_graph,
+            (1, 1, 1),
+            scales=(200, 240, 300),
+        )
+        expected = rst.abs_z1_sq_from_renormalized_det(
+            result.surface,
+            renormalized_det_factor=result.renormalized_det_factor,
+        )
+
+        self.assertEqual(result.normalization_factor, 1.0)
+        self.assertAlmostEqual(result.abs_z1_sq, expected, places=12)
+
+    def test_sigma_scale_from_z1_requires_higher_genus(self):
+        surface = rst.build_surface_data(L=20, l1=3, l2=4)
+        with self.assertRaises(ValueError):
+            rst.sigma_scale_from_z1(
+                [0.21 + 0.17j],
+                -0.17 + 0.14j,
+                surface,
+                divisor_points=[0.23 + 0.11j],
+                normalization_point=0.0 + 0.0j,
+                z1=1.7,
+                nmax=8,
+            )
+
+    def test_genus2_sigma_scale_from_z1_matches_lambda_one_equation(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+
+        z1 = np.complex128(1.7)
+        anchor_b_points = [0.12 + 0.08j, -0.07 + 0.18j]
+        anchor_c_point = 0.04 - 0.19j
+        divisor_points = [0.23 + 0.11j, -0.17 + 0.14j]
+
+        scale = rst.sigma_scale_from_z1(
+            anchor_b_points,
+            anchor_c_point,
+            surface,
+            divisor_points=divisor_points,
+            normalization_point=0.0 + 0.0j,
+            z1=z1,
+            nmax=8,
+        )
+        a_tilde = rst.lambda_one_geometric_z1_factor(
+            anchor_b_points,
+            anchor_c_point,
+            surface,
+            divisor_points=divisor_points,
+            normalization_point=0.0 + 0.0j,
+            nmax=8,
+        )
+        target = z1 * np.sqrt(z1)
+
+        self.assertAlmostEqual((scale * a_tilde).real, target.real, places=9)
+        self.assertAlmostEqual((scale * a_tilde).imag, target.imag, places=9)
+
+    def test_bc_correlator_selection_rule_is_enforced(self):
+        surface = rst.build_surface_data(L=20, l1=3, l2=4)
+        with self.assertRaises(ValueError):
+            rst.bc_correlator_geometric_factor(
+                [0.21 + 0.17j],
+                [],
+                surface,
+                lambda_weight=2.0,
+                divisor_points=[0.23 + 0.11j],
+                normalization_point=0.0 + 0.0j,
+                nmax=8,
+            )
+
+    def test_genus1_lambda_one_correlator_matches_special_z1_helper(self):
+        surface = rst.build_surface_data(L=20, l1=3, l2=4)
+        z = np.complex128(0.21 + 0.17j)
+        w = np.complex128(-0.17 + 0.14j)
+        divisor = [0.23 + 0.11j]
+
+        geometric = rst.bc_correlator_geometric_factor(
+            [z],
+            [w],
+            surface,
+            lambda_weight=1.0,
+            divisor_points=divisor,
+            normalization_point=w,
+            nmax=8,
+        )
+        omega_z = rst._evaluate_one_form(surface.normalized_forms[0], z)
+        special = rst.lambda_one_geometric_z1_factor(
+            [z],
+            w,
+            surface,
+            divisor_points=divisor,
+            normalization_point=w,
+            nmax=8,
+        )
+
+        self.assertAlmostEqual((geometric / omega_z).real, special.real, places=10)
+        self.assertAlmostEqual((geometric / omega_z).imag, special.imag, places=10)
 
 
 if __name__ == "__main__":

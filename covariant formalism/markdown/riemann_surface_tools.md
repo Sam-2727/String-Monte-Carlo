@@ -6,9 +6,18 @@ needed by the bc-correlator work: A-normalized holomorphic one-forms,
 radial antiderivatives / Abel-Jacobi maps on the disc frame, Riemann theta
 functions with characteristics, the prime form built from an odd
 characteristic, the Riemann class vector `Delta`, and the normalized
-`sigma`-function ratios that appear in the Verlinde-Verlinde formula. The
-sign/normalization conventions follow the Strebel note, with the concrete
-implementation choices recorded explicitly below.
+`sigma`-function ratios that appear in the Verlinde-Verlinde formula, as well
+as the general bc-system correlator itself. The sign/normalization
+conventions follow the Strebel note, with the concrete implementation choices
+recorded explicitly below. The file now also contains the large-`L`
+renormalization machinery for the scheme-dependent determinant factor
+`(\det A')^{-1/2}`, together with the canonical convention
+
+    |Z_1|^2 = [det Im(Omega)]^{1/2} (\det A')^{-1/2}
+
+after renormalization, a naive chiral choice `Z_1 = +sqrt(|Z_1|^2)`, and the
+higher-genus sigma-normalization machinery induced by the special
+`lambda=1`, `(n,m)=(g,1)` equation.
 
 ---
 
@@ -28,6 +37,13 @@ ribbon graph + edge lengths:
 | `A_periods`, `B_periods` | the raw A- and B-periods of the forms passed to `normalize_holomorphic_forms`. **Note:** these are the pre-normalization periods returned by `ell_to_tau.period_matrix`, **not** `I` and `Omega`. The `Omega` field and everything derived from `antiderivatives` / `normalized_forms` is the A-normalized object. |
 | `basis_pairs` | the chosen symplectic {alpha, beta} cycles, each stored as edge-chord decompositions `[(edge_idx, coeff), ...]`. |
 | `edge_midpoints` | the disc-frame representatives `(z0, z1)` for each edge-chord, used to integrate forms along cycles. |
+
+Two additional frozen dataclasses organize the new `|Z_1|^2` pipeline:
+
+| dataclass | fields | meaning |
+| --- | --- | --- |
+| `LargeLFitResult` | `c, gamma, alpha, r2, max_abs_log_residual, total_lengths, log_values, edge_length_sets` | output of the large-`L` fit `\log Z = c + \gamma L + \alpha \log L`; its property `.finite_part` is `exp(c)` |
+| `RenormalizedZ1Data` | `abs_z1_sq, normalization_factor, renormalized_det_factor, fit, surface` | end-to-end output of a `|Z_1|^2` estimator; in the canonical convention `normalization_factor = 1` |
 
 ### Constructor
 
@@ -172,15 +188,15 @@ Genus-1 simplification:
 
 ### Sigma Function
 
-The module does **not** attempt to construct an absolute canonical
-`sigma(z)`. Instead it computes:
+The sigma machinery now has two layers.
+
+The first layer computes relative sigma data:
 
 - `sigma_ratio(z, w, surface, divisor_points=..., ...) = sigma(z) / sigma(w)`
 - `sigma_value(z, ..., normalization_point=y0, normalization_value=c)`
   by imposing `sigma(y0) = c`
 
-This is the right level of generality because the Verlinde-Verlinde formula
-only determines `sigma` up to an overall multiplicative constant.
+This is the raw ratio-based layer that is always available.
 
 #### Input Data
 
@@ -272,6 +288,336 @@ Implementation choices:
   sigma ratio, not any stronger closed-form identification such as
   `sigma ~ sqrt(f)` in genus 1.
 
+#### Canonical Higher-Genus Sigma From Chiral `Z_1`
+
+Once a chiral `Z_1` has been chosen, the special `lambda=1`, `(n,m)=(g,1)`
+equation can be used to fix the overall sigma constant for genus `g > 1`.
+
+The code now provides:
+
+- `canonical_chiral_z1(abs_z1_sq)`:
+
+      Z_1 = +sqrt(|Z_1|^2)
+
+  i.e. the naive positive-real square root of the canonically normalized
+  `|Z_1|^2`
+- `sigma_scale_from_z1(anchor_b_points, anchor_c_point, surface, ..., z1=...)`
+- `canonical_sigma_value(z, surface, ..., z1=...)`
+
+Here the idea is:
+
+1. Start from the current user-normalized sigma
+
+       tilde_sigma(z) = sigma_value(z, ...)
+
+2. Assume the canonically normalized sigma is
+
+       sigma(z) = C * tilde_sigma(z)
+
+3. For fixed anchor data `z_i`, `w`, compute the special geometric factor
+   `A_tilde` from `lambda_one_geometric_z1_factor(...)`, which satisfies
+
+       A_tilde = Z_1^(3/2) / C^(g-1)
+
+   because the special equation contains `g` factors of `sigma(z_i)` and one
+   factor of `sigma(w)` in the denominator
+4. Therefore
+
+       C^(g-1) = Z_1^(3/2) / A_tilde
+
+5. The code chooses the principal `(g-1)`-st root of that complex number
+
+This is exactly what `sigma_scale_from_z1(...)` returns, and
+`canonical_sigma_value(...)` multiplies the old `sigma_value(...)` by that
+scale factor.
+
+Genus-1 caveat:
+- for `g=1`, the overall sigma constant cancels out of the special equation
+- so this procedure cannot fix sigma normalization on the torus
+- `sigma_scale_from_z1(...)` therefore raises `ValueError` at genus 1
+
+So the current state of the code is:
+- genus 1: sigma ratios plus an externally imposed normalization
+- genus `g>1`: sigma ratios plus a canonical overall normalization derived
+  from the chosen chiral `Z_1`
+
+### Renormalized `(\det A')^{-1/2}` and `|Z_1|^2`
+
+The last section of `Strebel.tex` expresses the Weyl-frame dependent chiral
+boson quantity through
+
+    |Z_1|^2 = \mathcal N_1 [det Im(Omega)]^{1/2} (\det A')^{-1/2}.
+
+The determinant factor is scheme-dependent, so the code does **not** use the
+raw finite-lattice value directly. Instead it follows the same large-`L`
+renormalization prescription used earlier in the notes for the bosonic
+partition function.
+
+Preferred convention in the current file:
+
+    \mathcal N_1 = 1,
+
+so after renormalization the determinant formula itself defines `|Z_1|^2`.
+
+#### Fit Object
+
+`_fit_large_l_behavior(total_lengths, log_values, edge_length_sets=None)`
+fits
+
+    log Z(L) = c + gamma * L + alpha * log L
+
+by linear least squares on the design matrix
+
+    [1, L, log L].
+
+It returns:
+- `c`: the finite part
+- `gamma`: coefficient of the linear divergence
+- `alpha`: coefficient of the logarithmic divergence
+- `r2`, `max_abs_log_residual`: fit-quality diagnostics
+- the sorted `L` samples and the corresponding logged values
+
+The renormalized quantity is always taken to be
+
+    exp(c).
+
+#### Determinant Renormalization
+
+`fit_renormalized_aprime_factor(ribbon_graph, base_edge_lengths, scales=..., min_edge_length=200)`
+implements the determinant fit for fixed moduli.
+
+Input convention:
+- `base_edge_lengths = (ell_1^(0), ..., ell_E^(0))` fixes the moduli point
+  through the edge-length ratios
+- `scales = (s_1, ..., s_n)` generates the actual fitting data by
+
+      ell_a = s * ell_a^(0)
+
+- the total lattice size used in the fit is
+
+      L = 2 * sum_a ell_a
+
+- every sampled edge length must satisfy
+
+      ell_a >= min_edge_length
+
+  and the default is `min_edge_length = 200`, exactly to avoid the small-`l`
+  artifacts seen elsewhere in the project
+
+Algorithm:
+
+1. For each `scale`:
+   - build `edge_lengths = scale * base_edge_lengths`
+   - construct `A'` using `partition_function.traced_matter_matrix_f1`
+   - symmetrize it as `0.5 * (A' + A'^T)`
+   - compute
+
+         log Z_det = -1/2 log det(A')
+
+     via `partition_function.logdet_cholesky`
+   - record the pair `(L, log Z_det)`
+2. Fit all samples to
+
+       log Z_det(L) = c(Omega) + gamma L + alpha log L
+
+3. Return `exp(c(Omega))` as the renormalized determinant factor feeding into
+   `|Z_1|^2`
+
+So in this module the phrase "renormalized determinant factor" always means
+
+    exp(c(Omega)),
+
+not the raw finite-lattice value `(\det A')^{-1/2}`.
+
+#### Surface Builder for the Large-`L` Regime
+
+`build_surface_from_ribbon_graph(ribbon_graph, edge_lengths, ...)` is a small
+convenience wrapper around
+
+    elt.make_cyl_eqn_improved_higher_genus(...)
+    + build_surface_data(...)
+
+so the same fixed-moduli large surface can be used both for the period-matrix
+data and for the `|Z_1|^2` extraction.
+
+#### Canonical `|Z_1|^2` and Chiral `Z_1`
+
+The preferred path now is:
+
+1. Fit the renormalized determinant finite part `exp(c(Omega))`
+2. Define
+
+       |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega))
+
+3. Choose the naive chiral representative
+
+       Z_1 = +sqrt(|Z_1|^2)
+
+The corresponding helpers are:
+
+- `abs_z1_sq_from_renormalized_det(surface, renormalized_det_factor, normalization_factor=1)`
+- `canonical_abs_z1_sq(surface, renormalized_det_factor=...)`
+- `estimate_canonical_abs_z1_sq(...)`
+- `canonical_chiral_z1(abs_z1_sq)`
+
+So the canonical public convention in the current file is the one with
+`\mathcal N_1 = 1`, not the older extracted-`\mathcal N_1` scheme.
+
+#### `|Z_1|^2` From the Last Strebel Equation as a Diagnostic
+
+For `lambda = 1` and `(n,m) = (g,1)`, the last equation of `Strebel.tex` is
+
+    Z_1 det(omega_I(z_i))
+    =
+    Z_1^{-1/2}
+    theta(sum_i zeta(z_i) - zeta(w) - Delta | Omega)
+    * [ prod_{i<i'} E(z_i, z_i') prod_i sigma(z_i) ]
+      / [ prod_i E(z_i, w) sigma(w) ].
+
+Move the determinant to the other side and define
+
+    A =
+    [ theta(sum_i zeta(z_i) - zeta(w) - Delta | Omega)
+      * prod_{i<i'} E(z_i, z_i') * prod_i sigma(z_i)
+      / (prod_i E(z_i, w) sigma(w))
+    ] / det(omega_I(z_i)).
+
+Then
+
+    A = Z_1^{3/2}.
+
+The helper `lambda_one_geometric_z1_factor(...)` computes exactly this complex
+number `A`, using:
+- `b_points = [z_1, ..., z_g]`
+- `c_point = w`
+- the already-implemented `abel_map`, `riemann_theta`, `prime_form`, and
+  `sigma_value`
+
+Because the phase of `Z_1` is convention-dependent and not needed for that
+older diagnostic, the module then extracts the physically relevant modulus by
+
+    |Z_1|^2 = |A|^{4/3}.
+
+This is implemented by `abs_z1_sq_from_lambda_one(...)`.
+
+#### Final Assembly
+
+`abs_z1_sq_from_renormalized_det(surface, normalization_factor, renormalized_det_factor)`
+computes
+
+    |Z_1|^2 = \mathcal N_1 [det Im(Omega)]^{1/2} exp(c(Omega)).
+
+The canonical high-level helper is now
+
+    estimate_canonical_abs_z1_sq(...)
+
+which does:
+
+1. fit the large-`L` determinant data
+2. build a large reference surface
+3. evaluate the canonical convention `|Z_1|^2 = [det Im(Omega)]^{1/2} exp(c)`
+
+The older helper
+
+    estimate_abs_z1_sq(...)
+
+is still present as a diagnostic path that compares the determinant-based
+definition against the special `lambda=1` equation.
+
+### General Verlinde-Verlinde bc Correlator
+
+The module now also exposes the full holomorphic correlator formula quoted in
+the last section of `Strebel.tex`.
+
+#### Ghost-Number Selection Rule
+
+Before evaluating the correlator, the code enforces the standard bc
+selection rule
+
+    n_c - n_b = (1 - 2 lambda) (g - 1),
+
+equivalently
+
+    n_b - n_c = (2 lambda - 1) (g - 1).
+
+This is implemented by the internal helper
+
+    _ghost_number_selection_rule(lambda_weight, genus, n_b=..., n_c=...)
+
+which raises `ValueError` if the requested insertion numbers are inconsistent
+with the anomaly.
+
+#### Geometric Factor
+
+`bc_correlator_geometric_factor(b_points, c_points, surface, lambda_weight=..., ...)`
+returns exactly the geometric part of the Verlinde-Verlinde formula:
+
+    theta(sum_i zeta(z_i) - sum_j zeta(w_j) - (2 lambda - 1) Delta | Omega)
+    *
+    [ prod_{i<i'} E(z_i, z_i') ]
+    [ prod_{j<j'} E(w_j, w_j') ]
+    [ prod_i sigma(z_i)^(2 lambda - 1) ]
+    /
+    (
+      [ prod_{i,j} E(z_i, w_j) ]
+      [ prod_j sigma(w_j)^(2 lambda - 1) ]
+    ).
+
+In other words, this function returns
+
+    Z_1^{1/2} < prod_i b_lambda(z_i) prod_j c_{1-lambda}(w_j) >,
+
+namely the full holomorphic correlator with the chiral prefactor
+`Z_1^{-1/2}` stripped off.
+
+Algorithm:
+
+1. Check the ghost-number selection rule.
+2. Compute `Delta` if it was not supplied.
+3. Form
+
+       theta_arg =
+       sum_i zeta(z_i) - sum_j zeta(w_j) - (2 lambda - 1) Delta.
+
+4. Evaluate the theta factor at `theta_arg`.
+5. Build the three prime-form products:
+
+       prime_bb = prod_{i<i'} E(z_i, z_i'),
+       prime_cc = prod_{j<j'} E(w_j, w_j'),
+       prime_bc = prod_{i,j} E(z_i, w_j).
+
+6. Build the sigma products:
+
+       sigma_b = prod_i sigma(z_i)^(2 lambda - 1),
+       sigma_c = prod_j sigma(w_j)^(2 lambda - 1),
+
+   using the same normalized `sigma_value(...)` convention as the rest of the
+   module.
+7. Return
+
+       theta * prime_bb * prime_cc * sigma_b / (prime_bc * sigma_c).
+
+So this function is completely determined by the already-implemented Abel map,
+theta function, prime form, and sigma machinery.
+
+#### Full Holomorphic Correlator
+
+`bc_correlator(...)` is a thin wrapper around the geometric-factor function.
+
+- If `z1` is **not** supplied, it returns the same geometric factor described
+  above.
+- If `z1` **is** supplied, it returns
+
+      Z_1^{-1/2} * geometric_factor
+
+  using the principal complex square root for `sqrt(z1)`.
+
+This split is intentional:
+- the geometric factor is robustly defined from the surface data alone
+- the chiral quantity `Z_1` itself is convention-dependent, and at present the
+  project only controls `|Z_1|^2` more reliably than a fully fixed holomorphic
+  branch of `Z_1`
+
 ### Choice Summary
 
 These are the main implementation choices that are fixed in code whenever
@@ -285,8 +631,14 @@ These are the main implementation choices that are fixed in code whenever
 | default odd characteristic | first odd characteristic in enumeration order |
 | prime-form square-root branch | principal complex branch |
 | Riemann class `Delta` | computed from the `Strebel.tex` formula using the stored alpha cycles |
-| `sigma` normalization | user-specified by fixing `sigma(normalization_point)=normalization_value` |
+| raw `sigma` normalization | user-specified by fixing `sigma(normalization_point)=normalization_value` |
+| canonical higher-genus `sigma` normalization | derived from the chosen chiral `Z_1 = +sqrt(|Z_1|^2)` via the `lambda=1`, `(n,m)=(g,1)` equation |
 | `sigma` divisor | any generic divisor of length `g`; normalized result is divisor-independent |
+| bc selection rule | enforced as `n_c - n_b = (1 - 2 lambda)(g - 1)` |
+| default correlator output | the Verlinde-Verlinde geometric factor with `Z_1^{-1/2}` stripped off unless `z1` is explicitly supplied |
+| determinant renormalization | fit `-1/2 log det A' = c + gamma L + alpha log L` and keep `exp(c)` |
+| canonical `|Z_1|^2` convention | `\mathcal N_1 = 1`, so `|Z_1|^2 = [det Im(Omega)]^{1/2} exp(c)` |
+| chiral `Z_1` convention | naive positive square root `Z_1 = +sqrt(|Z_1|^2)` |
 | genus-1 local limit | `E(z,w) ~ z-w` in the disc coordinate |
 | genus-1 flat-coordinate formula used in checks | `E_u = -theta_1(pi u|tau)/(pi theta_1'(0|tau))` |
 
@@ -307,8 +659,13 @@ These are the main implementation choices that are fixed in code whenever
 
 ## 2. Cross-checks performed
 
-All tests below use **every edge length >= 500** to stay away from the
-small-l Strebel artifacts. Reproducibility: unless noted otherwise, run
+All checks below avoid the small-`l` regime. For the dedicated large-`L`
+renormalization fit we use the weaker but explicit cutoff
+
+    ell_a >= 200,
+
+while the heavier genus-2 geometry diagnostics use larger values such as
+`50, 100, 150, 500` per edge as recorded below. Reproducibility: unless noted otherwise, run
 from `covariant formalism/python` with Python 3 and NumPy / SciPy / mpmath.
 For genus 2 the calculations use ~50 s wall clock on a modern laptop
 because of the `9000 x 4500` complex SVD inside
@@ -320,14 +677,18 @@ Run:
 
     python3 -m unittest test_riemann_surface_tools -v
 
-These seven tests pass in the current workspace:
+These sixteen tests pass in the current workspace:
 
-1. **Abel-Jacobi periods reproduce (1, tau)** at `(L, l1, l2) = (20, 3, 4)`:
+1. **Synthetic large-`L` fit recovers exact coefficients**:
+   feeding exact data of the form `c + gamma L + alpha log L` into
+   `_fit_large_l_behavior` reproduces `c`, `gamma`, `alpha`, and `exp(c)`.
+
+2. **Abel-Jacobi periods reproduce (1, tau)** at `(L, l1, l2) = (20, 3, 4)`:
    the alpha-period integral is `1.0` and the beta-period integral is
    `surface.tau` to 9 decimals.
-2. **Genus-1 Riemann class** at `(L, l1, l2) = (20, 3, 4)`:
+3. **Genus-1 Riemann class** at `(L, l1, l2) = (20, 3, 4)`:
    `riemann_constant_vector(surface) = (1 - tau) / 2` to 10 decimals.
-3. **Genus-1 characteristics vs. Jacobi `mp.jtheta`** at
+4. **Genus-1 characteristics vs. Jacobi `mp.jtheta`** at
    `tau = 0.37 + 0.91i`, `y = 0.23 + 0.07i`, `nmax = 8`:
 
    - `((0),(0))` -> `jtheta(3, pi y, q)`
@@ -336,22 +697,45 @@ These seven tests pass in the current workspace:
    - `((1),(1))` -> `-jtheta(1, pi y, q)`
 
    to 12 decimals.
-4. **Prime form local limit** `E(z, z+eps) / eps -> -1` for
+5. **Prime form local limit** `E(z, z+eps) / eps -> -1` for
    `z = 0.21 + 0.17i`, `eps = 1e-6 (1 + 0.4i)` on `(L, l1, l2) = (20, 3, 4)`
    with the odd characteristic `((1),(1))`. Equivalently,
    `E(z, z+eps) / (z-(z+eps)) -> 1`.
-5. **Genus-1 normalized sigma ratio is divisor-independent** at
+6. **Genus-1 normalized sigma ratio is divisor-independent** at
    `(L, l1, l2) = (20, 3, 4)`: with normalization point
    `w0 = -0.17 + 0.14i`, the values produced from divisor
    `[0.23 + 0.11i]` and divisor `[-0.09 + 0.27i]` agree to 9 decimals at
    `z = 0.31 - 0.12i`.
-6. **Genus-1 sigma normalization is imposed exactly**:
+7. **Genus-1 sigma normalization is imposed exactly**:
    `sigma_value(w0, ..., normalization_point=w0)` returns `1` to 12 decimals
    with the default normalization value.
-7. **Genus-2 theta constant cross-check** between `rst.riemann_theta` and
+8. **Identified genus-1 boundary points differ by a period-lattice vector**
+   at `(l1, l2, l3) = (500, 600, 700)`, `L = 3600`.
+9. **Identified genus-2 boundary points differ by a period-lattice vector**
+   on stored genus-2 topology `1` with `ell_list = [100] * 9`.
+10. **Genus-2 theta constant cross-check** between `rst.riemann_theta` and
    `elt.riemann_theta_constant_genus2` on the handmade symmetric
    `Omega = [[0.9i, 0.11+0.07i],[0.11+0.07i, 1.2i]]` at
    characteristic `((1,0),(0,1))`, `nmax = 8`.
+11. **Genus-1 `|Z_1|^2` pipeline is self-consistent**:
+    `estimate_abs_z1_sq(...)`, `abs_z1_sq_from_lambda_one(...)`, and
+    `abs_z1_sq_from_renormalized_det(...)` agree numerically on the same large
+    torus surface.
+12. **Canonical `|Z_1|^2` uses the `\mathcal N_1 = 1` convention**:
+    `estimate_canonical_abs_z1_sq(...)` returns `normalization_factor = 1`
+    and agrees with `abs_z1_sq_from_renormalized_det(...)`.
+13. **Higher-genus sigma normalization cannot be fixed at genus 1**:
+    `sigma_scale_from_z1(...)` raises `ValueError` on the torus, as it should.
+14. **Genus-2 sigma scale from chiral `Z_1` satisfies the special equation**:
+    the scale returned by `sigma_scale_from_z1(...)` reproduces
+    `Z_1^{3/2}` in the `lambda=1`, `(n,m)=(g,1)` identity.
+15. **bc selection rule is enforced**:
+    asking for an inconsistent genus-1 correlator at `lambda = 2` raises
+    `ValueError`.
+16. **Genus-1 `lambda = 1` correlator matches the special last-equation
+    helper**:
+    `bc_correlator_geometric_factor([z],[w],...) / omega(z)` agrees with
+    `lambda_one_geometric_z1_factor([z], w, ...)` to 10 decimals.
 
 ### 2.2 Extended low-genus diagnostics (ad-hoc, edge length >= 500)
 
@@ -555,7 +939,73 @@ Convergence check:
   of the approximate genus-2 surface construction, not a true spin-structure
   dependence of the prime-form formula.
 
-#### (H) Genus-2 period matrix symmetry at large edge lengths
+#### (H) Abel-map jumps for identified boundary points lie on the period lattice
+
+Another important consistency check is that if two boundary points are
+identified in the disc construction, then their Abel-map difference should be
+an integral period-lattice vector:
+
+    zeta(z_2) - zeta(z_1) = m + Omega n,
+
+for some integer vectors `m, n in Z^g`.
+
+The code tests this edge by edge using the raw boundary chords.
+
+Algorithm:
+
+1. For each edge `e`, let `c_e` be the raw oriented boundary chord joining its
+   two boundary occurrences.
+2. Let the symplectic basis chosen by `period_matrix` be
+   `{alpha_j, beta_j}`.
+3. Express the expected period-lattice jump of `c_e` by its intersections with
+   the basis cycles:
+
+       m_j = c_e . beta_j,
+       n_j = - c_e . alpha_j.
+
+   Then the predicted Abel jump is
+
+       Delta zeta_e(pred) = m + Omega n.
+
+4. Compute the actual Abel jump from the two stored midpoint representatives
+   `(z_1, z_2)` of edge `e`:
+
+       Delta zeta_e(act) = zeta(z_2) - zeta(z_1).
+
+5. Compare `Delta zeta_e(act)` and `Delta zeta_e(pred)` for every edge and
+   record the worst componentwise absolute error.
+
+Genus-1 large-length check:
+- Surface: theta graph with `(l1, l2, l3) = (500, 600, 700)`, `L = 3600`
+- Result:
+
+      worst edge error = 1.964965873654926e-08
+
+Genus-2 check:
+- Surface: stored genus-2 topology `1`
+- Ribbon graph rebuilt with the same helper used in `genus2_one_point.py`
+- Edge lengths tested:
+
+| `ell_list` | worst edge | worst error |
+| --- | --- | --- |
+| `[50] * 9`  | `2` | `6.135144459993016e-06` |
+| `[100] * 9` | `5` | `1.63306833103678e-06` |
+| `[150] * 9` | `5` | `7.419309695682251e-07` |
+
+Interpretation:
+- The error decreases steadily with edge length, which is exactly what one
+  expects if the residual mismatch comes from discretization / numerical
+  integration rather than a conceptual error in the Abel-map construction.
+- Following the project convention of avoiding tiny edge lengths, the
+  regression test in `test_riemann_surface_tools.py` now uses
+  `ell_list = [100] * 9` and checks
+
+      max edge error < 1e-5.
+
+This is a direct test that the Abel map already knows about the quotient by the
+period lattice encoded by the sewn boundary identifications.
+
+#### (I) Genus-2 period matrix symmetry at large edge lengths
 
 Ribbon graph: the stored F=1 topology-1 genus-2 graph returned by
 `compact_partition.get_stored_genus2_graph(1)`, converted to the
@@ -585,6 +1035,234 @@ imaginary eigenvalues are both strictly positive. Compute time ~50 s.
 Tighter symmetry is possible with larger `ell_list`, at the cost of the
 `m^3 = (sum ell)^3` SVD inside `make_cyl_eqn_improved_higher_genus`.
 
+#### (J) Large-`L` renormalization of `(\det A')^{-1/2}` and canonical torus `|Z_1|^2`
+
+This is the new check corresponding to the code path added for the bc ghost
+partition-function prefactor.
+
+Setup:
+- ribbon graph: genus-1 theta graph
+- fixed moduli represented by `base_edge_lengths = (1, 1, 1)`
+- fitting scales:
+
+      scales = (200, 240, 300)
+
+- so the actual edge lengths and total lattice lengths are
+
+| edge lengths | `L = 2 * sum ell_a` |
+| --- | --- |
+| `(200, 200, 200)` | `1200` |
+| `(240, 240, 240)` | `1440` |
+| `(300, 300, 300)` | `1800` |
+
+For each sample:
+1. build `A'` with `partition_function.traced_matter_matrix_f1`
+2. compute
+
+       log Z_det = -1/2 log det(A')
+
+3. fit
+
+       log Z_det = c + gamma L + alpha log L
+
+Observed determinant data:
+
+| `L` | `log Z_det` |
+| --- | --- |
+| `1200` | `-7.060727605920757` |
+| `1440` | `-7.26835771524325` |
+| `1800` | `-7.522480458763146` |
+
+Fit result:
+
+    c      =  1.0130478313885292
+    gamma  = -6.077664037671385e-08
+    alpha  = -1.1387327235441789
+    exp(c) =  2.753981909259428
+    R^2    =  1.0
+    max residual = 4.973799150320701e-14
+
+The fitted logarithmic coefficient is very close to the genus-1 value
+`alpha(1) = -1.13889` quoted earlier in `Strebel.tex`, while the fitted
+linear term is numerically negligible on this three-point torus sample.
+
+Now build the large reference surface at the largest sample,
+`edge_lengths = (300, 300, 300)`. The resulting modulus is
+
+    tau = 0.5000000000000002 + 0.8660254037844386 i,
+
+as expected for the equilateral theta graph.
+
+In the current preferred convention we define
+
+    |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega))
+
+with no extra moduli-independent factor. On the largest torus sample this gives
+
+    |Z_1|^2 = 2.3853662547876164
+
+using
+
+    det Im(Omega) = Im(tau) = 0.8660254037844386
+    exp(c(Omega)) = 2.753981909259428.
+
+This is exactly what `canonical_abs_z1_sq(...)` and
+`estimate_canonical_abs_z1_sq(...)` implement.
+
+Historical note:
+- the older helper `estimate_abs_z1_sq(...)` also compares this determinant
+  definition against the special `lambda=1` formula and reports the implied
+  `\mathcal N_1`
+- that path is still useful diagnostically, but it is no longer the preferred
+  normalization scheme recorded in this note
+
+#### (K) General bc correlator code path
+
+The new general correlator helper is checked in two simple but sharp ways.
+
+1. Selection rule:
+
+   On the genus-1 surface `surface = rst.build_surface_data(L=20, l1=3, l2=4)`,
+   the call
+
+       bc_correlator_geometric_factor([0.21+0.17i], [], surface,
+                                      lambda_weight=2,
+                                      divisor_points=[0.23+0.11i],
+                                      normalization_point=0,
+                                      nmax=8)
+
+   raises `ValueError`, because genus 1 requires
+
+       n_c - n_b = (1 - 2 lambda)(g - 1) = 0
+
+   for any `lambda`.
+
+2. Compatibility with the special `lambda = 1`, `(n,m) = (g,1)` helper:
+
+   On the same genus-1 surface, with
+
+       z = 0.21 + 0.17i,
+       w = -0.17 + 0.14i,
+       divisor_points = [0.23 + 0.11i],
+       normalization_point = w,
+       nmax = 8,
+
+   the general geometric factor satisfies
+
+       bc_correlator_geometric_factor([z], [w], surface, lambda_weight=1, ...)
+       / omega(z)
+
+   =
+
+       lambda_one_geometric_z1_factor([z], w, surface, ...)
+
+   to 10 decimal places.
+
+   This is the right compatibility relation because for `g=1`, `lambda=1`
+   the special last-equation helper differs from the raw correlator geometric
+   factor by exactly the determinant of the one-by-one holomorphic-form matrix,
+   namely `omega(z)`.
+
+#### (K.1) Canonical higher-genus sigma normalization from chiral `Z_1`
+
+The new higher-genus sigma-normalization helpers are checked in two steps.
+
+1. Torus obstruction:
+
+   On genus 1, `sigma_scale_from_z1(...)` raises `ValueError`, because the
+   `lambda=1`, `(n,m)=(g,1)` special equation is insensitive to
+
+       sigma(z) -> C sigma(z)
+
+   when `g=1`.
+
+2. Genus-2 normalization check:
+
+   On stored genus-2 topology `1` with `ell_list = [100] * 9`, choose
+
+       anchor_b_points = [0.12 + 0.08i, -0.07 + 0.18i]
+       anchor_c_point  = 0.04 - 0.19i
+       divisor_points  = [0.23 + 0.11i, -0.17 + 0.14i]
+       Z_1             = 1.7
+
+   Then:
+
+   - compute the scale `C` from `sigma_scale_from_z1(...)`
+   - compute the old special helper `A_tilde` from
+     `lambda_one_geometric_z1_factor(...)`
+
+   Since genus 2 has `g-1 = 1`, the normalization law reduces to
+
+       C * A_tilde = Z_1^(3/2).
+
+   The unit test verifies this identity directly to 9 decimal places. This is
+   the sharp check that the higher-genus sigma normalization is being fixed by
+   the chosen chiral `Z_1` in exactly the intended way.
+
+#### (L) Genus-1 `<b(z)c(0)>` is flat after the correct `f(z)` rescaling
+
+For the genus-1 bc ghosts (`lambda = 2`) with one `b` insertion at `z` and one
+`c` insertion at `0`, the geometric factor returned by
+
+    G(z,0) = bc_correlator_geometric_factor([z], [0], surface,
+                                            lambda_weight=2, ...)
+
+contains all of the nontrivial `z`-dependence, since `Z_1` is independent of
+the insertion point.
+
+The correct genus-1 flat-frame invariant is
+
+    |G(z,0)|^2 / |f(z)|^4,
+
+not `|f(z)|^4 |G(z,0)|^2`.
+
+Reason:
+- the torus identities for the genus-1 prime form and the validated sigma
+  formula imply
+
+      G(z,0) \propto f(z)^2 / f(0)
+
+  up to a `z`-independent factor
+- therefore dividing by `|f(z)|^4` removes the entire insertion-point
+  dependence
+
+This was checked numerically by scanning 20 interior points `z` on several
+large genus-1 surfaces, all with the same correlator inputs
+
+    c-point             = 0
+    divisor_points      = [0.23 + 0.11i]
+    normalization_point = 0
+    normalization_value = 1
+    nmax                = 10
+
+and evaluating
+
+    Q(z) = |G(z,0)|^2 / |f(z)|^4.
+
+The 20 sample points were:
+
+    0.06+0.10i,  0.11+0.15i,  0.18+0.07i,  0.26+0.14i,
+   -0.08+0.16i, -0.15+0.09i, -0.22+0.18i, -0.28+0.05i,
+   -0.11-0.12i, -0.19-0.18i, -0.05-0.25i,  0.09-0.20i,
+    0.17-0.11i,  0.27-0.06i,  0.03+0.28i, -0.02+0.31i,
+    0.14+0.24i, -0.24-0.08i,  0.31+0.02i,  0.07-0.31i.
+
+Results:
+
+| edge lengths `(l1,l2,l3)` | `tau` | max relative variation of `Q(z)` |
+| --- | --- | --- |
+| `(600,600,600)` | `0.5000000000000001 + 0.8660254037844385i` | `8.83e-15` |
+| `(500,500,1500)` | `0.713614581452909 + 0.7005385279467516i` | `4.69e-14` |
+| `(500,1000,1000)` | `0.4999999855560717 + 0.7234053551631896i` | `1.70e-14` |
+| `(500,1500,3000)` | `0.6344028298988311 + 0.607951342480161i` | `8.70e-15` |
+| `(500,750,1250)` | `0.6048020915467756 + 0.7178340473766368i` | `1.05e-14` |
+| `(600,600,800)` | `0.5612805323342086 + 0.8276256182735199i` | `1.50e-14` |
+| `(500,600,700)` | `0.532792754596249 + 0.8047088482514668i` | `1.32e-14` |
+| `(800,700,500)` | `0.42717313370051724 + 0.9413013690189171i` | `1.56e-14` |
+
+So the corrected invariant is constant to essentially machine precision across
+both insertion point and moduli, exactly as expected.
+
 ### 2.3 Known non-bug to be aware of
 
 `RiemannSurfaceData.A_periods` and `.B_periods` are the A/B periods of
@@ -598,10 +1276,24 @@ downstream code that reads `surface.A_periods` / `.B_periods` directly
 clarification or a flip to the normalized convention to avoid a
 foot-gun.
 
-Likewise, `sigma_value` is a **normalized** sigma rather than an absolute
-canonical sigma. The overall multiplicative constant is intentionally left as
-user input through `(normalization_point, normalization_value)`. This is not a
-bug: it is the natural ambiguity left by the defining formula.
+Likewise, `sigma_value` is the **raw normalized** sigma rather than the
+canonically `Z_1`-normalized one. Its overall multiplicative constant is left
+as user input through `(normalization_point, normalization_value)`. This is
+not a bug: it is exactly the ratio-based layer described above.
+
+For genus `g>1`, the canonical overall sigma constant is now fixed instead by
+`sigma_scale_from_z1(...)` / `canonical_sigma_value(...)` once a chiral `Z_1`
+has been chosen. On the torus this remains impossible, and the code raises
+explicitly there.
+
+The older quantity `normalization_factor_from_lambda_one(...)` is therefore
+best understood as a diagnostic comparison between two normalization schemes,
+not as the preferred definition of `\mathcal N_1`.
+
+Likewise, the full holomorphic correlator `bc_correlator(...)` depends on a
+choice of chiral `Z_1` branch whenever `z1` is supplied. The default public
+entry point therefore treats the geometric factor as the primary output and
+only inserts `Z_1^{-1/2}` when the caller explicitly passes a nonzero `z1`.
 
 Not a `riemann_surface_tools.py` issue, but noted during the review:
 `ell_to_tau.make_cyl_eqn` (line 121) has a self-flagged
