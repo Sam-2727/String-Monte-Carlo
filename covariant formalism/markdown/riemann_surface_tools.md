@@ -1099,12 +1099,13 @@ In the current preferred convention we define
 
 with no extra moduli-independent factor. On the largest torus sample this gives
 
-    |Z_1|^2 = 2.3853662547876164
+    |Z_1|^2 = 2.5628689466361014
 
 using
 
-    det Im(Omega) = Im(tau) = 0.8660254037844386
-    exp(c(Omega)) = 2.753981909259428.
+    det Im(Omega)          = Im(tau)           = 0.8660254037844386
+    [det Im(Omega)]^{1/2}  = sqrt(Im(tau))     = 0.9306048591020996
+    exp(c(Omega))                              = 2.753981909259428.
 
 This is exactly what `canonical_abs_z1_sq(...)` and
 `estimate_canonical_abs_z1_sq(...)` implement.
