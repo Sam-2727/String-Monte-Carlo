@@ -18,6 +18,7 @@ Strebel.pdf
 # Python
 __pycache__/
 *.pyc
+covariant formalism/python2/
 
 # macOS
 .DS_Store
