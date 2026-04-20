@@ -1,0 +1,64 @@
+{
+  "cells": [
+    {
+      "kind": 1,
+      "value": "Make sure to run initialization cells of directMat.nb first",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "logDetCholesky[m_?MatrixQ]:=Module[{r},r=CholeskyDecomposition[m];2 Total[Log[Diagonal[r]]]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CylEqnFastOptimized[l1_,l2_,l3_,z_,opts:OptionsPattern[]]:=Module[{wp=200,L,m,nList,anglesL,anglesR,B,gram,rhsVec,coeffs},L=2 (l1+l2+l3);\nm=L/2;\nnList=Range[m];\nanglesL=N[Join[Table[2 Pi (L/2+l1+1-k)/L,{k,1,l1}],Table[2 Pi (L/2+2 l1+l2+1-k)/L,{k,l1+1,l1+l2}],Table[2 Pi (L+l1+l2+1-k)/L,{k,l1+l2+1,m}]],wp];\nanglesR=N[Table[2 Pi k/L,{k,1,m}],wp];\n\nB=Developer`ToPackedArray[Exp[I Outer[Times,anglesL,nList]]+Exp[I Outer[Times,Take[anglesR,Length[anglesL]],nList]],Complex];\ngram=Transpose[B].B;\ngram[[1,1]]+=SetPrecision[1.,wp];\nrhsVec=Developer`ToPackedArray[UnitVector[m,1],Complex];\n(*Print[MatrixRank[gram]];*)\ncoeffs=LinearSolve[gram//Chop,rhsVec];\nChop@Sum[coeffs[[n]] z^(n-1),{n,1,m}]]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "ClearAll[RatioDet];\nRatioDet[L_,l11_,l12_,l21_,l22_,\\[Tau]1_,\\[Tau]2_]:=Module[{storedMat1,storedMat2,det1,storedMat22,det2,Z1,Z2},\nstoredMat1=DirectMatNFast[L,100];\nstoredMat2=DirectRedTracedMat[L,l11,l12,storedMat1];\ndet1=Exp[logDetCholesky[storedMat2]]/(L/2);\nstoredMat22=DirectRedTracedMat[L,l21,l22,storedMat1];\ndet2=Exp[logDetCholesky[storedMat22]]/(L/2);\nZ1=Z[\\[Tau]1];\nZ2=Z[\\[Tau]2];\n{1/2*Log[det2/det1],Log[Z1/Z2],Log[Sqrt[det1/det2]*Z1/Z2]}]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PoleIntercept[f_,k0_,L_]:=Module[{alphaMin,alphaMax,fitLow,fitHigh,vals,logDataSub,lm},alphaMin=-40;alphaMax=0;\nfitLow=-4;fitHigh=-1;\nvals=Table[{alpha,f[Exp[I Pi (2*k0/L+2alpha/L+1/L)]]},{alpha,alphaMin,alphaMax,2}];\nlogDataSub=({Log[Abs[Exp[I Pi (2*k0/L+2 #[[1]]/L+1/L)]-Exp[I Pi (2*k0+1)/L]]],Log[Abs[#[[2]]]]}&/@Select[vals,fitLow<=#[[1]]<=fitHigh&]);\nlm=LinearModelFit[logDataSub,x,x];\nlm[\"BestFitParameters\"][[1]]];\nBoundaryIntercepts[l1_,l2_,l3_,m1_,m2_,m3_]:=Module[{L,Lstep,k1,k2,k3,cyl,f,int1,int2,F,func,period1,period2,period3},(*geometry parameters*)L=2(l1+l2+l3);\nk1=m1;\nk2=l1+m2;\nk3=l1+l2+m3;\ncyl=CylEqnFastOptimized[l1,l2,l3,z]/. A[_]:>0;\nf[c_]:=cyl/. z->c;\nF=Integrate[cyl,z];\nfunc[c_]:=F/. z->c;\nperiod1=func[Exp[2 Pi I (L/2+l1-k1+1)/L]]-func[Exp[2 Pi I k1/L]];\nperiod2=func[Exp[2 Pi I (L/2+2 l1+l2-k2+1)/L]]-func[Exp[2 Pi I k2/L]];\nperiod3=func[Exp[2 Pi I (L+l1+l2-k3+1)/L]]-func[Exp[2 Pi I k3/L]];\nint1=PoleInterceptAverage[f,l1,l2,l3];\n{int1,period2/period1//Chop,period3/period1//Chop,(period2/period1-period3/period1)//Chop,period1}];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "PoleInterceptAverage[f_,l1_,l2_,l3_]:=Module[{alphaMin,alphaMax,fitLow,fitHigh,L=2*(l1+l2+l3),ells={l1,l1+l2+l3,2l1+2l2+l3},vals,logDataSub,lm},alphaMin=-40;alphaMax=0;\nfitLow=-4;fitHigh=-1;\nvals=Table[{alpha,f[Exp[I Pi (2*ells[[i]]/L+2alpha/L+1/L)]]},{i,1,3},{alpha,alphaMin,alphaMax,2}];\nlogDataSub=Table[({Log[Abs[Exp[I Pi (2*ells[[i]]/L+2 #[[1]]/L+1/L)]-Exp[I Pi (2*ells[[i]]+1)/L]]],Log[Abs[#[[2]]]]}&/@Select[vals[[i]],fitLow<=#[[1]]<=fitHigh&]),{i,1,3}];\nlm=Table[LinearModelFit[logDataSub[[i]],x,x],{i,1,3}];\nMean[Table[lm[[i]][\"BestFitParameters\"][[1]],{i,1,3}]]\n];",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 1,
+      "value": "Comparing Ratios",
+      "languageId": "markdown"
+    },
+    {
+      "kind": 2,
+      "value": "CompareRatios[L_,l1_,l2_,l1p_,l2p_]:=Module[{\\[Tau],\\[Tau]p,a,ap,logb,logbp,rd,l3=L/2-l1-l2, l3p=L/2-l1p-l2p},\nPrint[a=BoundaryIntercepts[l1,l2,l3,l1/2,l2/2,l3/2]];\nlogb=a[[1]];\n\\[Tau]=a[[2]];\nPrint[ap=BoundaryIntercepts[l1p,l2p,l3p,l1p/2,l2p/2,l3p/2]];\nlogbp=ap[[1]];\n\\[Tau]p=ap[[2]];\nPrint[rd=RatioDet[L,l1,l2,l1p,l2p,\\[Tau],\\[Tau]p]];\nPrint[{logb,logbp[[3]],(3)/(36)(logbp-logb)}];\n]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CompareRatios[903*2,301,301,129,129]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CompareRatios[903*2,301,301,215,301]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CompareRatios[903*2,301,301,129,387]",
+      "languageId": "wolfram"
+    },
+    {
+      "kind": 2,
+      "value": "CompareRatios[903*2,301,301,43,301]",
+      "languageId": "wolfram"
+    }
+  ]
+}

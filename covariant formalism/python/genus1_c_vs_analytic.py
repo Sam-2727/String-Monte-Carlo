@@ -24,6 +24,10 @@ coordinate from one of several local-coefficient conventions:
     --weyl-mode b_z36:
         S_L(moduli) = (log|b_1| + log|b_2|) / 36
 
+    --weyl-mode b_z36_raw:
+        S_L(moduli) = (log|b_1| + log|b_2|) / 36
+        with raw unhatted b from the unnormalized form f
+
     --weyl-mode b_z36_puncture:
         S_L(moduli) = (log|b_1| + log|b_2|) / 36 + log|P_1| / 12
 
@@ -36,6 +40,27 @@ symmetry, so these reduce to
     S_L(moduli) = log|nu| / 12
     S_L(moduli) = log|b| / 18
     S_L(moduli) = log|b| / 12
+
+Important convention note:
+
+This script extracts the local coefficient from the A-normalized holomorphic
+form, i.e. from \hat f = f / P1 with P1 = \oint_\alpha f dz. In other words,
+the nu and b values used here are the hatted ones:
+
+    \hat nu = nu / P1,
+    \hat b  = b / P1^(3/2).
+
+That differs from WeylTest.nb, which uses the raw unhatted local coefficient.
+Because this file works with the A-normalized convention by default, the
+explicit log|P1|/12 term is required in the b_z36_puncture mode. Equivalently,
+
+    (log|b_1| + log|b_2|)/36
+
+written with raw b is the same moduli-dependent Weyl factor as
+
+    (log|\hat b_1| + log|\hat b_2|)/36 + log|P1|/12.
+
+The dedicated mode b_z36_raw reproduces the raw-b convention directly.
 
 The current genus-1 helpers expose the regularized disc-coordinate coefficient
 nu directly. For the b-based conventions we therefore reconstruct |b| from
@@ -193,10 +218,14 @@ def _compute_weyl_moduli_term(
     if weyl_mode == "none":
         return 1.0, 0.0
 
+    normalize_a = weyl_mode != "b_z36_raw"
     averaged_nu = np.asarray(
-        elt.average_nu(L=total_L, l1=l1, l2=l2, normalize_A=True),
+        elt.average_nu(L=total_L, l1=l1, l2=l2, normalize_A=normalize_a),
         dtype=np.complex128,
     )
+    # Convention: this script uses A-normalized local data by default, i.e.
+    # \hat nu from \hat f = f / P1. The b_z36_raw mode is the one exception and
+    # reproduces the raw unhatted convention used in WeylTest.nb.
     nu_abs = float(np.mean(np.abs(averaged_nu)))
 
     if weyl_mode == "nu_z":
@@ -206,6 +235,8 @@ def _compute_weyl_moduli_term(
     # The current genus-1 helpers expose nu, not the u-coordinate coefficient b.
     # Reconstruct |b| from |nu| using |nu| = (2/3)^(1/3) |b|^(2/3).
     local_abs = float(math.sqrt(1.5) * (nu_abs ** 1.5))
+    if weyl_mode == "b_z36_raw":
+        return local_abs, float(math.log(local_abs) / 18.0)
     if weyl_mode == "b_z36":
         return local_abs, float(math.log(local_abs) / 18.0)
     if weyl_mode == "b_z36_puncture":
@@ -325,7 +356,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--weyl-mode",
-        choices=("none", "nu_z", "b_z36", "b_z36_puncture", "b_u24"),
+        choices=("none", "nu_z", "b_z36", "b_z36_raw", "b_z36_puncture", "b_u24"),
         default="nu_z",
         help="Convention for the moduli-dependent Weyl anomaly term.",
     )
