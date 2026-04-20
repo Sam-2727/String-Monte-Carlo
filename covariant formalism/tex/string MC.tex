@@ -778,9 +778,12 @@ In other words, $|\det B|$ calculates the $(\sum_i b(z_i) \wt{b}(\bar{z}_i))c\wt
 
 In the language of \ref{sec:WeylAnomaly}, and denoting the $\alpha$-cycle period of $f(z)$ as $\kappa$, so $\widehat{f}(z) = \frac{1}{\kappa} f(z)$, we can write
 \ie
+\label{eq:fullGenusOne}
 |\det B| ({\det}' A)^{-13} \propto \tau_2^{-13} |\eta(\tau)|^{-48} \frac{1}{|\kappa|^2} \left| \nu \right|^4 ,
 \fe
-for $\nu$ the average $\nu_i$.
+for $\nu$ the average $\nu_i$. It is worth emphasizing that the factor of $\kappa$ in the above formula comes from the insertion of $\hat{f}(z)^2$ from the transformation of $c\tilde{c}$. Although the exact logic can't be pinned down, it seems that the appearance of $|\det B|$ vs. $|\det B|^2$ comes from an identification of holomorphic and anti-holomorphic ghosts at the boundary of the disc.
+
+
 \subsection{Dependence on $c$ position}
 Instead of inserting the $c$ ghost at $z=0$ in the disk frame, which gives $\Psi_c[c]$, we can consider $c(z) = \sum_{n \leq 1} c_n z^{1-n}$ inserted at a generic $|z|<1$ and the corresponding $\Psi_{c(z)}[c]$, which will be built from
 \ie
@@ -823,13 +826,14 @@ One can parameterize the genus-2 amplitude via the period matrix $\Omega$ as
 where $\chi_{10}(\Omega)$ is the Igusa-cusp form and $\Omega$ is the period matrix. In the disc frame, the matter +b-c determinant is computed, analogously to the genus 1 case, as 
 \begin{align}
 \label{eq:numericGenus2}
-|\det B| (\det A')^2
+|\det B| (\det A')^{-13}
 \end{align}
 
 Generalizing the genus-1 formula to the case of genus 2, where there are two independent holomorphic one-forms on the boundary, a reasonable guess for the analytic formula of the numerical amplitude in equation \ref{eq:numericGenus2} is
 \begin{align}
-\frac{1}{(\det \im \Omega)^{13}}\frac{1}{|\chi_{10}(\Omega)|^2}
+\frac{1}{(\det \im \Omega)^{13}}\frac{1}{|\chi_{10}(\Omega)|^2}C(\nu)
 \end{align}
+where $C(\nu)$ is some generalization of the factor $|\nu|^4$ in equation \ref{eq:fullGenusOne}, but now for some suitable basis of holomorphic two-forms on the genus-2 surface (this is just a guess, it hasn't been verified if this is actually the case). One would guess that the factor of $\kappa$ is not present due to the absence of $c$-ghosts. It is also unclear if one has the same holomorphic factorization, where the full anti-holomorphic plus holomorphic b-c system is computed from $|\det B|$ instead of $|\det B|^2$. One sign that there might be complications is that in the genus 1 case, the phase of $\det B$ is independent of moduli, while in the genus 2 case, as far as I can tell, the phase of $\det B$ is not independent of moduli (but double check this).
 
 
 \section{Free fermion}
@@ -868,8 +872,6 @@ The NS-NS sector amplitude on the flat torus is
 with similar contributions from the NS/R and R/NS sectors. The Weyl anomaly is $1/2$ the Weyl anomaly of the Empirically, one finds that, proceeding counterclockwise along the bottom segment of the disc, NS/NS corresponds to $-i,-i,+i$, NS/R corresponds to $-i,+i,-i$, and R/NS corresponds to $+i,-i,-i$.
 
 The R/R sector should evaluate to zero without an insertion of the Ramond sector zero mode, which we have not yet inserted.
-
-\section{Higher Genus}
 
 \subsection{Compact boson at higher genus}
 For genus 2 surface with 1 puncture, the ribbon graph has 1 face, 6 vertices and 9 edges. There are 4 different topologies of graphs that covers different region of $\mathcal{M}_{2,1}$. Given a ribbon graph, we now describe the algorithm of computing the compact boson partition function on the Riemann surface associated with that ribbon graph. Although we use genus 2 as example, this can be trivially generalized to the case of arbitrary genera.
