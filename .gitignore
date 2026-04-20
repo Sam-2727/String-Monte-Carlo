@@ -11,6 +11,10 @@ Agents.md
 # Images
 Image from iOS.jpg
 
+# Personal notes
+Strebel.tex
+Strebel.pdf
+
 # Python
 __pycache__/
 *.pyc
@@ -23,6 +27,8 @@ __pycache__/
 *.log
 *.out
 *.synctex.gz
+*.fdb_latexmk
+*.fls
 
 # Claude Code
 .claude/
