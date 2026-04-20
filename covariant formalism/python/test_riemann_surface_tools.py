@@ -638,6 +638,55 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         spread = max(mags) / min(mags)
         self.assertLess(spread - 1.0, 1e-4)
 
+    def test_default_sigma_ratio_uses_canonical_delta_at_genus2(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        z = 0.08 + 0.12j
+        w = -0.19 + 0.13j
+        divisor = [0.21 + 0.09j, -0.16 + 0.12j]
+        ratio_default = rst.sigma_ratio(z, w, surface, divisor_points=divisor, nmax=6)
+        ratio_explicit = rst.sigma_ratio(
+            z,
+            w,
+            surface,
+            divisor_points=divisor,
+            Delta=Delta,
+            nmax=6,
+        )
+        self.assertAlmostEqual(ratio_default.real, ratio_explicit.real, places=10)
+        self.assertAlmostEqual(ratio_default.imag, ratio_explicit.imag, places=10)
+
+    def test_default_genus2_bbb_correlator_uses_canonical_delta(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [300] * 9
+        surface = rst.build_surface_from_ribbon_graph(ribbon_graph, edge_lengths)
+        b_points = [0.08 + 0.12j, -0.14 + 0.16j, 0.19 - 0.09j]
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        correlator_default = rst.genus2_bbb_correlator_from_lambda_one(
+            b_points,
+            surface,
+            z1=1.0,
+            nmax=6,
+        )
+        correlator_explicit = rst.genus2_bbb_correlator_from_lambda_one(
+            b_points,
+            surface,
+            z1=1.0,
+            Delta=Delta,
+            nmax=6,
+        )
+        self.assertAlmostEqual(correlator_default.real, correlator_explicit.real, places=10)
+        self.assertAlmostEqual(correlator_default.imag, correlator_explicit.imag, places=10)
+
 
 if __name__ == "__main__":
     unittest.main()

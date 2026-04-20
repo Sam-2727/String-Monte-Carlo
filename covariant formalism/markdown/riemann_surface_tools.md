@@ -215,12 +215,10 @@ Genus-1 simplification:
 > **Warning — `riemann_constant_vector` is buggy at $g \ge 2$ and must not
 > be used as-is.** Until this formula is fixed, use
 > `riemann_constant_vector_canonical(...)` (below) for any $g \ge 2$ work.
-> Every downstream helper that calls `riemann_constant_vector` internally
-> (`sigma_ratio`, `sigma_value`, `bc_correlator_geometric_factor`,
-> `lambda_one_geometric_z1_factor`, the genus-2 $\lambda = 1$ sigma kernel,
-> `genus2_bbb_correlator_from_lambda_one`, etc.) inherits the bug. Callers
-> should pass `Delta=rst.riemann_constant_vector_canonical(surface)`
-> explicitly to those helpers until the implementation is switched over.
+> The legacy helper is kept only for genus-1 diagnostics and historical
+> comparison. The downstream public helpers in `riemann_surface_tools.py`
+> now default to the canonical algorithm at $g > 1$ while preserving the
+> historical genus-1 half-period convention.
 
 Two sharp diagnostics that `riemann_constant_vector(...)` is wrong at
 $g = 2$:

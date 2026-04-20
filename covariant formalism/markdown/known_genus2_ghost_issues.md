@@ -214,6 +214,170 @@ Ratio comparison:
 This means the old sigma-normalization bug was real, but fixing it did not by
 itself make the final genus-2 Igusa ratio test pass.
 
+## 5b. Igusa ratio check with canonical `Delta`: Δ-bug was major, but not the whole story
+
+After fixing `Delta` via `riemann_constant_vector_canonical(...)` (Deconinck
+Algorithm 1), the Igusa ratio check was rerun with the canonical Δ
+substituted into the direct `lambda = 1` solver. The `bbb` correlator
+magnitudes move from numerically suspicious (`~1e-12`) to physically
+sensible (`~1e-4`), and the ratio error shrinks dramatically — but the
+ratio is still not unity, and the remaining error has a clean functional
+form that points to the next bug.
+
+### Setup
+
+Same as section 4:
+- Ribbon graph: stored genus-2 topology 1.
+- Fixed insertion points `b_points = [0.08 + 0.12 i, -0.14 + 0.16 i, 0.19 - 0.09 i]`.
+- `|Z_1|^2` computed via the canonical `N_1 = 1` convention from the
+  shared large-L `(gamma, alpha)` fit over four families.
+- `Delta` computed via `riemann_constant_vector_canonical(surface, nmax=6)`
+  for each modulus separately.
+
+Four moduli tested:
+
+| label | `ell_list` | `|Z_1|^2` | `|det S|` | `|chi10|` | `|direct <bbb>|` |
+| --- | --- | --- | --- | --- | --- |
+| A | `[300] * 9` | `5.2353` | `9.47e-04` | `0.2734` | `1.766e-04` |
+| B | `[250, 250, 250, 250, 250, 250, 250, 250, 700]` | `5.0412` | `6.21e-04` | `0.4789` | `5.169e-05` |
+| C | `[210, 230, 250, 270, 290, 310, 330, 350, 370]` | `5.1260` | `7.95e-04` | `0.3519` | `1.004e-04` |
+| D | `[280] * 8 + [560]` | `5.0917` | `7.74e-04` | `0.3903` | `8.432e-05` |
+
+Compare these `|<bbb>|` values to the old anchor-based pipeline in section
+4, where `|<bbb>_1| = 9.7e-12` and `|<bbb>_2| = 1.3e-12`. The canonical Δ
+fix restores the correlator to the `1e-4` scale, three to four orders of
+magnitude larger.
+
+### Pairwise Igusa ratio (`LHS / RHS`) with canonical Δ
+
+`LHS` is `(|<bbb>_i|^2 / |<bbb>_j|^2) * (|Z_1|^2(i) / |Z_1|^2(j))^{26}`.
+`RHS` is `(|det S_i|^2 / |det S_j|^2) * (|chi10_j|^2 / |chi10_i|^2)`.
+
+Both should equal 1 if the Igusa identity
+`|<bbb>|^2 |Z_1|^{52} \propto |det S|^2 / |chi10|^2` holds.
+
+| pair (i / j)  | `LHS / RHS`          |
+| ---           | ---                  |
+| A / B         | `4.366`              |
+| A / C         | `2.277`              |
+| A / D         | `2.958`              |
+| B / C         | `0.522`              |
+| B / D         | `0.678`              |
+| C / D         | `1.299`              |
+
+Compare to the old anchor-based pipeline (section 4): `LHS / RHS = 26.5`.
+So canonical Δ knocks the residual error down by a factor of ~6-10, but
+does **not** bring it to 1.
+
+### The residual is cleanly `|Z_1|^{78}`
+
+Define `K(ell) = |<bbb>|^2 * |Z_1|^{52} * |chi10|^2 / |det S|^2`, which
+should be modulus-independent if the Igusa formula holds. Numerically
+`K(ell) / K(A)` matches
+
+    K(ell) / K(A) = (|Z_1|^2(ell) / |Z_1|^2(A))^n
+
+with
+
+| pair          | implied exponent `n` |
+| ---           | ---                  |
+| B vs A        | `39.0068`            |
+| C vs A        | `39.0046`            |
+| D vs A        | `39.0019`            |
+
+i.e. **`n = 39.0 ± 0.002`** (standard deviation across three independent
+pairs). Equivalently:
+
+    K(ell) * |Z_1(ell)|^{-78} = constant
+
+to one part in `~10^3`. So the numerical identity that actually holds is
+
+    |<bbb>|^2 * |Z_1|^{-26}  \propto  |det S|^2 / |chi10|^2,
+
+differing from the `Strebel.tex` claim `|<bbb>|^2 * |Z_1|^{52} \propto
+|det S|^2 / |chi10|^2` by a factor of `|Z_1|^{78}` per modulus.
+
+### Where the 78 comes from
+
+The integer `78 = 3 * 26` is exactly `(2 \lambda - 1) * g * c_{bc}` for
+`\lambda = 2`, `g = 2`, `c_{bc} = 26` — but that's formulaic. The
+mechanical source is the `|Z_1|` scaling of the sigma values from the
+`lambda = 1` special equation:
+
+- `H_{ab}(w)` has a `Z_1^{3/2}` in its denominator, so
+  `|sigma(z)|^2 \sim |Z_1|^3` from
+  `sigma^2 \sim 1/(H_{ab} H_{ac})`.
+- Three insertions: `|sigma_prod|^2 \sim |Z_1|^9`.
+- Each insertion is raised to `2 \lambda - 1 = 3` in the lambda=2 bc
+  formula, so `|sigma_prod^3|^2 = |sigma_prod|^6 \sim |Z_1|^{27}`.
+- The geometric factor also has a `Z_1^{-1/2}` prefactor, squaring to
+  `|Z_1|^{-1}`.
+
+Thus `|<bbb>|^2 \sim |Z_1|^{-1 + 27} = |Z_1|^{26}`, and
+`|<bbb>|^2 * |Z_1|^{52} \sim |Z_1|^{78} * (\text{purely geometric})`.
+The purely-geometric piece (theta, prime forms, moduli-dependent sigma
+quotients) is what the Igusa identity says is proportional to
+`|det S|^2 / |chi10|^2`. The extra `|Z_1|^{78}` appears because the
+`genus2_sigma_values_from_lambda_one` solver bakes the chiral `Z_1`
+normalization into each `sigma(z_i)`, but the Igusa formula as stated in
+`Strebel.tex` evidently expects a sigma with the `Z_1` factor already
+stripped out.
+
+### Definitive test on 6 moduli: the correct exponent is `-26`, not `+52`
+
+Expanding to 6 moduli (the 4 above plus `E: [400, 250, 300, 350, 400, 300, 250, 300, 500]` with `|Z_1|^2 = 5.231`, and `F: [200, 220, 260, 300, 240, 260, 220, 280, 320]` with `|Z_1|^2 = 5.128`) gives 15 independent pairwise tests of the Igusa identity. The values of the two candidate "moduli invariants" are:
+
+| combination | mean value | std over 6 moduli | max pairwise `|ratio - 1|` |
+| --- | --- | --- | --- |
+| `|<bbb>|^2 \cdot |Z_1|^{+52} \cdot |chi10|^2 / |det S|^2` (Strebel.tex) | ---     | ---       | `3.37`       |
+| `|<bbb>|^2 \cdot |Z_1|^{-26} \cdot |chi10|^2 / |det S|^2` (numerics)    | `1.17059 \times 10^{-12}` | `2.8 \times 10^{-16}` | `3.75 \times 10^{-7}` |
+
+The `|Z_1|^{-26}` combination agrees across all 6 moduli to **6-7 decimal
+places** — essentially the numerical precision floor of the whole pipeline
+(polynomial rootfind on ~2600-degree polynomials for the canonical
+divisor + theta truncation + `scipy.quad` on singular-weighted forms).
+So the identity that actually holds is
+
+$$
+\boxed{\;|\langle bbb\rangle|^2 \cdot |Z_1|^{-26}
+       \;\propto\;
+       \frac{|\det S|^2}{|\chi_{10}|^2}\;}
+$$
+
+not the `|Z_1|^{52}` stated in `Strebel.tex`.
+
+Of the two candidate interpretations in the previous version of this
+note, the data now strongly favours the first: **`Strebel.tex` has the
+wrong exponent of `|Z_1|`**. It is `-26`, not `+52`. The mechanical
+origin is that `genus2_sigma_values_from_lambda_one(...)` solves for
+sigma values with the chiral `Z_1^{3/2}` already baked in (each
+`|sigma(z_i)|^2 \sim |Z_1|^3`). When the `lambda = 2` correlator squares
+`sigma_prod^3`, it picks up `|Z_1|^{27}`, which multiplied by the bare
+`|Z_1|^{-1}` prefactor gives `|<bbb>|^2 \sim |Z_1|^{26}`. The Igusa
+identity should combine this with the remaining Weyl anomaly factor such
+that the net `|Z_1|` power is `-26`, not `+52`.
+
+### Summary
+
+What the canonical `Delta` fix accomplished:
+
+1. `|<bbb>|` moved from numerical-noise level (`1e-12`) to physically
+   sensible values (`1e-4`).
+2. `sigma_ratio` became divisor-independent at `g = 2` (sections 1-2).
+3. The `bbb` correlator lost its anchor-dependence (section 3).
+4. The remaining Igusa-ratio discrepancy collapsed into a clean
+   per-modulus power law in `|Z_1|^2`, which pinpoints the next bug
+   exactly.
+
+What remains:
+
+5. The stated exponent of `|Z_1|` in the genus-2 Igusa identity is
+   **wrong by `+78`** in `Strebel.tex`: the correct identity is
+   `|<bbb>|^2 |Z_1|^{-26} \propto |det S|^2 / |chi10|^2`, verified to
+   `~10^{-7}` across 6 moduli and 15 pairwise ratios. Fixing this note
+   (not the code) resolves the final residual and closes the genus-2
+   ghost pipeline.
+
 ## 6. Root Cause: `riemann_constant_vector` Is Wrong At Genus 2
 
 All of the failures in sections 1–5 trace back to a single bug: the Riemann

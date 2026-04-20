@@ -735,6 +735,30 @@ def riemann_constant_vector_canonical(
     return np.asarray(best_K, dtype=np.complex128)
 
 
+def _default_riemann_constant(
+    surface: RiemannSurfaceData,
+    *,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.ndarray:
+    r"""
+    Return the module-default Riemann class vector.
+
+    For genus 1 we keep the legacy half-period formula, which is exact modulo
+    the period lattice and preserves the historical torus conventions used in
+    this module. For genus > 1 we use the canonical-divisor algorithm, since
+    the legacy cycle-integral implementation is not reliable in the disc frame.
+    """
+    if int(surface.genus) <= 1:
+        return riemann_constant_vector(surface, quad_limit=quad_limit)
+    return riemann_constant_vector_canonical(
+        surface,
+        nmax=nmax,
+        tol=tol,
+    )
+
+
 def sigma_ratio(
     z: complex,
     w: complex,
@@ -771,7 +795,12 @@ def sigma_ratio(
         )
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -914,7 +943,12 @@ def bc_correlator_geometric_factor(
     )
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -1412,7 +1446,12 @@ def lambda_one_geometric_z1_factor(
         )
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -1765,7 +1804,12 @@ def genus2_lambda_one_sigma_kernel(
         raise ZeroDivisionError("z1 must be nonzero.")
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (2,):
         raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
@@ -1825,7 +1869,12 @@ def genus2_sigma_values_from_lambda_one(
 
     p1, p2, p3 = points
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (2,):
         raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
@@ -1913,7 +1962,12 @@ def genus2_bbb_correlator_from_lambda_one(
         raise ValueError(f"Need exactly three b-points, got {len(b_points)}.")
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (2,):
         raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
