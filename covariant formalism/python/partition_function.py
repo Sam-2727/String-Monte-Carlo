@@ -378,7 +378,7 @@ def traced_numeric_amplitude_log_psi1_f1(
     ribbon_graph,
     ell_list,
     *,
-    matter_power: int = 2,
+    matter_power: int = -13,
     normalize_ghost: bool = False,
     pivot: int | None = None,
 ) -> mp.mpf:
@@ -386,8 +386,7 @@ def traced_numeric_amplitude_log_psi1_f1(
     Log of the higher-genus numerical amplitude built from Psi_1 and A'.
 
     By default this returns
-        log |det(B_tilde)| + 2 log(det A'),
-    which is the object currently used in the genus-2 matter+bc note.
+        log |det(B_tilde)| - 13 log(det A').
 
     If normalize_ghost=True, the ghost factor is replaced by its lattice-normalized
     version log(|det(B_tilde)| / 8^L).
