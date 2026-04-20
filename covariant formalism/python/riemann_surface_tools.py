@@ -548,6 +548,193 @@ def riemann_constant_vector(
     return np.asarray(Delta, dtype=np.complex128)
 
 
+def _canonical_divisor_zeros_from_form(
+    form,
+    *,
+    zero_radius: float = 0.99,
+    coeff_tol: float = 1e-10,
+) -> np.ndarray:
+    r"""
+    Return the zeros of an A-normalized higher-genus one-form inside the disc.
+
+    The improved higher-genus forms have the shape
+
+        f(z) = singular(z) * polynomial(z),
+
+    where `singular(z) = prod_i (1 - z/z_i)^(-1/3)` blows up at the 18 prevertices
+    on |z| = 1 and has no zeros in the disc interior. Hence zeros of `f` in the
+    disc are exactly zeros of the polynomial part.
+
+    This helper returns polynomial roots with `|z| < zero_radius`; for a
+    correctly built genus-`g` form that count equals `2g - 2`.
+    """
+    coeffs = getattr(form, "coeffs", None)
+    if coeffs is None:
+        raise ValueError(
+            "Form has no `.coeffs` attribute; "
+            "_canonical_divisor_zeros_from_form requires an improved form."
+        )
+    coeffs = np.asarray(coeffs, dtype=np.complex128)
+    nonzero = np.nonzero(np.abs(coeffs) > float(coeff_tol))[0]
+    if nonzero.size == 0:
+        raise ValueError("Form polynomial is numerically zero.")
+    trimmed = coeffs[: int(nonzero[-1]) + 1]
+    if trimmed.size <= 1:
+        return np.empty(0, dtype=np.complex128)
+    roots = np.roots(trimmed[::-1])
+    inside = roots[np.abs(roots) < float(zero_radius)]
+    return np.asarray(inside, dtype=np.complex128)
+
+
+def _default_riemann_constant_filter_points(surface: RiemannSurfaceData) -> tuple[complex, ...]:
+    """Deterministic disc-interior points used to disambiguate the half-lattice."""
+    return (
+        0.11 + 0.09j,
+        -0.08 + 0.17j,
+        0.22 - 0.05j,
+        0.19 + 0.23j,
+        0.03 - 0.24j,
+    )
+
+
+def riemann_constant_vector_canonical(
+    surface: RiemannSurfaceData,
+    *,
+    form_idx: int = 0,
+    zero_radius: float = 0.99,
+    coeff_tol: float = 1e-10,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    filter_points: Sequence[complex] | None = None,
+    sign_convention: str = "strebel",
+) -> np.ndarray:
+    r"""
+    Compute the Riemann constant via Deconinck's canonical-divisor algorithm.
+
+    By Deconinck, Patterson, Swierczewski (2015) Theorem 11, for any canonical
+    divisor `C` of degree `2g - 2`:
+
+        2 K(P_0) = -A(P_0, C)   (mod Lambda).
+
+    The right-hand side determines `K` only modulo `(1/2) Lambda`. The correct
+    half-lattice coset is pinned down by the Riemann vanishing theorem: for any
+    effective divisor `D` of degree `g - 1`,
+
+        theta(K + A(P_0, D), Omega) = 0,
+
+    and for a generic `K_candidate` this condition fails at generic `D`. The
+    algorithm iterates over the `2^(2g)` half-lattice candidates and picks the
+    one that minimises `sum_D |theta(K_candidate + A(P_0, D))|^2` over several
+    filter divisors `D`.
+
+    Parameters
+    ----------
+    form_idx:
+        Which A-normalized holomorphic one-form to read the canonical divisor
+        from. Different `form_idx` give canonical divisors in the same linear
+        equivalence class, so they yield Riemann constants that differ only by
+        a period-lattice vector — each representative is internally consistent.
+    zero_radius, coeff_tol:
+        Passed through to `_canonical_divisor_zeros_from_form` for polynomial
+        root filtering.
+    filter_points:
+        Disc-interior points used as the effective divisor `D` in the
+        multi-divisor filter. At `g = 2` each point is a valid effective
+        divisor of degree `g - 1 = 1`. For `g > 2` the algorithm uses
+        multi-point divisors built by summing up `g - 1` Abel images of these
+        same points.
+    sign_convention:
+        - `"strebel"` (default): returns `Delta` such that
+          `theta(zeta(p) - Delta, Omega) = 0` for every `p`. This matches
+          the sign used throughout `sigma_ratio`, `bc_correlator_geometric_factor`,
+          and the rest of this module (see the `-Delta` inside
+          `sigma_ratio` at `arg_z = zeta_sum - abel_map(z, ...) - Delta`).
+        - `"deconinck"`: returns the Fay/Mumford/Deconinck `K` instead, which
+          satisfies `theta(zeta(p) + K, Omega) = 0`.
+
+    Returns
+    -------
+    np.ndarray of shape `(g,)`.
+
+    Notes
+    -----
+    This function does **not** call the cycle-integral formula used by
+    `riemann_constant_vector`. It is a drop-in replacement that avoids the
+    disc-frame cycle-integral problem documented in
+    `known_genus2_ghost_issues.md` section 6.
+    """
+    if sign_convention not in {"strebel", "deconinck"}:
+        raise ValueError(
+            f"sign_convention must be 'strebel' or 'deconinck', got {sign_convention!r}."
+        )
+    g = int(surface.genus)
+    if not (0 <= int(form_idx) < len(surface.normalized_forms)):
+        raise ValueError(
+            f"form_idx={form_idx} out of range for surface with "
+            f"{len(surface.normalized_forms)} forms."
+        )
+
+    zeros = _canonical_divisor_zeros_from_form(
+        surface.normalized_forms[int(form_idx)],
+        zero_radius=zero_radius,
+        coeff_tol=coeff_tol,
+    )
+    expected = 2 * g - 2
+    if zeros.shape[0] != expected:
+        raise ValueError(
+            f"Canonical divisor from form {form_idx} has {zeros.shape[0]} zeros "
+            f"inside |z| < {zero_radius}, expected {expected}. "
+            "Adjust zero_radius / coeff_tol, or choose a different form."
+        )
+
+    A_of_C = np.zeros(g, dtype=np.complex128)
+    for c in zeros:
+        A_of_C = A_of_C + abel_map(c, surface)
+    K_base = -0.5 * A_of_C
+
+    Omega = np.asarray(surface.Omega, dtype=np.complex128)
+
+    if filter_points is None:
+        filter_points = _default_riemann_constant_filter_points(surface)
+    filter_points = tuple(np.complex128(p) for p in filter_points)
+    if not filter_points:
+        raise ValueError("Need at least one filter point to disambiguate the half-lattice.")
+
+    # Filter divisors: use the effective divisor D = (g-1) * p for each filter
+    # point p, so A(P_0, D) = (g-1) * zeta(p). At g = 2 this is just zeta(p).
+    filter_abel = (g - 1) * np.stack(
+        [abel_map(p, surface) for p in filter_points],
+        axis=0,
+    )
+
+    best_score = None
+    best_K: np.ndarray | None = None
+    for a_tuple in product((0.0, 0.5), repeat=g):
+        for b_tuple in product((0.0, 0.5), repeat=g):
+            h = (
+                np.asarray(a_tuple, dtype=np.complex128)
+                + Omega @ np.asarray(b_tuple, dtype=np.complex128)
+            )
+            K_candidate = K_base + h
+            score = 0.0
+            for zD in filter_abel:
+                theta_val = riemann_theta(
+                    K_candidate + zD,
+                    Omega,
+                    nmax=nmax,
+                    tol=tol,
+                )
+                score += float(abs(theta_val)) ** 2
+            if best_score is None or score < best_score:
+                best_score = score
+                best_K = K_candidate
+
+    assert best_K is not None
+    if sign_convention == "strebel":
+        return np.asarray(-best_K, dtype=np.complex128)
+    return np.asarray(best_K, dtype=np.complex128)
+
+
 def sigma_ratio(
     z: complex,
     w: complex,

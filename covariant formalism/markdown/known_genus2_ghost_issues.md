@@ -392,8 +392,10 @@ but non-lattice in genus 2.
 ### Comparison against the standard (Deconinck, 2015) formula
 
 The standard reference is Deconinck, Patterson, Swierczewski,
-*Computing the Riemann Constant Vector* (2015). Their definition,
-eq. (16) p. 9, is
+[*Computing the Riemann Constant Vector*][deconinck2015] (2015). Their
+definition, eq. (16) p. 9, is
+
+[deconinck2015]: https://depts.washington.edu/bdecon/papers/pdfs/rcv.pdf
 
     K_j(P) = (1 + Omega_{jj})/2
              - sum_{k != j} oint_{a_k} omega_k(Q) A_j(P, Q) dQ,
@@ -491,6 +493,105 @@ Three observations, in decreasing order of importance:
    even with Deconinck's sign convention, no half-lattice shift gets
    `|theta|` below ~`0.4`, so the implementation is also missing the
    half-lattice determination step.
+
+### Precise diagnosis: two separate bugs in `Strebel.tex`
+
+The sign sweep + one analytic observation combine to give a clean
+separation of what is wrong.
+
+**Bug 1. `Strebel.tex` has a sign error: the formula as written returns
+`-K`, not `K`.**
+
+Add the Strebel formula and the Fay/Deconinck formula componentwise:
+
+    Strebel_I + Fay_I  =  (1 - Omega_{II})/2  +  Sum_{J != I} int
+                        + (1 + Omega_{II})/2  -  Sum_{J != I} int
+                        =  1.
+
+So `Strebel = 1 - Fay` in every component, i.e. `Strebel = (1, 1, ..., 1) -
+Fay`. The vector `(1, ..., 1)` is an integer lattice element, so modulo the
+period lattice
+
+    Strebel  ==  -Fay  (mod Lambda).
+
+The Fay constant `K` is characterised by the Riemann vanishing theorem:
+`theta(zeta(p) - K) = 0` for every `p`. Its negative `-K` does **not**
+inherit this property — at g = 2 one would need `zeta(p) + 2K` to lie on
+`zeta(Sym^{g-1} X)` for every `p`, which is a measure-zero condition. So
+the `Strebel.tex` formula, taken literally and computed with the correct
+surface-cycle integral, would still not be a valid Riemann constant: it is
+the negative of one.
+
+Fix: replace the formula in `Strebel.tex` with the standard
+Fay/Deconinck convention
+
+    Delta_I = (1 + Omega_{II})/2
+              - sum_{J != I} oint_{alpha_J} omega_J(p) zeta_I(p) dp,
+
+and add a remark that this expression only determines `Delta` modulo
+`(1/2) Lambda`; the full `Delta` is fixed by `theta(Delta, Omega) = 0`
+(Riemann vanishing) or by `2 Delta = -A(P_0, C) (mod Lambda)` for any
+canonical divisor `C` (Deconinck 2015 Theorem 11).
+
+**Bug 2. The cycle-integral term cannot be evaluated directly in the
+disc-frame construction, even with the sign fixed.**
+
+Inside the simply-connected disc, for holomorphic one-forms
+`omega_I = f_I(z) dz` and `omega_J = f_J(z) dz`,
+
+    d(omega_J(z) zeta_I(z) dz) = omega_I(z) /\ omega_J(z) = f_I f_J dz /\ dz = 0.
+
+So `omega_J(z) zeta_I(z) dz` is a closed one-form in the disc interior.
+Fay's formula integrates this one-form around the `alpha_J` cycle on the
+surface. The lift of the `alpha_J` loop to the disc is the three-leg path
+
+    0  ->  z_0  ->  z_1  ->  0
+
+(interior ray + boundary chord + interior ray), with `z_0 ~ z_1` identified
+on the surface. This three-leg path is a *contractible* loop inside the
+disc, and by Stokes the integral of a closed one-form around a contractible
+loop is zero:
+
+    int_{0 -> z_0}  +  int_{chord z_0 -> z_1}  +  int_{z_1 -> 0}  =  0.
+
+Numerical check on three moduli (including the asymmetric
+`ell = [210, 230, 250, 270, 290, 310, 330, 350, 370]`):
+
+| `ell`                | full-loop disc integral (I_A + I_B + I_C)   |
+| ---                  | ---                                         |
+| `[100] * 9`          | `(8.6e-12 - 1.2e-11 i, 1.2e-11 + 5.1e-11 i)`|
+| `[250,...,250, 700]` | `(9.7e-12 - 4.4e-12 i, 5.6e-12 - 3.1e-12 i)`|
+| `[210,...,370]`      | `(-1.4e-11 - 6.4e-12 i, 5.5e-12 + 4.6e-12 i)`|
+
+So the *correct* disc-frame image of the Fay cycle integral is identically
+zero (up to numerical noise). What the code integrates is only the middle
+chord leg `I_B` — which is `~0.17` in magnitude and equals
+`-(I_A + I_C)` by the Stokes identity above — and that leg is **not** the
+right quantity to plug into Fay's formula.
+
+The non-trivial part of Fay's surface-cycle integral comes from the
+multi-valuedness of `zeta_I` across non-contractible loops on `X`. The
+disc-frame `F_I` deliberately uses a single branch (radial integral from
+`z = 0` inside a simply connected region), which hides that
+multi-valuedness. The formula therefore cannot be implemented on the disc
+by any choice of "cycle representative".
+
+### Consequences for the fix
+
+Bugs 1 and 2 are independent:
+
+- Bug 1 (sign) would be visible even with an ideal surface-cycle integrator.
+- Bug 2 (closed-form collapse in the disc) would be visible even with the
+  correct Fay/Deconinck sign convention.
+
+The fix for Bug 1 is mechanical (rewrite the formula in `Strebel.tex`).
+The fix for Bug 2 is structural: any implementation that builds `Delta`
+out of disc-interior cycle integrals of `omega_J zeta_I dz` will return
+zero for that integral and therefore cannot distinguish one complex
+structure from another beyond the `(1 + Omega_{II})/2` term. The practical
+escape is to characterise `Delta` by `2 Delta = -A(P_0, C) (mod Lambda)`
+instead, which uses only the Abel map of a canonical divisor and the
+Riemann vanishing test; both are already reliable in the disc frame.
 
 ### Downstream impact
 

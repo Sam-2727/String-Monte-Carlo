@@ -212,6 +212,224 @@ Genus-1 simplification:
 
   which is one of the unit tests below.
 
+> **Warning — `riemann_constant_vector` is buggy at $g \ge 2$ and must not
+> be used as-is.** Until this formula is fixed, use
+> `riemann_constant_vector_canonical(...)` (below) for any $g \ge 2$ work.
+> Every downstream helper that calls `riemann_constant_vector` internally
+> (`sigma_ratio`, `sigma_value`, `bc_correlator_geometric_factor`,
+> `lambda_one_geometric_z1_factor`, the genus-2 $\lambda = 1$ sigma kernel,
+> `genus2_bbb_correlator_from_lambda_one`, etc.) inherits the bug. Callers
+> should pass `Delta=rst.riemann_constant_vector_canonical(surface)`
+> explicitly to those helpers until the implementation is switched over.
+
+Two sharp diagnostics that `riemann_constant_vector(...)` is wrong at
+$g = 2$:
+
+- **Riemann vanishing fails.** The Riemann theorem requires
+  $\theta(\zeta(p) - \Delta \mid \Omega) = 0$ at every point $p \in X$.
+  On stored genus-2 topology 1 with `ell_list = [100] * 9`, the returned
+  $\Delta = (0.0740 - 0.5158 i,\; 0.0740 - 0.5158 i)$ gives
+
+  | point $p$        | $\lvert \theta(\zeta(p) - \Delta)\rvert$ |
+  | ---              | ---                                       |
+  | $0.08 + 0.12 i$  | $2.08 \times 10^{1}$                      |
+  | $-0.14 + 0.16 i$ | $1.69 \times 10^{1}$                      |
+  | $0.19 - 0.09 i$  | $4.08 \times 10^{1}$                      |
+  | $0.21 + 0.09 i$  | $2.54 \times 10^{1}$                      |
+  | $-0.16 + 0.12 i$ | $1.82 \times 10^{1}$                      |
+
+  Generic $\lvert\theta(y)\rvert$ on this $\Omega$ is of order $\sim 3$,
+  so these values are strictly larger than the generic scale, not merely
+  not small.
+
+- **`sigma_ratio` is divisor-dependent.** On the same topology with
+  `ell_list = [300] * 9`, taking $z = 0.08 + 0.12 i$,
+  $w = -0.19 + 0.13 i$:
+
+  | divisor                               | $\sigma(z) / \sigma(w)$    | $\lvert\sigma(z)/\sigma(w)\rvert$ |
+  | ---                                   | ---                        | --- |
+  | $[0.21 + 0.09 i,\; -0.16 + 0.12 i]$   | $-0.2334 + 0.2413 i$       | $0.336$ |
+  | $[0.17 + 0.05 i,\; -0.12 + 0.11 i]$   | $-0.8793 + 0.4752 i$       | $0.999$ |
+  | $[0.22 + 0.08 i,\; -0.09 + 0.16 i]$   | $-1.4393 - 0.1098 i$       | $1.443$ |
+
+  The sigma-ratio is a well-defined invariant of the surface and should
+  not depend on the auxiliary divisor choice; here it varies by a factor
+  of ~4.3 across three divisors.
+
+Under the replacement $\Delta \to$
+`riemann_constant_vector_canonical(surface, nmax=6)` both diagnostics
+recover. On the same `[300] * 9` surface the three divisors now give
+
+    sigma_ratio = 0.76678220 - 0.14752560 i
+                = 0.76678467 - 0.14752500 i
+                = 0.76678450 - 0.14752343 i
+
+agreeing to ~5 decimals (limited by `scipy.quad` on the singular-weighted
+form); and Riemann vanishing holds at $\lvert\theta\rvert \sim 10^{-6}$.
+
+Root cause (full writeup in [known_genus2_ghost_issues.md](known_genus2_ghost_issues.md) §6):
+
+- The implemented cycle integral is a disc-chord integral, not the
+  surface-loop integral Fay's formula requires. On the simply-connected
+  disc interior $d(\omega_J\,\zeta_I\,dz) = \omega_I \wedge \omega_J = 0$,
+  so the Fay cycle integral's disc-frame image vanishes by Stokes, while
+  the code instead returns only the middle chord leg.
+- The sign convention in the `Strebel.tex` formula corresponds to $-K$
+  rather than $K$, so even with the correct surface integral it would
+  produce a sign-flipped $\Delta$.
+
+At $g = 1$ the buggy cycle-integral branch is empty
+($J \ne I$ is empty), so $\Delta = (1 - \tau)/2$ is exact modulo the
+period lattice. The function is therefore harmless at $g = 1$ and is
+retained for the genus-1 unit tests and historical diagnostics only.
+
+### Canonical Riemann Class Vector via Deconinck Algorithm 1
+
+`riemann_constant_vector_canonical(surface, *, form_idx=0, zero_radius=0.99,
+coeff_tol=1e-10, nmax=None, tol=1e-12, filter_points=None,
+sign_convention="strebel")` computes $\Delta$ without any cycle integral,
+following Deconinck, Patterson, Swierczewski (2015) Algorithm 1
+([*Computing the Riemann Constant Vector*][deconinck2015]). This is the
+recommended computation at $g \ge 2$ and gives the same result (mod the
+period lattice) as the old formula at $g = 1$.
+
+[deconinck2015]: https://depts.washington.edu/bdecon/papers/pdfs/rcv.pdf
+
+#### Mathematical input: two classical characterisations of $\Delta$
+
+- **Canonical divisor characterisation** (Deconinck Theorem 11). For any
+  canonical divisor $C$ of degree $2g - 2$ on $X$,
+
+  $$
+  2\,\Delta \equiv -A(P_0, C) \pmod{\Lambda},
+  $$
+
+  where $A(P_0, C) = \sum_i \zeta(c_i)$ is the Abel map of $C$ with basepoint
+  $P_0$ and $\Lambda = \mathbb{Z}^g + \Omega\mathbb{Z}^g$.
+
+- **Riemann vanishing** (Riemann theorem, as stated in Deconinck Thm 13). For
+  any effective divisor $D$ of degree $g - 1$,
+
+  $$
+  \theta\!\bigl(\Delta + A(P_0, D) \mid \Omega\bigr) = 0.
+  $$
+
+The first characterisation determines $\Delta$ modulo $\tfrac{1}{2}\Lambda$
+(halving a mod-$\Lambda$ relation leaves a $\tfrac{1}{2}\Lambda$ ambiguity).
+The second then pins down the unique half-lattice representative.
+
+#### Algorithm
+
+For a surface with genus $g$:
+
+1. **Canonical divisor from the zeros of a holomorphic one-form.** Read
+   the polynomial coefficients of the A-normalized improved form
+   `surface.normalized_forms[form_idx]`. Its zeros inside the disc form a
+   canonical divisor $C$:
+
+       _canonical_divisor_zeros_from_form(form, zero_radius, coeff_tol)
+
+   returns `np.roots(polynomial)` filtered to $|z| < \text{zero\_radius}$,
+   after dropping trailing coefficients with $|c_n| < \text{coeff\_tol}$.
+   A correctly built A-normalized form at genus $g$ has exactly $2g - 2$
+   such interior zeros; any other count raises `ValueError`.
+
+2. **Abel-map of the canonical divisor.**
+
+   $$
+   A(P_0, C) = \sum_{c \in C} \zeta(c).
+   $$
+
+   Each $\zeta(c) = F(c)$ is the module's radial Abel primitive with
+   basepoint $P_0 = 0$, i.e. `abel_map(c, surface)`.
+
+3. **Base half-value.**
+
+   $$
+   \Delta_{\mathrm{base}} = -\tfrac{1}{2}\,A(P_0, C).
+   $$
+
+4. **Half-lattice disambiguation.** Enumerate the $2^{2g}$ half-lattice
+   candidates
+
+   $$
+   h_{a,b} = a + \Omega\,b,
+   \qquad
+   a, b \in \{0, \tfrac{1}{2}\}^g.
+   $$
+
+   For each candidate, form $\Delta_{\mathrm{cand}} = \Delta_{\mathrm{base}} + h$ and
+   compute the multi-divisor filter score
+
+   $$
+   s(h) = \sum_{k} \bigl|\theta\!\bigl(\Delta_{\mathrm{cand}} +
+           (g - 1)\,\zeta(p_k) \mid \Omega\bigr)\bigr|^2,
+   $$
+
+   where the $p_k$ are the `filter_points`. At $g = 2$ the argument
+   $(g - 1)\zeta(p_k) = \zeta(p_k)$ is the Abel image of the single-point
+   effective divisor $D = p_k$. For $g > 2$ it is the image of
+   $D = (g - 1)\,p_k$, a valid effective divisor of degree $g - 1$.
+
+   Return the candidate with the smallest $s(h)$. In practice exactly one
+   candidate gives $s(h) \sim 10^{-12}$ while the rest are $\gtrsim 1$, so
+   the filter is effectively a sharp selection.
+
+5. **Sign convention.** The returned value is $-K$ by default
+   (`sign_convention="strebel"`), which is the value $\Delta$ such that
+   $\theta(\zeta(p) - \Delta)$ vanishes for every $p$. This matches the
+   $-\Delta$ that appears inside `sigma_ratio`, `bc_correlator_geometric_factor`,
+   and the other downstream helpers in this module. Passing
+   `sign_convention="deconinck"` instead returns the unnegated $K$ in the
+   Mumford/Fay/Deconinck convention, which satisfies $\theta(\zeta(p) + K) = 0$.
+
+#### Default `filter_points`
+
+The default 5 disc-interior points are
+
+    (0.11 + 0.09 i,
+     -0.08 + 0.17 i,
+      0.22 - 0.05 i,
+      0.19 + 0.23 i,
+      0.03 - 0.24 i).
+
+These are deliberately away from the boundary prevertices at $|z| = 1$, and
+cover roughly symmetric phases so the filter is not degenerate for any
+common surface symmetry. The caller may override by passing `filter_points`
+explicitly; any $\ge 1$ distinct disc-interior points suffice to pin down
+$\Delta$ generically.
+
+#### What this avoids
+
+- **No cycle integrals.** The disc-chord-integral issue of
+  `riemann_constant_vector` is bypassed entirely. Stokes on
+  $\omega_J \zeta_I\,dz$ inside the disc is therefore irrelevant.
+- **No `Strebel.tex` sign assumption.** The algorithm reads $\Delta$ off
+  the canonical divisor and the Riemann vanishing theorem directly, so no
+  sign convention in a quoted formula is trusted.
+- **No fundamental-polygon assumption.** The derivation does not depend on
+  the fundamental domain being a $4g$-gon; the ribbon-graph 18-gon is
+  fine.
+
+#### Genus-1 behaviour
+
+At $g = 1$ the canonical divisor has degree $2g - 2 = 0$, so
+`_canonical_divisor_zeros_from_form` returns an empty array and
+$A(P_0, C) = 0$. The algorithm reduces to
+
+$$
+\Delta = -\bigl(a + \tau\,b\bigr)
+\quad\text{with } a, b \in \{0, \tfrac{1}{2}\}
+\text{ chosen to minimise }\lvert\theta(\Delta \mid \tau)\rvert,
+$$
+
+which reproduces $(1 - \tau)/2$ modulo the period lattice. On the
+`(L, l1, l2) = (20, 3, 4)` surface this gives numerically
+$\Delta_{\mathrm{canonical}} - \Delta_{\mathrm{old}} = (-1, 0)$, an integer
+lattice shift, so the genus-1 $\sigma$-value on
+`(z, w_0) = (0.31 - 0.12i, -0.17 + 0.14i)` is the same
+`0.431008760111272 - 0.224918148464132 i` under either convention.
+
 ### Sigma Function
 
 The sigma machinery now has two layers.
@@ -753,7 +971,9 @@ These are the main implementation choices that are fixed in code whenever
 | holomorphic one-forms | A-normalized using `ell_to_tau.normalize_holomorphic_forms` |
 | default odd characteristic | first odd characteristic in enumeration order |
 | prime-form square-root branch | principal complex branch |
-| Riemann class `Delta` | computed from the `Strebel.tex` formula using the stored alpha cycles |
+| Riemann class `Delta` (recommended, $g \ge 1$) | `riemann_constant_vector_canonical(...)`: Deconinck Algorithm 1 (canonical divisor from zeros of `normalized_forms[0]`, $2^{2g}$ half-lattice search, filter points are 5 fixed disc-interior points) |
+| Riemann class `Delta` (legacy, $g = 1$ only) | `riemann_constant_vector(...)`: direct $\frac{1}{2}(1 - \Omega_{II})$ + disc-chord cycle integrals; fails Riemann vanishing at $g \ge 2$ |
+| canonical $\Delta$ sign convention | `sign_convention="strebel"` (default): returns $\Delta$ with $\theta(\zeta(p) - \Delta) = 0$, matching the `-Delta` used in `sigma_ratio` and `bc_correlator_geometric_factor` |
 | raw `sigma` normalization | user-specified by fixing $\sigma(z_0) = c$ at a chosen normalization point |
 | canonical higher-genus `sigma` normalization | derived from the chosen chiral $Z_1 = +\sqrt{\lvert Z_1\rvert^2}$ via the $\lambda = 1$, $(n,m) = (g,1)$ equation |
 | `sigma` divisor | any generic divisor of length $g$; normalized result is divisor-independent |
@@ -1429,6 +1649,124 @@ Results:
 
 So the corrected invariant is constant to essentially machine precision across
 both insertion point and moduli, exactly as expected.
+
+#### (M) Canonical $\Delta$ via Deconinck Algorithm 1: consistency across all $\Delta$-dependent diagnostics
+
+Having introduced `riemann_constant_vector_canonical(...)`, we re-ran every
+$\Delta$-dependent diagnostic in sections (E)-(L) with the new $\Delta$ and
+verified that nothing regresses.
+
+##### Genus-1 diagnostics are numerically unchanged
+
+At $g = 1$ on `(L, l1, l2) = (20, 3, 4)`, the canonical algorithm returns a
+$\Delta$ that differs from the old $(1 - \tau)/2$ by the exact integer
+lattice shift
+
+$$
+\Delta_{\mathrm{canonical}} - \Delta_{\mathrm{old}} = (-1,\; 0)
+= -(1,\; 0) \in \Lambda.
+$$
+
+This is a pure integer shift with no $\tau$-period component, so the
+quasi-periodic factor $\exp(2\pi i n(\zeta(w_0) - \zeta(z)))$ that would
+otherwise distinguish `sigma_value` under a $\tau$-shift is absent, and
+every $\Delta$-dependent genus-1 quantity agrees **numerically** with the
+recorded old values:
+
+| diagnostic | quantity | with canonical $\Delta$ |
+| --- | --- | --- |
+| (E) sigma divisor-independence | $\lvert \sigma(z)_{\text{div1}} - \sigma(z)_{\text{div2}} \rvert$ | $2.48 \times 10^{-16}$ |
+| (E) sigma normalization | $\lvert \sigma(w_0) - 1 \rvert$ | $1.21 \times 10^{-18}$ |
+| (E) recorded $\sigma(z)$ value | `0.431008760111272 - 0.224918148464132 i` | matches exactly |
+| (K.2) $G/\omega(z)$ vs `lambda_one_geometric_z1_factor` | $\lvert \mathrm{diff} \rvert$ | $8.9 \times 10^{-16}$ |
+| (L) $Q(z) = \lvert G\rvert^2 / \lvert f\rvert^4$ flatness | max rel var across 20 sample points | see below |
+
+(L) results with canonical $\Delta$ on 4 moduli (same `divisor_points`,
+`normalization_point`, `nmax = 10` as the original test):
+
+| edge lengths `(l1,l2,l3)` | `tau` | max relative variation of $Q(z)$ |
+| --- | --- | --- |
+| `(600,600,600)` | `0.5000000000000001 + 0.8660254037844385 i` | `4.49e-14` |
+| `(500,600,700)` | `0.5327927545962490 + 0.8047088482514668 i` | `1.79e-14` |
+| `(800,700,500)` | `0.42717313370051724 + 0.9413013690189171 i` | `5.00e-14` |
+| `(500,1500,3000)` | `0.6344028298988311 + 0.6079513424801610 i` | `2.33e-14` |
+
+All numbers match the original (L) run to the same order of magnitude,
+confirming that at $g = 1$ the new algorithm is strictly a drop-in
+replacement.
+
+##### Genus-2 Riemann vanishing and sigma-ratio on three moduli
+
+At $g = 2$ the new algorithm actually changes behaviour, because the old
+one is wrong there (see `known_genus2_ghost_issues.md` §6). Using
+`riemann_constant_vector_canonical(surface, nmax=6)` on stored topology 1:
+
+| `ell_list` | description | $\max_p \lvert\theta(\zeta(p)-\Delta)\rvert$ over 6 test points | sigma-ratio spread $\lvert\max/\min - 1\rvert$ over 3 divisors |
+| --- | --- | --- | --- |
+| `[100] * 9` | $Z_3$-symmetric | `1.20e-06` | `7.02e-06` |
+| `[250,250,250,250,250,250,250,250,700]` | mildly asymmetric | `4.39e-07` | `1.76e-06` |
+| `[210, 230, 250, 270, 290, 310, 330, 350, 370]` | fully asymmetric | `1.19e-07` | `5.71e-07` |
+
+Compare to the old `riemann_constant_vector`, which gives
+$\max_p \lvert \theta \rvert \sim 30\text{-}45$ and sigma-ratio spread
+$\sim 4$ on all three moduli.
+
+The test points for Riemann vanishing were
+
+    0.08+0.12i, -0.14+0.16i, 0.19-0.09i, 0.21+0.09i, -0.16+0.12i, 0.30+0.15i.
+
+The sigma-ratio divisor sets were
+
+    (z, w) = (0.08+0.12i, -0.19+0.13i)
+    div_1 = [(0.21+0.09i), (-0.16+0.12i)]
+    div_2 = [(0.17+0.05i), (-0.12+0.11i)]
+    div_3 = [(0.22+0.08i), (-0.09+0.16i)].
+
+##### Canonical-divisor representative independence
+
+Running the algorithm with `form_idx=0` and `form_idx=1` on the same
+surface uses the zeros of two linearly independent A-normalized forms as
+distinct canonical divisors. The resulting $\Delta$ values must differ by
+a period-lattice vector (since both are valid Riemann constants mod
+$\Lambda$). Numerically, on all three moduli above,
+
+$$
+\Delta_{\mathrm{form\_idx}=0} - \Delta_{\mathrm{form\_idx}=1}
+= (0, -1) + \Omega\,(1, 0) \in \Lambda,
+$$
+
+with residual $\lesssim 10^{-6}$ per component — exactly as expected.
+Either choice is a valid $\Delta$; each is internally consistent with
+itself in every downstream identity.
+
+##### Genus-2 higher-genus sigma normalization (K.1.2) with canonical $\Delta$
+
+With canonical $\Delta$ supplied, the sharp identity
+
+$$
+C \cdot \widetilde{A} = Z_1^{3/2}
+$$
+
+from (K.1.2) (stored topology 1, `ell_list = [100] * 9`, `Z_1 = 1.7`,
+anchor data exactly as in (K.1.2)) holds to
+
+    |C * A_tilde - Z_1^(3/2)| = 4.5e-16
+
+which is the same precision as the original check.
+
+##### Unit-test addendum
+
+The unit-test suite in `test_riemann_surface_tools.py` gained four new
+tests (all passing):
+
+1. `test_canonical_riemann_constant_matches_genus1_half_period_modulo_lattice`
+2. `test_canonical_riemann_constant_satisfies_vanishing_genus2_symmetric`
+3. `test_canonical_riemann_constant_satisfies_vanishing_genus2_asymmetric`
+   (this is the regression test against the old "Z_3-symmetry artifact"
+   failure mode)
+4. `test_canonical_riemann_constant_makes_sigma_ratio_divisor_independent_genus2`
+
+Total suite runtime is now ~65 s (25 tests pass).
 
 ### 2.3 Known non-bug to be aware of
 

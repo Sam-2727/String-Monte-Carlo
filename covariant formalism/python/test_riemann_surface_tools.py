@@ -542,6 +542,102 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         self.assertAlmostEqual((geometric / omega_z).real, special.real, places=10)
         self.assertAlmostEqual((geometric / omega_z).imag, special.imag, places=10)
 
+    def test_canonical_riemann_constant_matches_genus1_half_period_modulo_lattice(self):
+        surface = rst.build_surface_data(L=20, l1=3, l2=4)
+        Delta_can = rst.riemann_constant_vector_canonical(surface, nmax=8)
+        Delta_old = rst.riemann_constant_vector(surface)
+        diff = Delta_can[0] - Delta_old[0]
+        tau = surface.tau
+        a_re = diff.real - round(diff.real)
+        a_im = diff.imag
+        m_n_n = a_im / tau.imag
+        n = round(m_n_n)
+        m = round(diff.real - n * tau.real)
+        residual = diff - (m + n * tau)
+        self.assertLess(abs(residual), 1e-8)
+
+    def test_canonical_riemann_constant_satisfies_vanishing_genus2_symmetric(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        test_points = [
+            0.08 + 0.12j,
+            -0.14 + 0.16j,
+            0.19 - 0.09j,
+            0.21 + 0.09j,
+            -0.16 + 0.12j,
+        ]
+        values = [
+            abs(rst.riemann_theta(
+                rst.abel_map(p, surface) - Delta,
+                surface.Omega,
+                nmax=6,
+            ))
+            for p in test_points
+        ]
+        self.assertLess(max(values), 1e-4)
+
+    def test_canonical_riemann_constant_satisfies_vanishing_genus2_asymmetric(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        test_points = [
+            0.08 + 0.12j,
+            -0.14 + 0.16j,
+            0.19 - 0.09j,
+            0.21 + 0.09j,
+            -0.16 + 0.12j,
+        ]
+        values = [
+            abs(rst.riemann_theta(
+                rst.abel_map(p, surface) - Delta,
+                surface.Omega,
+                nmax=6,
+            ))
+            for p in test_points
+        ]
+        self.assertLess(max(values), 1e-4)
+
+    def test_canonical_riemann_constant_makes_sigma_ratio_divisor_independent_genus2(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        z = 0.08 + 0.12j
+        w = -0.19 + 0.13j
+        divisors = [
+            [0.21 + 0.09j, -0.16 + 0.12j],
+            [0.17 + 0.05j, -0.12 + 0.11j],
+            [0.22 + 0.08j, -0.09 + 0.16j],
+        ]
+        ratios = [
+            rst.sigma_ratio(z, w, surface, divisor_points=d, Delta=Delta, nmax=6)
+            for d in divisors
+        ]
+        mags = [abs(r) for r in ratios]
+        spread = max(mags) / min(mags)
+        self.assertLess(spread - 1.0, 1e-4)
+
 
 if __name__ == "__main__":
     unittest.main()
