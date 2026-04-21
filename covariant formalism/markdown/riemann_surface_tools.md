@@ -11,14 +11,27 @@ as the general bc-system correlator itself. The sign/normalization
 conventions follow the Strebel note, with the concrete implementation choices
 recorded explicitly below. The file now also contains the large-`L`
 renormalization machinery for the scheme-dependent determinant factor
-$\left(\det A'\right)^{-1/2}$, together with the canonical convention
+$\left(\det A'\right)^{-1/2}$. In the updated convention recorded in
+`Strebel.tex`, the chiral boson partition function satisfies
 
 $$
-\lvert Z_1\rvert^2
-= \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2} \left(\det A'\right)^{-1/2}.
+Z_{\mathrm{chiral}} = Z_1^{-1/2},
 $$
 
-after renormalization, a naive chiral choice
+so after renormalization the determinant formula directly gives
+
+$$
+\lvert Z_{\mathrm{chiral}}\rvert^2
+= \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2} \left(\det A'\right)^{-1/2},
+$$
+
+and therefore
+
+$$
+\lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4}.
+$$
+
+The file now provides helpers for both quantities, together with a naive chiral choice
 $Z_1 = +\sqrt{\lvert Z_1\rvert^2}$, and the higher-genus
 sigma-normalization machinery induced by the special
 $\lambda = 1$, $(n,m) = (g,1)$ equation.
@@ -42,13 +55,13 @@ ribbon graph + edge lengths:
 | `basis_pairs` | the chosen symplectic $\{\alpha,\beta\}$ cycles, each stored as edge-chord decompositions `[(edge_idx, coeff), ...]`. |
 | `edge_midpoints` | the disc-frame representatives `(z0, z1)` for each edge-chord, used to integrate forms along cycles. |
 
-Two additional frozen dataclasses organize the new $\lvert Z_1\rvert^2$
-pipeline:
+Two additional frozen dataclasses organize the renormalized determinant /
+$\lvert Z_1\rvert^2$ pipeline:
 
 | dataclass | fields | meaning |
 | --- | --- | --- |
 | `LargeLFitResult` | `c, gamma, alpha, r2, max_abs_log_residual, total_lengths, log_values, edge_length_sets` | output of the large-$L$ fit $\log Z = c + \gamma L + \alpha \log L$; its property `.finite_part` is $\exp(c)$ |
-| `RenormalizedZ1Data` | `abs_z1_sq, normalization_factor, renormalized_det_factor, fit, surface` | end-to-end output of a $\lvert Z_1\rvert^2$ estimator; in the canonical convention `normalization_factor = 1` |
+| `RenormalizedZ1Data` | `abs_z1_sq, normalization_factor, renormalized_det_factor, fit, surface` | end-to-end output of a $\lvert Z_1\rvert^2$ estimator in the current convention `Z_{\mathrm{chiral}} = Z_1^{-1/2}`; in the canonical convention `normalization_factor = 1` |
 
 ### Constructor
 
@@ -561,6 +574,13 @@ Once a chiral $Z_1$ has been chosen, the special $\lambda = 1$,
 $(n,m) = (g,1)$ equation can be used to fix the overall sigma constant for
 genus $g > 1$.
 
+In the current convention this $Z_1$ is related to the determinant-based
+chiral boson factor by
+
+$$
+Z_{\mathrm{chiral}} = Z_1^{-1/2}.
+$$
+
 The code now provides:
 
 - `canonical_chiral_z1(abs_z1_sq)`:
@@ -621,15 +641,28 @@ So the current state of the code is:
 - genus $g > 1$: sigma ratios plus a canonical overall normalization derived
   from the chosen chiral $Z_1$
 
-### Renormalized $\left(\det A'\right)^{-1/2}$ and $\lvert Z_1\rvert^2$
+### Renormalized $\left(\det A'\right)^{-1/2}$, $\lvert Z_{\mathrm{chiral}}\rvert^2$, and $\lvert Z_1\rvert^2$
 
-The last section of `Strebel.tex` expresses the Weyl-frame dependent chiral
-boson quantity through
+The updated last section of `Strebel.tex` identifies the determinant formula
+with the chiral boson partition function:
 
 $$
-\lvert Z_1\rvert^2
+\lvert Z_{\mathrm{chiral}}\rvert^2
 = \mathcal N_1 \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2}
 \left(\det A'\right)^{-1/2}.
+$$
+
+Since
+
+$$
+Z_{\mathrm{chiral}} = Z_1^{-1/2},
+$$
+
+this immediately implies
+
+$$
+\lvert Z_1\rvert^2 = \mathcal N_1 \bigl[\det \mathrm{Im}(\Omega)\bigr]^{-1}
+\left(\det A'\right)^{+1}.
 $$
 
 The determinant factor is scheme-dependent, so the code does **not** use the
@@ -643,7 +676,8 @@ $$
 \mathcal N_1 = 1,
 $$
 
-so after renormalization the determinant formula itself defines $\lvert Z_1\rvert^2$.
+so after renormalization the determinant formula itself defines
+$\lvert Z_{\mathrm{chiral}}\rvert^2$, and $\lvert Z_1\rvert^2$ is derived from it.
 
 #### Fit Object
 
@@ -723,7 +757,7 @@ Algorithm:
    $$
 
 3. Return $\exp(c(\Omega))$ as the renormalized determinant factor feeding into
-   $\lvert Z_1\rvert^2$
+   both $\lvert Z_{\mathrm{chiral}}\rvert^2$ and $\lvert Z_1\rvert^2$
 
 So in this module the phrase "renormalized determinant factor" always means
 
@@ -741,7 +775,7 @@ followed by `build_surface_data(...)`, so the same fixed-moduli large surface
 can be used both for the period-matrix
 data and for the $\lvert Z_1\rvert^2$ extraction.
 
-#### Canonical `|Z_1|^2` and Chiral `Z_1`
+#### Canonical `|Z_{\mathrm{chiral}}|^2`, `|Z_1|^2`, and Chiral `Z_1`
 
 The preferred path now is:
 
@@ -749,11 +783,17 @@ The preferred path now is:
 2. Define
 
    $$
-   \lvert Z_1\rvert^2
+   \lvert Z_{\mathrm{chiral}}\rvert^2
    = \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2} \exp(c(\Omega))
    $$
 
-3. Choose the naive chiral representative
+3. Then convert to
+
+   $$
+   \lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4}
+   $$
+
+4. Choose the naive chiral representative
 
    $$
    Z_1 = +\sqrt{\lvert Z_1\rvert^2}
@@ -761,13 +801,17 @@ The preferred path now is:
 
 The corresponding helpers are:
 
+- `abs_zchiral_sq_from_renormalized_det(surface, renormalized_det_factor, normalization_factor=1)`
+- `canonical_abs_zchiral_sq(surface, renormalized_det_factor=...)`
 - `abs_z1_sq_from_renormalized_det(surface, renormalized_det_factor, normalization_factor=1)`
 - `canonical_abs_z1_sq(surface, renormalized_det_factor=...)`
 - `estimate_canonical_abs_z1_sq(...)`
 - `canonical_chiral_z1(abs_z1_sq)`
 
 So the canonical public convention in the current file is the one with
-$\mathcal N_1 = 1$, not the older extracted-$\mathcal N_1$ scheme.
+$\mathcal N_1 = 1$, not the older extracted-$\mathcal N_1$ scheme, and the
+determinant formula should now be read first as a formula for
+$\lvert Z_{\mathrm{chiral}}\rvert^2$.
 
 #### `|Z_1|^2` From the Last Strebel Equation as a Diagnostic
 
@@ -819,12 +863,23 @@ This is implemented by `abs_z1_sq_from_lambda_one(...)`.
 
 #### Final Assembly
 
+`abs_zchiral_sq_from_renormalized_det(surface, normalization_factor, renormalized_det_factor)`
+computes
+
+$$
+\lvert Z_{\mathrm{chiral}}\rvert^2
+= \mathcal N_1 \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2} \exp(c(\Omega)).
+$$
+
+Then
+
 `abs_z1_sq_from_renormalized_det(surface, normalization_factor, renormalized_det_factor)`
+
 computes
 
 $$
 \lvert Z_1\rvert^2
-= \mathcal N_1 \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2} \exp(c(\Omega)).
+= \mathcal N_1 \bigl(\lvert Z_{\mathrm{chiral}}\rvert^2\bigr)^{-2}.
 $$
 
 The canonical high-level helper is now
@@ -836,7 +891,9 @@ which does:
 1. fit the large-`L` determinant data
 2. build a large reference surface
 3. evaluate the canonical convention
-   $\lvert Z_1\rvert^2 = [\det \mathrm{Im}(\Omega)]^{1/2} \exp(c)$
+   $\lvert Z_{\mathrm{chiral}}\rvert^2 = [\det \mathrm{Im}(\Omega)]^{1/2} \exp(c)$
+4. convert to the current
+   $\lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4}$ convention
 
 The older helper
 
@@ -978,7 +1035,8 @@ These are the main implementation choices that are fixed in code whenever
 | bc selection rule | enforced as $n_c - n_b = (1 - 2\lambda)(g - 1)$ |
 | default correlator output | the Verlinde-Verlinde geometric factor with `Z_1^{-1/2}` stripped off unless `z1` is explicitly supplied |
 | determinant renormalization | fit $-\frac{1}{2}\log \det A' = c + \gamma L + \alpha \log L$ and keep $\exp(c)$ |
-| canonical `|Z_1|^2` convention | $\mathcal N_1 = 1$, so $\lvert Z_1\rvert^2 = [\det \mathrm{Im}(\Omega)]^{1/2} \exp(c)$ |
+| canonical `|Z_{\mathrm{chiral}}|^2` convention | $\mathcal N_1 = 1$, so $\lvert Z_{\mathrm{chiral}}\rvert^2 = [\det \mathrm{Im}(\Omega)]^{1/2} \exp(c)$ |
+| canonical `|Z_1|^2` convention | $\lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4}$ |
 | chiral `Z_1` convention | naive positive square root $Z_1 = +\sqrt{\lvert Z_1\rvert^2}$ |
 | genus-1 local limit | $E(z,w) \sim z-w$ in the disc coordinate |
 | genus-1 flat-coordinate formula used in checks | $E_u = -\theta_1(\pi u\mid\tau)/(\pi \theta_1'(0\mid\tau))$ |
@@ -1022,18 +1080,28 @@ Run:
 python3 -m unittest test_riemann_surface_tools -v
 ```
 
-These sixteen tests pass in the current workspace:
+These twenty-seven tests pass in the current workspace:
 
 1. **Synthetic large-`L` fit recovers exact coefficients**:
    feeding exact data of the form `c + gamma L + alpha log L` into
    `_fit_large_l_behavior` reproduces `c`, `gamma`, `alpha`, and `exp(c)`.
-
-2. **Abel-Jacobi periods reproduce (1, tau)** at `(L, l1, l2) = (20, 3, 4)`:
+2. **Universal same-genus large-`L` fit recovers shared coefficients**:
+   `fit_universal_large_l_coefficients(...)` reproduces common `gamma`,
+   `alpha`, and the family-dependent finite parts on synthetic data.
+3. **Renormalized determinant factor from fixed coefficients recovers the
+   finite part**:
+   both `renormalized_aprime_factor_from_raw_log_values(...)` and
+   `renormalized_aprime_factor_from_raw_det(...)` return `exp(c)` on
+   synthetic large-`L` samples with fixed `gamma`, `alpha`.
+4. **Fixed large-`L` coefficients allow a single sample**:
+   once `gamma` and `alpha` are supplied, one large-`L` sample is enough to
+   recover `exp(c)`.
+5. **Abel-Jacobi periods reproduce (1, tau)** at `(L, l1, l2) = (20, 3, 4)`:
    the alpha-period integral is `1.0` and the beta-period integral is
    `surface.tau` to 9 decimals.
-3. **Genus-1 Riemann class** at `(L, l1, l2) = (20, 3, 4)`:
+6. **Genus-1 Riemann class** at `(L, l1, l2) = (20, 3, 4)`:
    `riemann_constant_vector(surface) = (1 - tau) / 2` to 10 decimals.
-4. **Genus-1 characteristics vs. Jacobi `mp.jtheta`** at
+7. **Genus-1 characteristics vs. Jacobi `mp.jtheta`** at
    `tau = 0.37 + 0.91i`, `y = 0.23 + 0.07i`, `nmax = 8`:
 
    - `((0),(0))` -> `jtheta(3, pi y, q)`
@@ -1042,45 +1110,71 @@ These sixteen tests pass in the current workspace:
    - `((1),(1))` -> `-jtheta(1, pi y, q)`
 
    to 12 decimals.
-5. **Prime form local limit** `E(z, z+eps) / eps -> -1` for
+8. **Prime form local limit** `E(z, z+eps) / eps -> -1` for
    `z = 0.21 + 0.17i`, `eps = 1e-6 (1 + 0.4i)` on `(L, l1, l2) = (20, 3, 4)`
    with the odd characteristic `((1),(1))`. Equivalently,
    `E(z, z+eps) / (z-(z+eps)) -> 1`.
-6. **Genus-1 normalized sigma ratio is divisor-independent** at
+9. **Genus-1 normalized sigma ratio is divisor-independent** at
    `(L, l1, l2) = (20, 3, 4)`: with normalization point
    `w0 = -0.17 + 0.14i`, the values produced from divisor
    `[0.23 + 0.11i]` and divisor `[-0.09 + 0.27i]` agree to 9 decimals at
    `z = 0.31 - 0.12i`.
-7. **Genus-1 sigma normalization is imposed exactly**:
+10. **Genus-1 sigma normalization is imposed exactly**:
    `sigma_value(w0, ..., normalization_point=w0)` returns `1` to 12 decimals
    with the default normalization value.
-8. **Identified genus-1 boundary points differ by a period-lattice vector**
+11. **Identified genus-1 boundary points differ by a period-lattice vector**
    at `(l1, l2, l3) = (500, 600, 700)`, `L = 3600`.
-9. **Identified genus-2 boundary points differ by a period-lattice vector**
+12. **Identified genus-2 boundary points differ by a period-lattice vector**
    on stored genus-2 topology `1` with `ell_list = [100] * 9`.
-10. **Genus-2 theta constant cross-check** between `rst.riemann_theta` and
+13. **Genus-2 theta constant cross-check** between `rst.riemann_theta` and
    `elt.riemann_theta_constant_genus2` on the handmade symmetric
    `Omega = [[0.9i, 0.11+0.07i],[0.11+0.07i, 1.2i]]` at
    characteristic `((1,0),(0,1))`, `nmax = 8`.
-11. **Genus-1 `|Z_1|^2` pipeline is self-consistent**:
+14. **Genus-1 `|Z_1|^2` pipeline is self-consistent in the current convention**:
     `estimate_abs_z1_sq(...)`, `abs_z1_sq_from_lambda_one(...)`, and
     `abs_z1_sq_from_renormalized_det(...)` agree numerically on the same large
     torus surface.
-12. **Canonical `|Z_1|^2` uses the `\mathcal N_1 = 1` convention**:
+15. **Canonical determinant-based normalization uses the `\mathcal N_1 = 1` convention**:
     `estimate_canonical_abs_z1_sq(...)` returns `normalization_factor = 1`
     and agrees with `abs_z1_sq_from_renormalized_det(...)`.
-13. **Higher-genus sigma normalization cannot be fixed at genus 1**:
+16. **Higher-genus sigma normalization cannot be fixed at genus 1**:
     `sigma_scale_from_z1(...)` raises `ValueError` on the torus, as it should.
-14. **Genus-2 sigma scale from chiral `Z_1` satisfies the special equation**:
+17. **Genus-2 sigma scale from chiral `Z_1` satisfies the special equation**:
     the scale returned by `sigma_scale_from_z1(...)` reproduces
     `Z_1^{3/2}` in the `lambda=1`, `(n,m)=(g,1)` identity.
-15. **bc selection rule is enforced**:
-    asking for an inconsistent genus-1 correlator at `lambda = 2` raises
-    `ValueError`.
-16. **Genus-1 `lambda = 1` correlator matches the special last-equation
+18. **Direct genus-2 sigma values satisfy the three `lambda=1` equations**:
+   `genus2_sigma_values_from_lambda_one(...)` solves the genus-2 system
+   consistently on the chosen three points.
+19. **Direct genus-2 `bbb` correlator is anchor-free**:
+   the new direct solver no longer depends on the old auxiliary anchor data.
+20. **bc selection rule is enforced**:
+   asking for an inconsistent genus-1 correlator at `lambda = 2` raises
+   `ValueError`.
+21. **Genus-1 `lambda = 1` correlator matches the special last-equation
     helper**:
     `bc_correlator_geometric_factor([z],[w],...) / omega(z)` agrees with
     `lambda_one_geometric_z1_factor([z], w, ...)` to 10 decimals.
+22. **Canonical genus-1 Riemann constant matches the half-period formula
+    modulo the period lattice**:
+    `riemann_constant_vector_canonical(surface)` differs from the old
+    genus-1 answer only by a lattice vector.
+23. **Canonical genus-2 Riemann constant satisfies Riemann vanishing on the
+    symmetric modulus**:
+    `theta(zeta(p)-Delta)` is small on the sampled points for
+    `ell_list = [100] * 9`.
+24. **Canonical genus-2 Riemann constant satisfies Riemann vanishing on an
+    asymmetric modulus**:
+    the same vanishing check passes for
+    `ell_list = [210,230,250,270,290,310,330,350,370]`.
+25. **Canonical genus-2 Riemann constant restores divisor-independence of
+    `sigma_ratio`**:
+    the three test divisors agree to better than `1e-4` in relative spread.
+26. **Default genus-2 `sigma_ratio(...)` now uses canonical `Delta`**:
+    omitting `Delta=` gives the same answer as explicitly passing
+    `riemann_constant_vector_canonical(...)`.
+27. **Default genus-2 `bbb` correlator now uses canonical `Delta`**:
+    omitting `Delta=` in `genus2_bbb_correlator_from_lambda_one(...)`
+    agrees with the explicit canonical-`Delta` call.
 
 ### 2.2 Extended low-genus diagnostics (ad-hoc, edge length >= 500)
 
@@ -1477,13 +1571,20 @@ as expected for the equilateral theta graph.
 In the current preferred convention we define
 
 $$
-\lvert Z_1\rvert^2
+\lvert Z_{\mathrm{chiral}}\rvert^2
 = \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2}\exp\!\bigl(c(\Omega)\bigr)
+$$
+
+and therefore
+
+$$
+\lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4}
 $$
 
 with no extra moduli-independent factor. On the largest torus sample this gives
 
-    |Z_1|^2 = 2.5628689466361014
+    |Z_chiral|^2 = 2.5628689466361014
+    |Z_1|^2       = 0.15224645959545133
 
 using
 
@@ -1491,8 +1592,9 @@ using
     [det Im(Omega)]^{1/2}  = sqrt(Im(tau))     = 0.9306048591020996
     exp(c(Omega))                              = 2.753981909259428.
 
-This is exactly what `canonical_abs_z1_sq(...)` and
-`estimate_canonical_abs_z1_sq(...)` implement.
+This is exactly what `canonical_abs_zchiral_sq(...)`,
+`canonical_abs_z1_sq(...)`, and `estimate_canonical_abs_z1_sq(...)`
+implement.
 
 Historical note:
 - the older helper `estimate_abs_z1_sq(...)` also compares this determinant
@@ -1752,10 +1854,83 @@ anchor data exactly as in (K.1.2)) holds to
 
 which is the same precision as the original check.
 
+##### Genus-2 Igusa check with the corrected $Z_{\mathrm{chiral}}/Z_1$ convention
+
+After updating the convention to
+
+$$
+Z_{\mathrm{chiral}} = Z_1^{-1/2},
+$$
+
+the standalone script
+
+`python/genus2_bc_igusa_ratio_check.py`
+
+was updated so that:
+
+- the renormalized determinant first defines
+
+  $$
+  \lvert Z_{\mathrm{chiral}}\rvert^2
+  = \bigl[\det \mathrm{Im}(\Omega)\bigr]^{1/2}\exp(c(\Omega)),
+  $$
+
+- then
+
+  $$
+  \lvert Z_1\rvert^2 = \lvert Z_{\mathrm{chiral}}\rvert^{-4},
+  $$
+
+- and the physical genus-2 comparison is performed on
+
+  $$
+  \left|\langle b(z_1)b(z_2)b(z_3)\rangle\right|^2
+  \lvert Z_{\mathrm{chiral}}\rvert^{52}.
+  $$
+
+For the equal-length and equal-total-length moduli
+
+    ell_1 = [300] * 9
+    ell_2 = [250,250,250,250,250,250,250,250,700]
+
+the script now reports
+
+| quantity | modulus 1 | modulus 2 |
+| --- | --- | --- |
+| renormalized determinant factor $\exp(c)$ | `5.85951881695965` | `5.954020862102647` |
+| $\lvert Z_{\mathrm{chiral}}\rvert^2$ | `5.235326888706135` | `5.041172336191629` |
+| $\lvert Z_1\rvert^2$ | `0.036484835495740914` | `0.039349290969561426` |
+| direct $\langle bbb\rangle$ | `-2.1401648028735693e-19 - 1.6750770504677397e-18 i` | `-1.0294758647256187e-18 + 8.433074751000023e-20 i` |
+| old anchor-based $\langle bbb\rangle$ | `-2.1399364825777336e-19 - 1.6751007771125136e-18 i` | `-1.0294610079398033e-18 + 8.429203336614126e-20 i` |
+
+The final Igusa comparison is
+
+$$
+\frac{\left|\langle bbb\rangle_{\Omega_1}\right|^2}
+{\left|\langle bbb\rangle_{\Omega_2}\right|^2}
+\left(
+\frac{\lvert Z_{\mathrm{chiral}}(\Omega_1)\rvert^2}
+     {\lvert Z_{\mathrm{chiral}}(\Omega_2)\rvert^2}
+\right)^{26}
+=
+\frac{|\det S(\Omega_1)|^2}{|\det S(\Omega_2)|^2}
+\frac{|\chi_{10}(\Omega_2)|^2}{|\chi_{10}(\Omega_1)|^2},
+$$
+
+with numerical values
+
+    LHS = 7.139760447638384
+    RHS = 7.139757771156295
+    LHS / RHS = 1.0000003748701531
+    relative difference = 3.748701531730963e-07
+
+So with the corrected convention the genus-2 Igusa check passes to about
+$4\times 10^{-7}$ relative accuracy.
+
 ##### Unit-test addendum
 
-The unit-test suite in `test_riemann_surface_tools.py` gained four new
-tests (all passing):
+The unit-test suite in `test_riemann_surface_tools.py` gained six new
+tests over the course of the `\Delta` and default-convention fixes (all passing):
 
 1. `test_canonical_riemann_constant_matches_genus1_half_period_modulo_lattice`
 2. `test_canonical_riemann_constant_satisfies_vanishing_genus2_symmetric`
@@ -1763,8 +1938,10 @@ tests (all passing):
    (this is the regression test against the old "Z_3-symmetry artifact"
    failure mode)
 4. `test_canonical_riemann_constant_makes_sigma_ratio_divisor_independent_genus2`
+5. `test_default_sigma_ratio_uses_canonical_delta_at_genus2`
+6. `test_default_genus2_bbb_correlator_uses_canonical_delta`
 
-Total suite runtime is now ~65 s (25 tests pass).
+Total suite runtime is now about 175 s (27 tests pass).
 
 ### 2.3 Known non-bug to be aware of
 

@@ -63,7 +63,7 @@ def _canonical_bbb_correlator(
     z1,
     nmax: int = 12,
 ):
-    Delta = rst.riemann_constant_vector(surface)
+    Delta = rst.riemann_constant_vector_canonical(surface, nmax=nmax)
     zeta_b = np.sum(
         np.asarray([rst.abel_map(point, surface) for point in b_points], dtype=np.complex128),
         axis=0,
@@ -94,7 +94,7 @@ def _canonical_bbb_correlator(
 
 
 def _direct_bbb_component_data(surface, b_points, *, z1, nmax: int = 12):
-    Delta = rst.riemann_constant_vector(surface)
+    Delta = rst.riemann_constant_vector_canonical(surface, nmax=nmax)
     sigma_vals = rst.genus2_sigma_values_from_lambda_one(
         b_points,
         surface,
@@ -141,12 +141,16 @@ def _surface_data_for_ratio_check(ribbon_graph, edge_lengths, *, gamma: float, a
         alpha=alpha,
     )
     surface = rst.build_surface_from_ribbon_graph(ribbon_graph, edge_lengths)
+    abs_zchiral_sq = rst.canonical_abs_zchiral_sq(
+        surface,
+        renormalized_det_factor=renormalized_det_factor,
+    )
     abs_z1_sq = rst.canonical_abs_z1_sq(
         surface,
         renormalized_det_factor=renormalized_det_factor,
     )
     z1 = rst.canonical_chiral_z1(abs_z1_sq)
-    return surface, renormalized_det_factor, abs_z1_sq, z1
+    return surface, renormalized_det_factor, abs_zchiral_sq, abs_z1_sq, z1
 
 
 def main():
@@ -174,8 +178,8 @@ def main():
         alpha=shared.alpha,
     )
 
-    surface_1, ren_1, abs_z1_sq_1, z1_1 = data_1
-    surface_2, ren_2, abs_z1_sq_2, z1_2 = data_2
+    surface_1, ren_1, abs_zchiral_sq_1, abs_z1_sq_1, z1_1 = data_1
+    surface_2, ren_2, abs_zchiral_sq_2, abs_z1_sq_2, z1_2 = data_2
 
     pieces_1 = _direct_bbb_component_data(
         surface_1,
@@ -211,7 +215,7 @@ def main():
     chi10_1 = elt.igusa_chi10_genus2(surface_1.Omega, nmax=12, normalization="product")
     chi10_2 = elt.igusa_chi10_genus2(surface_2.Omega, nmax=12, normalization="product")
 
-    lhs = (abs(corr_1) ** 2 / abs(corr_2) ** 2) * ((abs_z1_sq_1 / abs_z1_sq_2) ** 26)
+    lhs = (abs(corr_1) ** 2 / abs(corr_2) ** 2) * ((abs_zchiral_sq_1 / abs_zchiral_sq_2) ** 26)
     rhs = (abs(sdet_1) ** 2 / abs(sdet_2) ** 2) * (abs(chi10_2) ** 2 / abs(chi10_1) ** 2)
 
     print("Genus-2 bc / Igusa ratio check")
@@ -225,6 +229,7 @@ def main():
     print(f"  total L = {2 * sum(edge_lengths_1)}")
     print(f"  Omega =\n{surface_1.Omega}")
     print(f"  renormalized det factor = {ren_1}")
+    print(f"  |Z_chiral|^2 = {abs_zchiral_sq_1}")
     print(f"  |Z1|^2 = {abs_z1_sq_1}")
     print(f"  direct <bbb> = {corr_1}")
     print(f"  old anchor-based <bbb> = {old_corr_1}")
@@ -240,6 +245,7 @@ def main():
     print(f"  total L = {2 * sum(edge_lengths_2)}")
     print(f"  Omega =\n{surface_2.Omega}")
     print(f"  renormalized det factor = {ren_2}")
+    print(f"  |Z_chiral|^2 = {abs_zchiral_sq_2}")
     print(f"  |Z1|^2 = {abs_z1_sq_2}")
     print(f"  direct <bbb> = {corr_2}")
     print(f"  old anchor-based <bbb> = {old_corr_2}")
@@ -251,6 +257,7 @@ def main():
     print(f"  chi10 = {chi10_2}")
     print()
     print("Ratio comparison")
+    print("  LHS uses |<bbb>|^2 * |Z_chiral|^52")
     print(f"  LHS = {lhs}")
     print(f"  RHS = {rhs}")
     print(f"  LHS / RHS = {lhs / rhs}")

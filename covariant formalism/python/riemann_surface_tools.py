@@ -1560,6 +1560,32 @@ def abs_z1_sq_from_lambda_one(
     return float(abs(factor) ** (4.0 / 3.0))
 
 
+def abs_zchiral_sq_from_renormalized_det(
+    surface: RiemannSurfaceData,
+    *,
+    normalization_factor: float = 1.0,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Evaluate the chiral-boson partition factor `|Z_chiral|^2`.
+
+    With the convention in the updated `Strebel.tex`,
+
+        Z_chiral = Z_1^{-1/2},
+
+    and the renormalized determinant formula gives
+
+        |Z_chiral|^2 = [det Im(Omega)]^{1/2} exp(c(Omega))
+
+    up to a moduli-independent normalization factor.
+    """
+    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
+    det_im_omega = float(np.linalg.det(im_omega))
+    if det_im_omega <= 0.0:
+        raise ValueError("Need det(Im Omega) > 0 to evaluate |Z_chiral|^2.")
+    return float(normalization_factor) * np.sqrt(det_im_omega) * float(renormalized_det_factor)
+
+
 def abs_z1_sq_from_renormalized_det(
     surface: RiemannSurfaceData,
     *,
@@ -1569,24 +1595,32 @@ def abs_z1_sq_from_renormalized_det(
     r"""
     Evaluate
 
-        |Z_1|^2 = N_1 [det Im(Omega)]^{1/2} exp(c(Omega)),
+        |Z_1|^2 = N_1 [det Im(Omega)]^{-1} exp(-2 c(Omega)),
 
     where exp(c(Omega)) is the renormalized finite part extracted from the
     large-L fit to -1/2 log(det A').
 
-    The default `normalization_factor=1.0` is the canonical convention where
-    the renormalized determinant formula itself defines `|Z_1|^2`, i.e.
+    This follows from the updated convention in `Strebel.tex`
 
-        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)).
+        Z_chiral = Z_1^{-1/2},
 
-    In the notation of Strebel.tex this corresponds to choosing
-    `mathcal{N}_1 = 1` (equivalently `log mathcal{N}_1 = 0`).
+    together with
+
+        |Z_chiral|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)).
+
+    Therefore
+
+        |Z_1| = [det Im(Omega)]^{-1/2} exp(-c(Omega)),
+        |Z_1|^2 = [det Im(Omega)]^{-1} exp(-2 c(Omega)).
     """
-    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
-    det_im_omega = float(np.linalg.det(im_omega))
-    if det_im_omega <= 0.0:
-        raise ValueError("Need det(Im Omega) > 0 to evaluate |Z_1|^2.")
-    return float(normalization_factor) * np.sqrt(det_im_omega) * float(renormalized_det_factor)
+    abs_zchiral_sq = abs_zchiral_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+    if abs_zchiral_sq <= 0.0:
+        raise ValueError("Need |Z_chiral|^2 > 0 to evaluate |Z_1|^2.")
+    return float(normalization_factor) / float(abs_zchiral_sq ** 2)
 
 
 def canonical_abs_z1_sq(
@@ -1599,11 +1633,33 @@ def canonical_abs_z1_sq(
 
     This is a thin wrapper for the convention
 
-        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)),
+        |Z_1|^2 = [det Im(Omega)]^{-1} exp(-2 c(Omega)),
 
     with no extra moduli-independent factor.
     """
     return abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+
+
+def canonical_abs_zchiral_sq(
+    surface: RiemannSurfaceData,
+    *,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Return the canonical `|Z_chiral|^2` from the renormalized determinant.
+
+    With the current convention,
+
+        Z_chiral = Z_1^{-1/2},
+
+    so this is the quantity directly extracted from the renormalized boson
+    determinant.
+    """
+    return abs_zchiral_sq_from_renormalized_det(
         surface,
         normalization_factor=1.0,
         renormalized_det_factor=renormalized_det_factor,
@@ -1674,8 +1730,11 @@ def sigma_scale_from_z1(
       equation, so this procedure cannot determine sigma normalization.
     - If `z1` is omitted, the function uses the naive chiral choice
       `Z_1 = +sqrt(|Z_1|^2)`. You may supply `abs_z1_sq` directly or
-      `renormalized_det_factor`, in which case the canonical convention
-      `|Z_1|^2 = [det Im(Omega)]^(1/2) exp(c(Omega))` is used.
+      `renormalized_det_factor`, in which case the current canonical convention
+      implied by `Z_chiral = Z_1^{-1/2}` is used:
+
+          |Z_chiral|^2 = [det Im(Omega)]^(1/2) exp(c(Omega)),
+          |Z_1|^2 = |Z_chiral|^(-4).
     """
     if surface.genus <= 1:
         raise ValueError(
@@ -2046,7 +2105,12 @@ def normalization_factor_from_lambda_one(
         raise ValueError("Need det(Im Omega) > 0 to determine the normalization factor.")
     if renormalized_det_factor <= 0.0:
         raise ValueError("renormalized_det_factor must be positive.")
-    return float(abs_z1_sq / (np.sqrt(det_im_omega) * float(renormalized_det_factor)))
+    canonical_abs_z1_sq_value = abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+    return float(abs_z1_sq / canonical_abs_z1_sq_value)
 
 
 def estimate_abs_z1_sq(
@@ -2076,7 +2140,12 @@ def estimate_abs_z1_sq(
     1. Fit the large-L behavior of -1/2 log(det A') at fixed edge-length ratios.
     2. Build a large surface at the chosen reference edge lengths.
     3. Use the lambda=1, (n,m)=(g,1) identity to compute |Z_1|^2.
-    4. Convert that into the moduli-independent normalization N_1.
+    4. Compare that against the determinant-based convention
+
+           |Z_chiral|^2 = [det Im(Omega)]^(1/2) exp(c(Omega)),
+           |Z_1|^2 = |Z_chiral|^(-4),
+
+       to extract the moduli-independent normalization N_1.
 
     As in `normalization_factor_from_lambda_one`, the extracted N_1 is tied to
     the sigma normalization convention supplied here.
@@ -2146,7 +2215,11 @@ def estimate_canonical_abs_z1_sq(
     High-level helper for the canonical convention `mathcal{N}_1 = 1`.
 
     This uses the renormalized determinant formula itself as the definition of
-    `|Z_1|^2`, without trying to extract a separate normalization from the
+    `|Z_chiral|^2`, and then converts to the current `|Z_1|^2` convention via
+
+        Z_chiral = Z_1^{-1/2}.
+
+    It therefore does not try to extract a separate normalization from the
     `lambda=1`, `(n,m)=(g,1)` identity.
     """
     fit = fit_renormalized_aprime_factor(
