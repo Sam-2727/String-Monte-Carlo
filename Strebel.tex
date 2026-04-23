@@ -525,4 +525,16 @@ where $\chi_{10}$ is the Igusa cusp form. Since the quantity $\left|\langle b(z_
 \fe
 which holds for general moduli $\Omega_1, \Omega_2$.
 
+For genus 3, there's a similar check against the Mumford form $\chi_{18}$. The ghost + matter correlator are given by
+\ie
+\left|\langle \prod_{i=1}^6 b(z_i)\rangle\right|^2 |Z_\text{chiral}(\Omega)|^{52} \propto |\det(S_i(z_j))|^2|\chi_{18}|^{-1}
+\fe
+Similarly, the matrix $S_i(z_j)$ is given by the quadratic products of the 3 normalized holomorphic 1-forms. This can be only done for non-hyperelliptic genus-3 riemann surfaces, as for hyperelliptic genus-3 surfaces the 6 $S_i$'s are no longer linear independent and they no longer span the Cech cohomology $H^0(\Sigma, K^2)$ of global sections. The object $\chi_{18}$ is the genus-3 Mumford form, which can be calculated using the theta product formula
+\ie
+\chi_{18}=\prod_{\delta \text{ even}}\theta[\delta](0|\Omega)
+\fe
+which involves 36 even spin structures $\delta$. This relation has been checked for 4 different genus 3 moduli in \texttt{genus3\_bc\_chi18\_ratio\_check.py}.
+
+For genus 4 and higher, there are no analogous checks one can perform, as $S_i$ constructed using quadratic products of holomorphic 1-form will admit nontrivial relations. There are also no analogous object to the Igusa cusp form or the Mumford form for higher genus.
+
 \end{document}

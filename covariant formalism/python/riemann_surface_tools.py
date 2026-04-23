@@ -794,6 +794,21 @@ def sigma_ratio(
             f"Need exactly g={surface.genus} divisor points, got {len(divisor_points)}."
         )
 
+    z = np.complex128(z)
+    w = np.complex128(w)
+    coincidence_tol = 1e-12
+    for point in divisor_points:
+        if abs(point - z) < coincidence_tol:
+            raise ValueError(
+                "divisor_points must be disjoint from z in sigma_ratio; "
+                f"got divisor point {point!r} coinciding with z={z!r}."
+            )
+        if abs(point - w) < coincidence_tol:
+            raise ValueError(
+                "divisor_points must be disjoint from w in sigma_ratio; "
+                f"got divisor point {point!r} coinciding with w={w!r}."
+            )
+
     if Delta is None:
         Delta = _default_riemann_constant(
             surface,
