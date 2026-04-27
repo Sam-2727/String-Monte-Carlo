@@ -1,0 +1,156 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,bm,epsf,epsfig,graphicx,hyperref,physics, cleveref, subfig, slashed, stmaryrd, tensor, float}
+\usepackage[backend=bibtex,natbib,style=numeric-comp,sorting=none, doi=false, isbn=false,url=false]{biblatex}
+\addbibresource{ref}
+\input epsf.sty
+\topmargin -.5cm \textheight 21cm \oddsidemargin -.125cm
+\textwidth 17cm
+\setlength{\parskip}{0.7em}
+
+\usepackage[]{todonotes}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+\usepackage[weather, alpine]{ifsym}
+
+\definecolor{bisque}{rgb}{1.0, 0.89, 0.77}
+\definecolor{forestgreen(web)}{rgb}{0.13, 0.55, 0.13}
+
+\def\be{\begin{equation}}
+\def\ee{\end{equation}}
+\def\bea{\begin{eqnarray}}
+\def\eea{\end{eqnarray}}
+\def\ie{\begin{equation}\begin{aligned}}
+\def\fe{\end{aligned}\end{equation}}
+\numberwithin{equation}{section}
+\def\mt{\bar}
+
+\renewcommand{\title}[1]{\vbox{\center\LARGE{#1}}\vspace{5mm}}
+\renewcommand{\author}[1]{\vbox{\center#1}\vspace{5mm}}
+\newcommand{\address}[1]{\vbox{\center\em#1}}
+\newcommand{\email}[1]{\vbox{\center\tt#1}\vspace{5mm}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+\unitlength = .8mm
+
+\begin{titlepage}
+
+\begin{center}
+
+\hfill \\
+\hfill \\
+\vskip 1cm
+
+\title{Bosonic String Amplitudes From Ribbon Graphs}
+
+\author{Sam Christian, Ben Mazel, Jaroslav Scheinpflug, Yuchen Wang, Xi Yin, Yutai Zhang}
+
+\address{Jefferson Physical Laboratory, Harvard University,
+Cambridge, MA 02138 USA
+}
+
+\email{yuchen\_wang@fas.harvard.edu, xiyin@fas.harvard.edu\\ (please enter your email by yourself)}
+
+\end{center}
+
+\abstract{We develop a new method for numerically computing higher-genus CFT correlators and string amplitudes based on Kontsevich's ribbon graph parametrization of the moduli space $\mathcal{M}_{g,n}$ of punctured Riemann surfaces. Using this method, we compute the compact boson partition functions as well as the moduli space integrand for bosonic string vacuum amplitudes at higher genus. Our results are checked against known analytic formulae, including T-duality of the compact boson and Mumford forms relevant to bosonic string amplitudes.}
+
+\vfill
+
+\end{titlepage}
+
+\eject
+
+\begingroup
+\hypersetup{linkcolor=black}
+
+\tableofcontents
+
+\endgroup
+
+\section{Introduction}
+
+
+\section{Riemann surfaces from ribbon graphs}
+
+\subsection{Kontsevich's isomorphism}
+
+In this section, we review Kontsevich's parametrization of the moduli space $\mathcal{M}_{g,n}$ of genus-$g$, $n$-punctured Riemann surface by ribbon graphs \cite{Kontsevich:1992ti}. Specifically, $\mathcal{M}_{g,n}$ can be parametrized via the moduli space $\mathcal{M}_{g,n}^{\text{comb}}$ of metric ribbon graphs through Kontsevich's isomorphism 
+\ie
+\mathcal{M}_{g,n}\times \mathbb{R}_+^n \xrightarrow{\sim} \mathcal{M}_{g,n}^{\text{comb}}
+\fe
+Here, each point of $\mathcal{M}_{g,n}^{\text{comb}}$ corresponds to a genus-$g$, $n$-faced metric ribbon graph, and the $n$ positive numbers in $\mathbb{R}_+^n$ parametrize the total edge length around each face.
+
+This isomorphism can be explicitly constructed using the Strebel differential, namely the unique quadratic differential $\omega = \varphi(z)dz^2$ characterized by the following theorem \cite{Strebel:1967, Strebel:1984}
+\begin{theorem}
+Let $\Sigma$ be a genus-$g$ Riemann surface with $n$ punctures $\{z_1,\cdots, z_n\}$. Given a positive number $p_i\in \mathbb{R}_+$ for each puncture, if $n\geq 1$ and $2-2g-n<0$, there exists an unique quadratic differential $\omega = \varphi(z)dz^2$ that satisfies
+\begin{enumerate}
+\item $\omega$ is holomorphic on $\Sigma\backslash\{z_1,\cdots z_n\}$, and $\omega$ has a double pole at each $z_i$.
+\item The union of all non-compact horizontal trajectories of $\omega$ has measure zero.
+\item Each compact horizontal trajectory of $\omega$ is a simple loop around one of the punctures $z_i$. Horizontal trajectories $\gamma_i$ around puncture $z_i$ satisfies
+\ie
+\oint_{\gamma_i}\sqrt{\varphi(z)}\, dz = p_i
+\fe
+\end{enumerate}
+\end{theorem}
+
+It can be proved that each non-compact horizontal trajectory of $\omega$ is critical, namely that it is bounded by two zeroes of $\omega$. The union of all non-compact horizontal trajectories then forms a graph $\Gamma$, whose vertices of $\Gamma$ are the zeroes of $\omega$ and whole edges are the non-compact horizontal trajectories. Since the edge lengths and the cyclic order of edges at each vertex are preserved under biholomorphism, the graph $\Gamma$ naturally acquires the structure of a metric ribbon graph. The map $\mathcal{M}_{g,n}\times \mathbb{R}_+^n \rightarrow \mathcal{M}_{g,n}^{\text{comb}}$ is then defined by sending $(\Sigma, \{p_i\})$ to the metric ribbon graph $\Gamma$ constructed in this way.
+
+The Riemann surface $\Sigma$ can be divided into $n$ domains $D_i$, each swept out by the compact horizontal trajectories around $z_i$, as illustrated in figure \ref{celldecompSigma}. This gives a cell decomposition of $\Sigma$, in which the 2-cells are the domains $D_i$, while the 1-cells and 0-cells are the edges and vertices of the graph $\Gamma$, respectively.
+
+% All figures are temporary. We should redraw them in tikZ...
+\begin{figure}
+    \begin{center}
+        \includegraphics[scale=0.3]{figures/celldecompSigma.png}
+    \end{center}
+    \caption{Horizontal trajectories of the Strebel differential $\omega$. Red points correspond to the zeroes of $\omega$.}
+    \label{celldecompSigma}
+\end{figure}
+
+Given the Strebel differential $\omega$, one can define the conformally flat metric
+\ie ds^2=|\varphi(z)|dzd\bar{z} \fe
+under which all domains $D_i$ has the geometry of a flat semi-infinite cylinder. The Riemann surface $\Sigma$ can then be reconstructed from the ribbon graph $\Gamma$ by gluing $n$ semi-infinite flat cylinders along the edges of $\Gamma$, as shown in figure \ref{gluingcylinders}. This process defines the inverse map $\mathcal{M}_{g,n}^{\text{comb}}\rightarrow \mathcal{M}_{g,n}\times \mathbb{R}_+^n$.
+
+\begin{figure}
+    \begin{center}
+        \includegraphics[scale=0.5]{figures/gluingcylinders.png}
+    \end{center}
+    \caption{Reconstructing a 3-punctured sphere by gluing 3 semi-infinite cylinders. The left picture shows the ribbon graph $\Gamma$.}
+    \label{gluingcylinders}
+\end{figure}
+
+The combinatorial moduli space $\mathcal{M}_{g,n}^{\text{comb}}$ comes with a natural cell decomposition, in which each cell is labelled by the topology, or combinatorial type, of a ribbon graph. In particular, the top-dimensional cells correspond to trivalent graphs, namely the graphs with only cubic vertices. The full combinatorial moduli space $\mathcal{M}_{g,n}^{\text{comb}}$ is obtained by gluing these cells together along boundaries where one or more edge lengths degenerate to zero. For a trivalent graph with $n$ faces, its dual graph defines a $n$-vertex triangularization of the Riemann surface $\Sigma$, and the number of top-dimensional cells within $\mathcal{M}_{g,n}^{\text{comb}}$ can be counted by enumerating $n$-vertex triangularizations on $\Sigma$. 
+
+In the rest of this paper, we focus on the case of Riemann surfaces with a single puncture. In this case, the Riemann surface $\Sigma$ can be reconstructed from the ribbon graph by identifying segments on the boundary of a unit disk $D$, with the puncture located at the origin of $D$, as illustrated in figure $\ref{gluingdisk}$. 
+
+\begin{figure}
+    \begin{center}
+        \includegraphics[scale=0.2]{figures/gluingdisk.jpg}
+    \end{center}
+    \caption{Reconstructing a 1-punctured torus by gluing boundary segments of the unit disk. Note that the boundary segments are glued in the opposite orientation.}
+    \label{gluingdisk}
+\end{figure}
+
+Since the top-dimensional cells in $\mathcal{M}_{g,1}^{\text{comb}}$ correspond to trivalent graphs, the ribbon graph at a generic point in the moduli space has only cubic vertices. The number of vertices $V$ and edges $E$ in the ribbon graph $\Gamma$ therefore satisfy $3V=2E$. Together with Euler's formula $V-E+F=2-2g$, this implies that $E=6g-3$ and $V=4g-2$. Thus, reconstructing $\Sigma$ requires gluing $6(2g-1)$ segments along the boundary of $D$, and different ways of gluing correspond to different topology of the ribbon graph. The number of one-vertex triangularizations on a genus-$g$ surface was determined by Bacher and Vdovina \cite{BACHER200213}, and the corresponding number of ribbon graph topologies are $1, 9, 1726$ and $1349005$ for genus $1,2,3$ and $4$, respectively.
+
+\subsection{Holomorphic data from ribbon graphs}
+
+Given the metric ribbon graph $\Gamma$, one can numerically compute the basis of holomorphic 1-forms using the following algorithm. 
+
+\section{Free boson CFT from ribbon graphs}
+
+\section{Weyl anomaly and $bc$ ghosts}
+
+\section{Compact boson at higher genus}
+
+\section{Moduli space integrand of vacuum amplitudes}
+
+
+\printbibliography
+\end{document}

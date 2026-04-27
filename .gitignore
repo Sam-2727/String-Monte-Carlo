@@ -28,6 +28,11 @@ covariant formalism/python2/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+*-blx.bib
+*.bbl
+*.blg
+*.run.xml
+*.toc
 
 # Claude Code
 .claude/
