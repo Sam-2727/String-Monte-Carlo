@@ -91,7 +91,7 @@ This isomorphism can be explicitly constructed using the Strebel differential, d
 \begin{theorem}
 Let $\Sigma$ be a genus-$g$ Riemann surface with $n$ punctures $\{z_1,\cdots, z_n\}$. Given a positive number $p_i\in \mathbb{R}_+$ for each puncture, if $n\geq 1$ and $2-2g-n<0$, there exists a unique quadratic differential $\omega = \varphi(z)dz^2$ that satisfies
 \begin{enumerate}
-\item $\omega$ is holomorphic on $\Sigma\backslash\{z_1,\cdots z_n\}$, and $\omega$ has a double pole at each $z_i$.
+\item $\omega$ is holomorphic on $\Sigma\backslash\{z_1,\cdots, z_n\}$, and $\omega$ has a double pole at each $z_i$.
 \item The union of all non-compact horizontal trajectories of $\omega$ has measure zero.
 \item Each compact horizontal trajectory of $\omega$ is a simple loop around one of the punctures $z_i$. Horizontal trajectories $\gamma_i$ around puncture $z_i$ satisfy
 \ie
@@ -113,7 +113,7 @@ Let $\Sigma$ be a genus-$g$ Riemann surface with $n$ punctures $\{z_1,\cdots, z_
 It can be proved that each non-compact horizontal trajectory of $\omega$ is critical, namely that it is bounded by two zeroes of $\omega$. The union of all non-compact horizontal trajectories then forms a graph $\Gamma$ with $n$ faces, whose vertices are the zeroes of $\omega$ and whose edges are the non-compact horizontal trajectories. The Riemann surface $\Sigma$ can be divided into $n$ domains $D_i$, each swept out by the compact horizontal trajectories around $z_i$, as illustrated in figure \ref{celldecompSigma}. This gives a cell decomposition of $\Sigma$, in which the 2-cells are the domains $D_i$, while the 1-cells and 0-cells are the edges and vertices of the graph $\Gamma$, respectively. If we define the conformally flat metric
 \ie ds^2=|\varphi(z)|dzd\bar{z},
 \label{flatcylmetric}\fe
-then the condition \eqref{lengthconst} tells us that all compact horizontal trajectories around $z_i$ have the same length $2\pi p_i$, and the domains $D_i$ have the geometry of a flat semi-infinite cylinder or equivalently a disk. On the domain $D_i$, one can define the disk coordinates $w_i$ to be
+then the condition \eqref{lengthconst} tells us that all compact horizontal trajectories around $z_i$ have the same length $2\pi p_i$, and the domains $D_i$ have the geometry of a flat semi-infinite cylinder or, equivalently, a disk. If on the domain $D_i$ we define the disk coordinates $w_i$ to be
 \ie
 w_i(z) = \exp\left(\frac{i}{p_i}\int^z \sqrt{\omega}\right),
 \label{diskcoord}
@@ -204,7 +204,7 @@ and we make the identifications
 \fe
 as a discretized version of the gluing map \eqref{gluinggenus1}. We will denote the point identified with $z(k)$ by $z(k')$. The relative segment lengths $\tfrac{\ell_1}{L}, \tfrac{\ell_2}{L}$ can be identified with the moduli $\theta_1, \theta_2-\theta_1$, respectively. The Strebel vertices $\pm 1,\pm e^{i\theta_1}, \pm e^{i\theta_2}$ are located halfway between the discretized points at the edges of identified sections of the boundary.
 
-In order to solve \eqref{fzoneform}, we can truncate the Fourier coefficients $a_n$ by restricting to the lowest $\tfrac{L}{2}$ modes, normalize with $a_1=1$, and solve for $a_2,\cdots a_{L/2}$ by imposing the condition that $f(z)dz$ matches across identified discretized points:
+In order to solve \eqref{fzoneform}, we can truncate the Fourier coefficients $a_n$ by restricting to the lowest $\tfrac{L}{2}$ modes, normalize with $a_1=1$, and solve for $a_2,\cdots, a_{L/2}$ by imposing the condition that $f(z)dz$ matches across identified discretized points:
 \ie
 {}&\frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k-\frac 12}{L})} }{(1-e^{4i\pi \frac{k-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}\\
 &\qquad\qquad = - \frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k'-\frac 12}{L})} }{(1-e^{4i\pi \frac{k'-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k'-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k'-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}, ~~~~1 \leq k \leq \tfrac{L}{2},
@@ -339,23 +339,23 @@ Z(\ell_a) &=\int \prod_{k=1}^{L} dX(k)\prod_{k\in \mathcal{K}} \delta(X(k)-X(k')
 \fe
 where the matrix $A(\ell_a)$ is defined by \eqref{Amatrix}, with the identification map replaced by \eqref{gluinggenusg}. The matrix $A'(\ell_a)$ is obtained from $A(\ell_a)$ using \eqref{Aprime}.
 
-Let us finish this section with a few remarks. First, the algorithm outlined above can be generalized easily for 1-point functions, where one simply replace the wavefunctional $\Psi_1[X]$ of identity operator with the wavefunctional $\Psi_\mathcal{O}[X]$ of the corresponding operator. The discretized expression for the 1-point function $\langle \mathcal{O}\rangle$ on the Riemann surface reads
+Let us finish this section with a few remarks. First, the algorithm outlined above can be generalized easily for 1-point functions, where one simply replaces the wavefunctional $\Psi_1[X]$ of the identity operator with the wavefunctional $\Psi_\mathcal{O}[X]$ of the corresponding operator. The discretized expression for the 1-point function $\langle \mathcal{O}\rangle$ on the Riemann surface reads
 \ie
 \langle \mathcal{O}\rangle_{\Sigma(\ell_a)}= \frac{1}{Z(\ell_a)}\int \prod_{k=1}^{L} dX(k)\prod_{k\in \mathcal{K}} \delta(X(k)-X(k'))\,\Psi_\mathcal{O}[X].
 \fe
-Since the operator $\mathcal{O}$ generally have nonzero conformal dimension, one should be careful about the conformal factor that comes with the local coordinates where the operator is inserted.
+Since the operator $\mathcal{O}$ generally has nonzero conformal dimension, one should be careful about the conformal factor that comes with the local coordinates where the operator is inserted.
 
-It is important to notice that the quantity $Z(\ell_a)$ computed this way will be subject to Weyl anomaly, and the Weyl anomaly factor will generally depend on the moduli $\frac{\ell_a}{L}$, or equivalently the period matrix $\Omega$. In particular, one can not compare the genus-1 partition function $Z(\ell_1, \ell_2)$ with the analytic expression obtained from the flat torus frame as is, as there is a nontrivial Weyl transform that relates the disk and the flat torus frame. However, one can compare the partition function of 2 different theories (with the same central charge) at the same moduli, or compute the 1-point function $\langle \mathcal{O}\rangle$ of nontrivial operators, and such observables will be free from the Weyl anomaly factor.
+It is important to notice that the quantity $Z(\ell_a)$ computed this way will be subject to Weyl anomaly, and the Weyl anomaly factor will generally depend on the moduli $\frac{\ell_a}{L}$, or equivalently the period matrix $\Omega$. In particular, one cannot compare the genus-1 partition function $Z(\ell_1, \ell_2)$ with the analytic expression obtained from the flat torus frame as is, as there is a nontrivial Weyl transform that relates the disk and the flat torus frame. However, one can compare the partition functions of two different theories (with the same central charge) at the same moduli, or compute the 1-point function $\langle \mathcal{O}\rangle$ of nontrivial operators, and such observables will be free from the Weyl anomaly factor.
 
-It is also worth noting that the quantity $Z(\ell_1, \ell_2)$, as a function of the total length $L$, is divergent in the continuum limit $L\rightarrow \infty$. There are two sources for the divergence. One is due to the discretization scheme and the normalization of the Gaussian measure, which scales like $\exp(\text{const}\cdot L)$. This piece is clearly moduli-independent. The other is due to the divergence in the Weyl anomaly factor, which scales like a constant power of $L$. One can directly compute this divergent behavior as the following.
+It is also worth noting that the quantity $Z(\ell_1, \ell_2)$, as a function of the total length $L$, is divergent in the continuum limit $L\rightarrow \infty$. There are two sources of the divergence. One is due to the discretization scheme and the normalization of the Gaussian measure, which scales like $\exp(\text{const}\cdot L)$. This piece is clearly moduli-independent. The other is due to the divergence in the Weyl anomaly factor, which scales like a constant power of $L$. One can directly compute this divergent behavior as follows.
 
-Around a cubic vertex of the ribbon graph, the metric \eqref{flatcylmetric} have the behavior $ds^2 =e^{2\omega} dz d\bar z \sim |z| dz d\bar z$, and so the Weyl transformation $\omega$ that relates the disk metric with the locally flat metric behaves like $\omega \sim {1\over 2} \log|z|$. Near the puncture, on the otherhand, we have $\omega \sim - \log|z|$. The Weyl anomaly factor in going from the flat metric to the ribbon graph metric on the torus is given by $e^{S_\text{Weyl}}$ with
+Around a cubic vertex of the ribbon graph, the metric \eqref{flatcylmetric} has the behavior $ds^2 =e^{2\omega} dz d\bar z \sim |z| dz d\bar z$, and so the Weyl transformation $\omega$ that relates the disk metric with the locally flat metric behaves like $\omega \sim {1\over 2} \log|z|$. Near the puncture, on the other hand, we have $\omega \sim - \log|z|$. The Weyl anomaly factor in going from the flat metric to the ribbon graph metric on the torus is given by $e^{S_\text{Weyl}}$ with
 \ie\label{sweyl}
 S_\text{Weyl} = {1\over 12\pi} \int_{D^2} d^2z \,\partial\omega \bar\partial\omega \sim \frac{2g-1}{24}\log \frac{1}{\delta} +\frac{1}{12} \log \frac{1}{\epsilon},
 \fe
-where $\delta$ and $\epsilon$ are the cutoff parameters near the $(4g-2)$ cubic vertices and the puncture, respectively. From here, one can see that the coefficient of the logarithmic divergence is independent from the moduli $\Omega$.
+where $\delta$ and $\epsilon$ are the cutoff parameters near the $(4g-2)$ cubic vertices and the puncture, respectively. From here, one can see that the coefficient of the logarithmic divergence is independent of the moduli $\Omega$.
 
-If we want to have a finite answer when taking the $L\rightarrow \infty$ limit, we need to further renormalize the action by adding counterterms. The large-$L$ behavior of the partition function take the form 
+If we want to have a finite answer when taking the $L\rightarrow \infty$ limit, we need to further renormalize the action by adding counterterms. The large-$L$ behavior of the partition function takes the form
 \ie\label{largeL}
 \log Z(L;\ell_a) \sim c(\Omega) + \gamma L + \alpha(g) \log L,
 \fe
@@ -366,13 +366,13 @@ In order to arrive at a finite partition function in the $L\rightarrow \infty$ l
 \ie
 S_\text{CT} = \gamma L + (\alpha_0+\alpha_1)\log L- \frac{\alpha_1}{8\pi}\log L\int_\Sigma \mathrm{d}^2\sigma \sqrt{g}\, R(g).
 \fe
-These counterterm will cancel with the divergences in \eqref{largeL}, and the renormalized partition function is given by simply
+These counterterms will cancel the divergences in \eqref{largeL}, and the renormalized partition function is simply given by
 \ie
 Z_\text{r}(\Omega) = \exp c(\Omega).
 \fe
-The renormalization scheme here is not unique, and one can perform a finite renormalization, namely add arbitrary finite part to the counterterms, to define a different renormalization scheme.
+The renormalization scheme here is not unique, and one can perform a finite renormalization, namely adding an arbitrary finite part to the counterterms, to define a different renormalization scheme.
 
-\subsection{The compact Boson partition function}
+\subsection{The compact boson partition function}
 
 \section{$bc$ ghosts and string amplitudes}
 
@@ -380,6 +380,15 @@ The renormalization scheme here is not unique, and one can perform a finite reno
 
 \section{Comparison with analytic results}
 
+\subsection{The stress-tensor 1-point function}
+
+\subsection{T-duality}
+
+\subsection{Ratio of compact boson partition functions}
+
+\subsection{The Igusa cusp form}
+
+\subsection{The genus-3 Mumford form}
 
 \printbibliography
 \end{document}
