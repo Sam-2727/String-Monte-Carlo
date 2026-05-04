@@ -79,6 +79,8 @@ Cambridge, MA 02138 USA
 
 \section{Riemann surfaces from ribbon graphs}
 
+\label{geometrysection}
+
 \subsection{Kontsevich's isomorphism}
 
 In this section, we review Kontsevich's parametrization of the moduli space $\mathcal{M}_{g,n}$ of genus-$g$, $n$-punctured Riemann surfaces by ribbon graphs \cite{Kontsevich:1992ti}. Specifically, $\mathcal{M}_{g,n}$ can be parametrized via the moduli space $\mathcal{M}_{g,n}^{\text{comb}}$ of metric ribbon graphs through Kontsevich's isomorphism 
@@ -226,6 +228,8 @@ Once the holomorphic 1-form is solved, we can numerically compute the usual comp
 In the disk frame, both of these cycles are given by chords that connect the Strebel vertices, as illustrated in figure \ref{torus1cycles}.
 
 \subsection{Holomorphic data from ribbon graphs: Higher genus}
+
+\label{holodata}
 
 The algorithm above can be generalized to the case of $g\geq 2$. The genus-$g$ Riemann surface can be reconstructed by gluing $12g-6$ boundary segments on the disk. Upon discretizing the unit circle into $L$ sites, the moduli space $\mathcal{M}_{g,1}$ can be parametrized by the $6g-4$ independent edge lengths.
 
@@ -487,18 +491,18 @@ where $n\in \mathbb{Z}^{2g}$ is a lattice vector in the $2g$-dimensional integra
 
 The discretized compact boson partition function can then be computed by summing over all physical shifts
 \ie
-Z(R;L;\ell_a)= \sum_{n\in \mathbb{Z}^{2g}} \int \prod_{k=1}^{L} dX(k)\prod_{a=1}^{6g-3} \prod_{k\in S_{i_1(a)}} \delta\left(X(k')-X(k)-2\pi R s_a\right)\,\Psi_1[X],
+Z(R;L;\ell_a)= \sum_{n\in \mathbb{Z}^{2g}} \int \prod_{k=1}^{L} dX(k)\prod_{a=1}^{6g-3} \prod_{k\in S_{i_1(a)}} \delta\left(X(k')-X(k)-2\pi R s_a(n)\right)\,\Psi_1[X],
 \fe
-where $s_a$ is given by \eqref{physicalshifts} in terms of the lattice vector $n$. After replacing the variables $X(k)$ with $k\in \{1,\cdots, L\}\backslash \mathcal{K}$ using the delta functions and factoring out the zero mode, one obtains
+where $s_a(n)$ is given by \eqref{physicalshifts} in terms of the lattice vector $n$. After replacing the variables $X(k)$ with $k\in \{1,\cdots, L\}\backslash \mathcal{K}$ using the delta functions and factoring out the zero mode, one obtains
 \ie
-Z(R;L;\ell_a) = 2\pi R\int_{k\in \mathcal{K}'} dX(k) \exp\left[-\sum_{k,\ell\in\mathcal{K}'}\mathbf{A}'_{k\ell}X(k)X(\ell)+2\sum_{k\in \mathcal{K}'}\mathbf{v}'_k X(k) +\mathbf{C}\right],
+Z(R;L;\ell_a) = 2\pi R\sum_{n\in \mathbb{Z}^{2g}}\int_{k\in \mathcal{K}'} \prod_{k\in \mathcal{K}}dX(k) \exp\left[-\sum_{k,\ell\in\mathcal{K}'}\mathbf{A}'_{k\ell}X(k)X(\ell)+2\sum_{k\in \mathcal{K}'}\mathbf{v}'_k X(k) +\mathbf{C}\right],
 \fe
 where the set $\mathcal{K}'$ is defined to be $\mathcal{K}\backslash\{1\}$. The matrix $\mathbf{A}'$, the vector $\mathbf{v}'$, and the constant $\mathbf{C}$ are defined as
 \ie
 &\mathbf{M}_{k\ell}=\frac{1}{2\pi \alpha' L}\frac{\sin \frac{\pi}{L}}{\cos \frac{2\pi (k-\ell)}{L}-\cos \frac{\pi}{L}},\\
 &\mathbf{A}_{k\ell} = \mathbf{M}_{k\ell}+ \mathbf{M}_{k'\ell} + \mathbf{M}_{k \ell'} +\mathbf{M}_{k'\ell'},\quad \mathbf{A}'_{k\ell}= \mathbf{A}_{k\ell} - \mathbf{A}_{1,\ell} - \mathbf{A}_{k,1} + \mathbf{A}_{1,1},\\
-&\mathbf{v}_k = 2\pi R\sum_{a=1}^{6g-3} s_a \sum_{\ell\in S_{i_1(a)}}(\mathbf{M}_{k\ell'}+\mathbf{M}_{k'\ell'}),\quad \mathbf{v}'_k = \mathbf{v}_k-\mathbf{v}_1,\\
-&\mathbf{C}= (2\pi R)^2 \sum_{a,b=1}^{6g-3} s_a s_b \sum_{k\in S_{i_1(a)}} \sum_{\ell \in S_{i_1(b)}} \mathbf{M}_{k'\ell'}.
+&\mathbf{v}_k = 2\pi R\sum_{a=1}^{6g-3} s_a(n) \sum_{\ell\in S_{i_1(a)}}(\mathbf{M}_{k\ell'}+\mathbf{M}_{k'\ell'}),\quad \mathbf{v}'_k = \mathbf{v}_k-\mathbf{v}_1,\\
+&\mathbf{C}= (2\pi R)^2 \sum_{a,b=1}^{6g-3} s_a(n) s_b(n) \sum_{k\in S_{i_1(a)}} \sum_{\ell \in S_{i_1(b)}} \mathbf{M}_{k'\ell'}.
 \fe
 One can then directly perform the Gaussian integral to find
 \ie
@@ -513,6 +517,30 @@ where $\Theta$ is the Siegel theta function that comes from summing over lattice
 and the matrix $\mathbf{B}$ is defined in \eqref{Bmatrix}.
 
 \section{$bc$ ghosts and string amplitudes}
+
+Correlators of the fermionic $(b_\lambda, c_{1-\lambda})$ system on higher-genus Riemann surfaces can be computed from the holomorphic data computed in section \ref{holodata} using the formula \cite{Verlinde:1986kw}
+\ie
+\left\langle\prod_{i=1}^n b_\lambda\left(z_i\right) \prod_{j=1}^m c_{1-\lambda}\left(w_j\right)\right\rangle_{\Sigma}=\  & Z_\text{chiral}\ \theta\left(\sum_i \zeta\left(z_i\right)-\sum_j \zeta\left(w_j\right)-(2 \lambda-1) \Delta \mid \Omega\right) \\
+& \times \frac{\prod_{i<i^{\prime}} E\left(z_i, z_{i^{\prime}}\right) \prod_{j<j^{\prime}} E\left(w_j, w_{j^{\prime}}\right) \prod_i\left(\sigma\left(z_i\right)\right)^{2 \lambda-1}}{\prod_{i, j} E\left(z_i, w_j\right) \prod_j\left(\sigma\left(w_j\right)\right)^{2 \lambda-1}},
+\fe 
+where $n$ and $m$ must saturate the ghost number anomaly $n-m=(2\lambda-1)(g-1)$. The definitions of the chiral boson partition function $Z_{\text{chiral}}$, the Abel-Jacobi map $\zeta(z)$, the Riemann constant vector $\Delta$, the prime form $E(z,w)$, and the function $\sigma(z)$ will be discussed below in detail, together with the algorithm we use to compute them from the holomorphic 1-forms $\omega_i$ and the period matrix $\Omega$.
+
+\subsubsection*{The chiral boson partition function}
+
+The chiral boson partition function $Z_{\text{chiral}}$ is the holomorphic conformal block of the $U(1)$ current algebra generated by $\partial X$ in the free boson CFT. It can be related to the free boson partition function by
+\ie
+Z_\text{bos}(\Omega) = V_X\int \frac{d^gk}{(2\pi)^g} e^{-\pi k^I k^J\mathrm{Im}(\Omega_{IJ})}|Z_\text{chiral}|^2 \propto \left[\det \mathrm{Im}(\Omega_{IJ})\right]^{-1/2}|Z_1|^{-1}.
+\fe
+
+Notably, the quantity $Z_{\text{chiral}}$ is dependent on the Weyl frame and subject to gravitational anomaly due to the unbalanced central charge $(1,0)$. To specify $Z_{\text{chiral}}$ one must 
+
+\subsubsection*{The Abel-Jacobi map}
+
+\subsubsection*{Spin structures and the prime form}
+
+\subsubsection*{The Riemann constant vector}
+
+\subsubsection*{The function $\sigma(z)$}
 
 \label{bcsection}
 
