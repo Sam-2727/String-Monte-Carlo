@@ -76,6 +76,15 @@ class LargeLFitResult:
 
 
 @dataclass(frozen=True)
+class UniversalLargeLCoefficients:
+    gamma: float
+    alpha: float
+    r2: float
+    max_abs_log_residual: float
+    family_constants: tuple[float, ...]
+
+
+@dataclass(frozen=True)
 class RenormalizedZ1Data:
     abs_z1_sq: float
     normalization_factor: float
@@ -539,6 +548,217 @@ def riemann_constant_vector(
     return np.asarray(Delta, dtype=np.complex128)
 
 
+def _canonical_divisor_zeros_from_form(
+    form,
+    *,
+    zero_radius: float = 0.99,
+    coeff_tol: float = 1e-10,
+) -> np.ndarray:
+    r"""
+    Return the zeros of an A-normalized higher-genus one-form inside the disc.
+
+    The improved higher-genus forms have the shape
+
+        f(z) = singular(z) * polynomial(z),
+
+    where `singular(z) = prod_i (1 - z/z_i)^(-1/3)` blows up at the 18 prevertices
+    on |z| = 1 and has no zeros in the disc interior. Hence zeros of `f` in the
+    disc are exactly zeros of the polynomial part.
+
+    This helper returns polynomial roots with `|z| < zero_radius`; for a
+    correctly built genus-`g` form that count equals `2g - 2`.
+    """
+    coeffs = getattr(form, "coeffs", None)
+    if coeffs is None:
+        raise ValueError(
+            "Form has no `.coeffs` attribute; "
+            "_canonical_divisor_zeros_from_form requires an improved form."
+        )
+    coeffs = np.asarray(coeffs, dtype=np.complex128)
+    nonzero = np.nonzero(np.abs(coeffs) > float(coeff_tol))[0]
+    if nonzero.size == 0:
+        raise ValueError("Form polynomial is numerically zero.")
+    trimmed = coeffs[: int(nonzero[-1]) + 1]
+    if trimmed.size <= 1:
+        return np.empty(0, dtype=np.complex128)
+    roots = np.roots(trimmed[::-1])
+    inside = roots[np.abs(roots) < float(zero_radius)]
+    return np.asarray(inside, dtype=np.complex128)
+
+
+def _default_riemann_constant_filter_points(surface: RiemannSurfaceData) -> tuple[complex, ...]:
+    """Deterministic disc-interior points used to disambiguate the half-lattice."""
+    return (
+        0.11 + 0.09j,
+        -0.08 + 0.17j,
+        0.22 - 0.05j,
+        0.19 + 0.23j,
+        0.03 - 0.24j,
+    )
+
+
+def riemann_constant_vector_canonical(
+    surface: RiemannSurfaceData,
+    *,
+    form_idx: int = 0,
+    zero_radius: float = 0.99,
+    coeff_tol: float = 1e-10,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    filter_points: Sequence[complex] | None = None,
+    sign_convention: str = "strebel",
+) -> np.ndarray:
+    r"""
+    Compute the Riemann constant via Deconinck's canonical-divisor algorithm.
+
+    By Deconinck, Patterson, Swierczewski (2015) Theorem 11, for any canonical
+    divisor `C` of degree `2g - 2`:
+
+        2 K(P_0) = -A(P_0, C)   (mod Lambda).
+
+    The right-hand side determines `K` only modulo `(1/2) Lambda`. The correct
+    half-lattice coset is pinned down by the Riemann vanishing theorem: for any
+    effective divisor `D` of degree `g - 1`,
+
+        theta(K + A(P_0, D), Omega) = 0,
+
+    and for a generic `K_candidate` this condition fails at generic `D`. The
+    algorithm iterates over the `2^(2g)` half-lattice candidates and picks the
+    one that minimises `sum_D |theta(K_candidate + A(P_0, D))|^2` over several
+    filter divisors `D`.
+
+    Parameters
+    ----------
+    form_idx:
+        Which A-normalized holomorphic one-form to read the canonical divisor
+        from. Different `form_idx` give canonical divisors in the same linear
+        equivalence class, so they yield Riemann constants that differ only by
+        a period-lattice vector — each representative is internally consistent.
+    zero_radius, coeff_tol:
+        Passed through to `_canonical_divisor_zeros_from_form` for polynomial
+        root filtering.
+    filter_points:
+        Disc-interior points used as the effective divisor `D` in the
+        multi-divisor filter. At `g = 2` each point is a valid effective
+        divisor of degree `g - 1 = 1`. For `g > 2` the algorithm uses
+        multi-point divisors built by summing up `g - 1` Abel images of these
+        same points.
+    sign_convention:
+        - `"strebel"` (default): returns `Delta` such that
+          `theta(zeta(p) - Delta, Omega) = 0` for every `p`. This matches
+          the sign used throughout `sigma_ratio`, `bc_correlator_geometric_factor`,
+          and the rest of this module (see the `-Delta` inside
+          `sigma_ratio` at `arg_z = zeta_sum - abel_map(z, ...) - Delta`).
+        - `"deconinck"`: returns the Fay/Mumford/Deconinck `K` instead, which
+          satisfies `theta(zeta(p) + K, Omega) = 0`.
+
+    Returns
+    -------
+    np.ndarray of shape `(g,)`.
+
+    Notes
+    -----
+    This function does **not** call the cycle-integral formula used by
+    `riemann_constant_vector`. It is a drop-in replacement that avoids the
+    disc-frame cycle-integral problem documented in
+    `known_genus2_ghost_issues.md` section 6.
+    """
+    if sign_convention not in {"strebel", "deconinck"}:
+        raise ValueError(
+            f"sign_convention must be 'strebel' or 'deconinck', got {sign_convention!r}."
+        )
+    g = int(surface.genus)
+    if not (0 <= int(form_idx) < len(surface.normalized_forms)):
+        raise ValueError(
+            f"form_idx={form_idx} out of range for surface with "
+            f"{len(surface.normalized_forms)} forms."
+        )
+
+    zeros = _canonical_divisor_zeros_from_form(
+        surface.normalized_forms[int(form_idx)],
+        zero_radius=zero_radius,
+        coeff_tol=coeff_tol,
+    )
+    expected = 2 * g - 2
+    if zeros.shape[0] != expected:
+        raise ValueError(
+            f"Canonical divisor from form {form_idx} has {zeros.shape[0]} zeros "
+            f"inside |z| < {zero_radius}, expected {expected}. "
+            "Adjust zero_radius / coeff_tol, or choose a different form."
+        )
+
+    A_of_C = np.zeros(g, dtype=np.complex128)
+    for c in zeros:
+        A_of_C = A_of_C + abel_map(c, surface)
+    K_base = -0.5 * A_of_C
+
+    Omega = np.asarray(surface.Omega, dtype=np.complex128)
+
+    if filter_points is None:
+        filter_points = _default_riemann_constant_filter_points(surface)
+    filter_points = tuple(np.complex128(p) for p in filter_points)
+    if not filter_points:
+        raise ValueError("Need at least one filter point to disambiguate the half-lattice.")
+
+    # Filter divisors: use the effective divisor D = (g-1) * p for each filter
+    # point p, so A(P_0, D) = (g-1) * zeta(p). At g = 2 this is just zeta(p).
+    filter_abel = (g - 1) * np.stack(
+        [abel_map(p, surface) for p in filter_points],
+        axis=0,
+    )
+
+    best_score = None
+    best_K: np.ndarray | None = None
+    for a_tuple in product((0.0, 0.5), repeat=g):
+        for b_tuple in product((0.0, 0.5), repeat=g):
+            h = (
+                np.asarray(a_tuple, dtype=np.complex128)
+                + Omega @ np.asarray(b_tuple, dtype=np.complex128)
+            )
+            K_candidate = K_base + h
+            score = 0.0
+            for zD in filter_abel:
+                theta_val = riemann_theta(
+                    K_candidate + zD,
+                    Omega,
+                    nmax=nmax,
+                    tol=tol,
+                )
+                score += float(abs(theta_val)) ** 2
+            if best_score is None or score < best_score:
+                best_score = score
+                best_K = K_candidate
+
+    assert best_K is not None
+    if sign_convention == "strebel":
+        return np.asarray(-best_K, dtype=np.complex128)
+    return np.asarray(best_K, dtype=np.complex128)
+
+
+def _default_riemann_constant(
+    surface: RiemannSurfaceData,
+    *,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.ndarray:
+    r"""
+    Return the module-default Riemann class vector.
+
+    For genus 1 we keep the legacy half-period formula, which is exact modulo
+    the period lattice and preserves the historical torus conventions used in
+    this module. For genus > 1 we use the canonical-divisor algorithm, since
+    the legacy cycle-integral implementation is not reliable in the disc frame.
+    """
+    if int(surface.genus) <= 1:
+        return riemann_constant_vector(surface, quad_limit=quad_limit)
+    return riemann_constant_vector_canonical(
+        surface,
+        nmax=nmax,
+        tol=tol,
+    )
+
+
 def sigma_ratio(
     z: complex,
     w: complex,
@@ -574,8 +794,28 @@ def sigma_ratio(
             f"Need exactly g={surface.genus} divisor points, got {len(divisor_points)}."
         )
 
+    z = np.complex128(z)
+    w = np.complex128(w)
+    coincidence_tol = 1e-12
+    for point in divisor_points:
+        if abs(point - z) < coincidence_tol:
+            raise ValueError(
+                "divisor_points must be disjoint from z in sigma_ratio; "
+                f"got divisor point {point!r} coinciding with z={z!r}."
+            )
+        if abs(point - w) < coincidence_tol:
+            raise ValueError(
+                "divisor_points must be disjoint from w in sigma_ratio; "
+                f"got divisor point {point!r} coinciding with w={w!r}."
+            )
+
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -718,7 +958,12 @@ def bc_correlator_geometric_factor(
     )
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -852,6 +1097,8 @@ def _fit_large_l_behavior(
     total_lengths,
     log_values,
     *,
+    fixed_gamma: float | None = None,
+    fixed_alpha: float | None = None,
     edge_length_sets=None,
 ) -> LargeLFitResult:
     """Fit log Z(L) = c + gamma L + alpha log L to large-L data."""
@@ -861,21 +1108,33 @@ def _fit_large_l_behavior(
         raise ValueError(
             f"Need one log value per total length; got {len(total_lengths)} and {len(log_values)}."
         )
-    if len(total_lengths) < 3:
-        raise ValueError("Need at least three large-L samples to fit c + gamma L + alpha log L.")
     if any(L <= 0 for L in total_lengths):
         raise ValueError("All total lengths must be positive.")
+    if (fixed_gamma is None) != (fixed_alpha is None):
+        raise ValueError("Provide both fixed_gamma and fixed_alpha, or neither.")
+    if fixed_gamma is None and len(total_lengths) < 3:
+        raise ValueError("Need at least three large-L samples to fit c + gamma L + alpha log L.")
+    if fixed_gamma is not None and len(total_lengths) < 1:
+        raise ValueError("Need at least one sample when gamma and alpha are fixed.")
 
     order = np.argsort(np.asarray(total_lengths, dtype=np.int64))
     l_arr = np.asarray(total_lengths, dtype=np.float64)[order]
     logz_arr = np.asarray(log_values, dtype=np.float64)[order]
-    design = np.column_stack([np.ones_like(l_arr), l_arr, np.log(l_arr)])
-    coef, *_ = np.linalg.lstsq(design, logz_arr, rcond=None)
-    predicted = design @ coef
+
+    if fixed_gamma is None:
+        design = np.column_stack([np.ones_like(l_arr), l_arr, np.log(l_arr)])
+        coef, *_ = np.linalg.lstsq(design, logz_arr, rcond=None)
+        c0, gamma, alpha = coef
+        predicted = design @ coef
+    else:
+        gamma = float(fixed_gamma)
+        alpha = float(fixed_alpha)
+        c0 = float(np.mean(logz_arr - gamma * l_arr - alpha * np.log(l_arr)))
+        predicted = c0 + gamma * l_arr + alpha * np.log(l_arr)
+
     residual = logz_arr - predicted
     ss_res = float(np.sum(residual ** 2))
     ss_tot = float(np.sum((logz_arr - np.mean(logz_arr)) ** 2))
-    c0, gamma, alpha = coef
 
     if edge_length_sets is None:
         sorted_edge_sets = tuple(() for _ in total_lengths)
@@ -899,6 +1158,122 @@ def _fit_large_l_behavior(
         log_values=tuple(float(x) for x in logz_arr),
         edge_length_sets=sorted_edge_sets,
     )
+
+
+def fit_universal_large_l_coefficients(
+    family_samples,
+) -> UniversalLargeLCoefficients:
+    r"""
+    Fit moduli-independent `gamma, alpha` from multiple large-L data families.
+
+    Each family contributes data of the form
+
+        log Z_k(L) = c_k + gamma L + alpha log L,
+
+    where the intercept `c_k` is family-dependent but `gamma, alpha` are
+    shared. The input should be an iterable of `(total_lengths, log_values)`
+    pairs, one per moduli family.
+    """
+    families = [
+        (
+            tuple(int(L) for L in total_lengths),
+            tuple(float(value) for value in log_values),
+        )
+        for total_lengths, log_values in family_samples
+    ]
+    if not families:
+        raise ValueError("Need at least one large-L family to fit universal coefficients.")
+
+    n_families = len(families)
+    rows: list[list[float]] = []
+    targets: list[float] = []
+    for family_idx, (total_lengths, log_values) in enumerate(families):
+        if len(total_lengths) != len(log_values):
+            raise ValueError(
+                f"Family {family_idx} has mismatched lengths: "
+                f"{len(total_lengths)} total lengths and {len(log_values)} log values."
+            )
+        for L, value in zip(total_lengths, log_values):
+            if L <= 0:
+                raise ValueError(f"All total lengths must be positive; got L={L}.")
+            row = [0.0] * (n_families + 2)
+            row[family_idx] = 1.0
+            row[-2] = float(L)
+            row[-1] = float(np.log(L))
+            rows.append(row)
+            targets.append(float(value))
+
+    if len(rows) < n_families + 2:
+        raise ValueError(
+            "Need at least n_families + 2 total samples to fit shared gamma and alpha."
+        )
+
+    design = np.asarray(rows, dtype=np.float64)
+    target_arr = np.asarray(targets, dtype=np.float64)
+    coef, *_ = np.linalg.lstsq(design, target_arr, rcond=None)
+    predicted = design @ coef
+    residual = target_arr - predicted
+    ss_res = float(np.sum(residual ** 2))
+    ss_tot = float(np.sum((target_arr - np.mean(target_arr)) ** 2))
+
+    return UniversalLargeLCoefficients(
+        gamma=float(coef[-2]),
+        alpha=float(coef[-1]),
+        r2=1.0 - ss_res / ss_tot if ss_tot > 0.0 else 1.0,
+        max_abs_log_residual=float(np.max(np.abs(residual))),
+        family_constants=tuple(float(x) for x in coef[:-2]),
+    )
+
+
+def renormalized_aprime_factor_from_raw_det(
+    total_lengths,
+    aprime_determinants,
+    *,
+    gamma: float,
+    alpha: float,
+) -> float:
+    r"""
+    Return `exp(c(Omega))` from raw `det A'` values and fixed `gamma, alpha`.
+
+    Given
+
+        -1/2 log det A' = c(Omega) + gamma L + alpha log L,
+
+    this strips the universal large-L piece and averages the remaining finite
+    part over the supplied large-L samples.
+    """
+    log_values = []
+    for det_value in aprime_determinants:
+        det_value = float(det_value)
+        if det_value <= 0.0:
+            raise ValueError(f"Need det A' > 0, got {det_value}.")
+        log_values.append(float(-0.5 * np.log(det_value)))
+    fit = _fit_large_l_behavior(
+        total_lengths,
+        log_values,
+        fixed_gamma=gamma,
+        fixed_alpha=alpha,
+    )
+    return fit.finite_part
+
+
+def renormalized_aprime_factor_from_raw_log_values(
+    total_lengths,
+    log_values,
+    *,
+    gamma: float,
+    alpha: float,
+) -> float:
+    r"""
+    Return `exp(c(Omega))` from raw `-1/2 log det A'` values and fixed coefficients.
+    """
+    fit = _fit_large_l_behavior(
+        total_lengths,
+        log_values,
+        fixed_gamma=gamma,
+        fixed_alpha=alpha,
+    )
+    return fit.finite_part
 
 
 def build_surface_from_ribbon_graph(
@@ -925,6 +1300,87 @@ def build_surface_from_ribbon_graph(
     )
 
 
+def _sample_aprime_large_l_data(
+    ribbon_graph,
+    base_edge_lengths,
+    *,
+    scales,
+    min_edge_length: int = 200,
+    kernel=None,
+) -> tuple[tuple[int, ...], tuple[float, ...], tuple[tuple[int, ...], ...]]:
+    import partition_function as pf
+
+    base_edge_lengths = tuple(int(x) for x in base_edge_lengths)
+    if not base_edge_lengths:
+        raise ValueError("Need at least one base edge length.")
+    if any(edge <= 0 for edge in base_edge_lengths):
+        raise ValueError("All base edge lengths must be positive integers.")
+
+    scales = tuple(int(scale) for scale in scales)
+    if len(scales) < 1:
+        raise ValueError("Need at least one scale to sample large-L data.")
+    if any(scale <= 0 for scale in scales):
+        raise ValueError("All scales must be positive integers.")
+
+    sampled_edge_lengths: list[tuple[int, ...]] = []
+    total_lengths: list[int] = []
+    log_values: list[float] = []
+    for scale in scales:
+        edge_lengths = tuple(int(scale * edge) for edge in base_edge_lengths)
+        if min(edge_lengths) < int(min_edge_length):
+            raise ValueError(
+                "All sampled edge lengths must satisfy the large-L cutoff "
+                f"ell_a >= {int(min_edge_length)}; got {edge_lengths}."
+            )
+        A_prime = np.asarray(
+            pf.traced_matter_matrix_f1(ribbon_graph, edge_lengths, kernel=kernel),
+            dtype=np.float64,
+        )
+        A_prime = 0.5 * (A_prime + A_prime.T)
+        log_values.append(float(-0.5 * pf.logdet_cholesky(A_prime)))
+        total_lengths.append(int(2 * sum(edge_lengths)))
+        sampled_edge_lengths.append(edge_lengths)
+
+    return (
+        tuple(total_lengths),
+        tuple(log_values),
+        tuple(sampled_edge_lengths),
+    )
+
+
+def fit_genus_universal_aprime_coefficients(
+    families,
+    *,
+    scales,
+    min_edge_length: int = 200,
+    kernel=None,
+) -> UniversalLargeLCoefficients:
+    r"""
+    Fit universal `gamma, alpha` from raw `A'` data across same-genus families.
+
+    Parameters
+    ----------
+    families:
+        Iterable of `(ribbon_graph, base_edge_lengths)` pairs. Each family is
+        sampled at the same `scales`, and the fit assumes
+
+            -1/2 log det A'_k = c_k(Omega) + gamma L + alpha log L
+
+        with shared `gamma, alpha` and family-dependent finite parts `c_k`.
+    """
+    family_samples = []
+    for ribbon_graph, base_edge_lengths in families:
+        total_lengths, log_values, _ = _sample_aprime_large_l_data(
+            ribbon_graph,
+            base_edge_lengths,
+            scales=scales,
+            min_edge_length=min_edge_length,
+            kernel=kernel,
+        )
+        family_samples.append((total_lengths, log_values))
+    return fit_universal_large_l_coefficients(family_samples)
+
+
 def fit_renormalized_aprime_factor(
     ribbon_graph,
     base_edge_lengths,
@@ -949,38 +1405,13 @@ def fit_renormalized_aprime_factor(
     where L = 2 sum_a ell_a is the total boundary lattice length. The
     renormalized determinant factor feeding into |Z_1|^2 is then exp(c).
     """
-    import partition_function as pf
-
-    base_edge_lengths = tuple(int(x) for x in base_edge_lengths)
-    if not base_edge_lengths:
-        raise ValueError("Need at least one base edge length.")
-    if any(edge <= 0 for edge in base_edge_lengths):
-        raise ValueError("All base edge lengths must be positive integers.")
-
-    scales = tuple(int(scale) for scale in scales)
-    if len(scales) < 3:
-        raise ValueError("Need at least three scales for the large-L fit.")
-    if any(scale <= 0 for scale in scales):
-        raise ValueError("All scales must be positive integers.")
-
-    sampled_edge_lengths: list[tuple[int, ...]] = []
-    total_lengths: list[int] = []
-    log_values: list[float] = []
-    for scale in scales:
-        edge_lengths = tuple(int(scale * edge) for edge in base_edge_lengths)
-        if min(edge_lengths) < int(min_edge_length):
-            raise ValueError(
-                "All sampled edge lengths must satisfy the large-L cutoff "
-                f"ell_a >= {int(min_edge_length)}; got {edge_lengths}."
-            )
-        A_prime = np.asarray(
-            pf.traced_matter_matrix_f1(ribbon_graph, edge_lengths, kernel=kernel),
-            dtype=np.float64,
-        )
-        A_prime = 0.5 * (A_prime + A_prime.T)
-        log_values.append(float(-0.5 * pf.logdet_cholesky(A_prime)))
-        total_lengths.append(int(2 * sum(edge_lengths)))
-        sampled_edge_lengths.append(edge_lengths)
+    total_lengths, log_values, sampled_edge_lengths = _sample_aprime_large_l_data(
+        ribbon_graph,
+        base_edge_lengths,
+        scales=scales,
+        min_edge_length=min_edge_length,
+        kernel=kernel,
+    )
 
     return _fit_large_l_behavior(
         total_lengths,
@@ -1030,7 +1461,12 @@ def lambda_one_geometric_z1_factor(
         )
 
     if Delta is None:
-        Delta = riemann_constant_vector(surface, quad_limit=quad_limit)
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
     Delta = np.asarray(Delta, dtype=np.complex128)
     if Delta.shape != (surface.genus,):
         raise ValueError(
@@ -1139,6 +1575,32 @@ def abs_z1_sq_from_lambda_one(
     return float(abs(factor) ** (4.0 / 3.0))
 
 
+def abs_zchiral_sq_from_renormalized_det(
+    surface: RiemannSurfaceData,
+    *,
+    normalization_factor: float = 1.0,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Evaluate the chiral-boson partition factor `|Z_chiral|^2`.
+
+    With the convention in the updated `Strebel.tex`,
+
+        Z_chiral = Z_1^{-1/2},
+
+    and the renormalized determinant formula gives
+
+        |Z_chiral|^2 = [det Im(Omega)]^{1/2} exp(c(Omega))
+
+    up to a moduli-independent normalization factor.
+    """
+    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
+    det_im_omega = float(np.linalg.det(im_omega))
+    if det_im_omega <= 0.0:
+        raise ValueError("Need det(Im Omega) > 0 to evaluate |Z_chiral|^2.")
+    return float(normalization_factor) * np.sqrt(det_im_omega) * float(renormalized_det_factor)
+
+
 def abs_z1_sq_from_renormalized_det(
     surface: RiemannSurfaceData,
     *,
@@ -1148,24 +1610,32 @@ def abs_z1_sq_from_renormalized_det(
     r"""
     Evaluate
 
-        |Z_1|^2 = N_1 [det Im(Omega)]^{1/2} exp(c(Omega)),
+        |Z_1|^2 = N_1 [det Im(Omega)]^{-1} exp(-2 c(Omega)),
 
     where exp(c(Omega)) is the renormalized finite part extracted from the
     large-L fit to -1/2 log(det A').
 
-    The default `normalization_factor=1.0` is the canonical convention where
-    the renormalized determinant formula itself defines `|Z_1|^2`, i.e.
+    This follows from the updated convention in `Strebel.tex`
 
-        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)).
+        Z_chiral = Z_1^{-1/2},
 
-    In the notation of Strebel.tex this corresponds to choosing
-    `mathcal{N}_1 = 1` (equivalently `log mathcal{N}_1 = 0`).
+    together with
+
+        |Z_chiral|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)).
+
+    Therefore
+
+        |Z_1| = [det Im(Omega)]^{-1/2} exp(-c(Omega)),
+        |Z_1|^2 = [det Im(Omega)]^{-1} exp(-2 c(Omega)).
     """
-    im_omega = np.asarray(np.imag(surface.Omega), dtype=np.float64)
-    det_im_omega = float(np.linalg.det(im_omega))
-    if det_im_omega <= 0.0:
-        raise ValueError("Need det(Im Omega) > 0 to evaluate |Z_1|^2.")
-    return float(normalization_factor) * np.sqrt(det_im_omega) * float(renormalized_det_factor)
+    abs_zchiral_sq = abs_zchiral_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+    if abs_zchiral_sq <= 0.0:
+        raise ValueError("Need |Z_chiral|^2 > 0 to evaluate |Z_1|^2.")
+    return float(normalization_factor) / float(abs_zchiral_sq ** 2)
 
 
 def canonical_abs_z1_sq(
@@ -1178,11 +1648,33 @@ def canonical_abs_z1_sq(
 
     This is a thin wrapper for the convention
 
-        |Z_1|^2 = [det Im(Omega)]^{1/2} exp(c(Omega)),
+        |Z_1|^2 = [det Im(Omega)]^{-1} exp(-2 c(Omega)),
 
     with no extra moduli-independent factor.
     """
     return abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+
+
+def canonical_abs_zchiral_sq(
+    surface: RiemannSurfaceData,
+    *,
+    renormalized_det_factor: float,
+) -> float:
+    r"""
+    Return the canonical `|Z_chiral|^2` from the renormalized determinant.
+
+    With the current convention,
+
+        Z_chiral = Z_1^{-1/2},
+
+    so this is the quantity directly extracted from the renormalized boson
+    determinant.
+    """
+    return abs_zchiral_sq_from_renormalized_det(
         surface,
         normalization_factor=1.0,
         renormalized_det_factor=renormalized_det_factor,
@@ -1253,8 +1745,11 @@ def sigma_scale_from_z1(
       equation, so this procedure cannot determine sigma normalization.
     - If `z1` is omitted, the function uses the naive chiral choice
       `Z_1 = +sqrt(|Z_1|^2)`. You may supply `abs_z1_sq` directly or
-      `renormalized_det_factor`, in which case the canonical convention
-      `|Z_1|^2 = [det Im(Omega)]^(1/2) exp(c(Omega))` is used.
+      `renormalized_det_factor`, in which case the current canonical convention
+      implied by `Z_chiral = Z_1^{-1/2}` is used:
+
+          |Z_chiral|^2 = [det Im(Omega)]^(1/2) exp(c(Omega)),
+          |Z_1|^2 = |Z_chiral|^(-4).
     """
     if surface.genus <= 1:
         raise ValueError(
@@ -1349,6 +1844,242 @@ def canonical_sigma_value(
     )
 
 
+def genus2_lambda_one_sigma_kernel(
+    a: complex,
+    b: complex,
+    w: complex,
+    surface: RiemannSurfaceData,
+    *,
+    z1: complex,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Return the genus-2 kernel `H_{ab}(w)` implied by the `lambda=1` equation.
+
+    For genus 2, the `lambda=1`, `(n,m)=(2,1)` Strebel identity gives
+
+        sigma(w) = sigma(a) sigma(b) H_{ab}(w),
+
+    where
+
+        H_{ab}(w)
+        =
+        theta(zeta(a)+zeta(b)-zeta(w)-Delta | Omega) E(a,b)
+        /
+        [ Z_1^(3/2) det(omega_I(a,b)) E(a,w) E(b,w) ].
+    """
+    if surface.genus != 2:
+        raise ValueError("genus2_lambda_one_sigma_kernel requires a genus-2 surface.")
+    z1 = np.complex128(z1)
+    if abs(z1) == 0.0:
+        raise ZeroDivisionError("z1 must be nonzero.")
+
+    if Delta is None:
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
+    Delta = np.asarray(Delta, dtype=np.complex128)
+    if Delta.shape != (2,):
+        raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
+
+    theta_arg = (
+        abel_map(a, surface)
+        + abel_map(b, surface)
+        - abel_map(w, surface)
+        - Delta
+    )
+    theta_val = riemann_theta(
+        theta_arg,
+        surface.Omega,
+        nmax=nmax,
+        tol=tol,
+    )
+
+    omega_matrix = np.asarray(
+        [
+            [_evaluate_one_form(form, point) for form in surface.normalized_forms]
+            for point in (a, b)
+        ],
+        dtype=np.complex128,
+    )
+    det_omega = np.complex128(np.linalg.det(omega_matrix))
+    if abs(det_omega) == 0.0:
+        raise ZeroDivisionError("det(omega_I(a,b)) vanished for the chosen points.")
+
+    e_ab = prime_form(a, b, surface, nmax=nmax, tol=tol)
+    e_aw = prime_form(a, w, surface, nmax=nmax, tol=tol)
+    e_bw = prime_form(b, w, surface, nmax=nmax, tol=tol)
+    denom = z1 * np.sqrt(z1) * det_omega * e_aw * e_bw
+    if abs(denom) == 0.0:
+        raise ZeroDivisionError("lambda-one sigma kernel denominator vanished.")
+    return np.complex128(theta_val * e_ab / denom)
+
+
+def genus2_sigma_values_from_lambda_one(
+    points: Sequence[complex],
+    surface: RiemannSurfaceData,
+    *,
+    z1: complex,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> tuple[np.complex128, np.complex128, np.complex128]:
+    r"""
+    Solve `sigma(p_1), sigma(p_2), sigma(p_3)` directly from the genus-2
+    `lambda=1` equations on the same three points.
+    """
+    if surface.genus != 2:
+        raise ValueError("genus2_sigma_values_from_lambda_one requires a genus-2 surface.")
+    points = tuple(np.complex128(point) for point in points)
+    if len(points) != 3:
+        raise ValueError(f"Need exactly three points, got {len(points)}.")
+
+    p1, p2, p3 = points
+    if Delta is None:
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
+    Delta = np.asarray(Delta, dtype=np.complex128)
+    if Delta.shape != (2,):
+        raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
+
+    h12 = genus2_lambda_one_sigma_kernel(
+        p1,
+        p2,
+        p3,
+        surface,
+        z1=z1,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    h13 = genus2_lambda_one_sigma_kernel(
+        p1,
+        p3,
+        p2,
+        surface,
+        z1=z1,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    h23 = genus2_lambda_one_sigma_kernel(
+        p2,
+        p3,
+        p1,
+        surface,
+        z1=z1,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    if abs(h12) == 0.0 or abs(h13) == 0.0 or abs(h23) == 0.0:
+        raise ZeroDivisionError("lambda-one sigma kernel vanished for the chosen points.")
+
+    s1_base = np.sqrt(np.complex128(1.0) / (h12 * h13))
+    s2_base = np.sqrt(np.complex128(1.0) / (h12 * h23))
+    s3_base = np.sqrt(np.complex128(1.0) / (h13 * h23))
+
+    best = None
+    best_residual = None
+    for signs in product((1.0, -1.0), repeat=3):
+        s1 = np.complex128(signs[0]) * s1_base
+        s2 = np.complex128(signs[1]) * s2_base
+        s3 = np.complex128(signs[2]) * s3_base
+        residual = max(
+            abs(s3 - s1 * s2 * h12),
+            abs(s2 - s1 * s3 * h13),
+            abs(s1 - s2 * s3 * h23),
+        )
+        if best_residual is None or residual < best_residual:
+            best_residual = residual
+            best = (s1, s2, s3)
+
+    assert best is not None
+    return best
+
+
+def genus2_bbb_correlator_from_lambda_one(
+    b_points: Sequence[complex],
+    surface: RiemannSurfaceData,
+    *,
+    z1: complex,
+    Delta=None,
+    nmax: int | None = None,
+    tol: float = 1e-12,
+    quad_limit: int = 200,
+) -> np.complex128:
+    r"""
+    Compute the genus-2 three-`b` correlator using direct `lambda=1` sigma data.
+
+    This avoids the auxiliary-divisor sigma pipeline by solving the three
+    needed sigma values directly from the genus-2 `lambda=1`, `(n,m)=(2,1)`
+    equation on the same three insertion points.
+    """
+    if surface.genus != 2:
+        raise ValueError("genus2_bbb_correlator_from_lambda_one requires a genus-2 surface.")
+    b_points = tuple(np.complex128(point) for point in b_points)
+    if len(b_points) != 3:
+        raise ValueError(f"Need exactly three b-points, got {len(b_points)}.")
+
+    if Delta is None:
+        Delta = _default_riemann_constant(
+            surface,
+            nmax=nmax,
+            tol=tol,
+            quad_limit=quad_limit,
+        )
+    Delta = np.asarray(Delta, dtype=np.complex128)
+    if Delta.shape != (2,):
+        raise ValueError(f"Delta must have shape (2,), got {Delta.shape}.")
+
+    sigma_vals = genus2_sigma_values_from_lambda_one(
+        b_points,
+        surface,
+        z1=z1,
+        Delta=Delta,
+        nmax=nmax,
+        tol=tol,
+        quad_limit=quad_limit,
+    )
+    sigma_prod = np.prod(np.asarray(sigma_vals, dtype=np.complex128))
+
+    zeta_b = np.sum(
+        np.asarray([abel_map(point, surface) for point in b_points], dtype=np.complex128),
+        axis=0,
+    )
+    theta_arg = zeta_b - 3.0 * Delta
+    theta_val = riemann_theta(
+        theta_arg,
+        surface.Omega,
+        nmax=nmax,
+        tol=tol,
+    )
+
+    prime_bb = np.complex128(1.0)
+    for idx, zi in enumerate(b_points):
+        for zj in b_points[idx + 1 :]:
+            prime_bb *= prime_form(zi, zj, surface, nmax=nmax, tol=tol)
+
+    z1 = np.complex128(z1)
+    if abs(z1) == 0.0:
+        raise ZeroDivisionError("z1 must be nonzero.")
+    return np.complex128(theta_val * prime_bb * sigma_prod**3 / np.sqrt(z1))
+
+
 def normalization_factor_from_lambda_one(
     b_points: Sequence[complex],
     c_point: complex,
@@ -1389,7 +2120,12 @@ def normalization_factor_from_lambda_one(
         raise ValueError("Need det(Im Omega) > 0 to determine the normalization factor.")
     if renormalized_det_factor <= 0.0:
         raise ValueError("renormalized_det_factor must be positive.")
-    return float(abs_z1_sq / (np.sqrt(det_im_omega) * float(renormalized_det_factor)))
+    canonical_abs_z1_sq_value = abs_z1_sq_from_renormalized_det(
+        surface,
+        normalization_factor=1.0,
+        renormalized_det_factor=renormalized_det_factor,
+    )
+    return float(abs_z1_sq / canonical_abs_z1_sq_value)
 
 
 def estimate_abs_z1_sq(
@@ -1419,7 +2155,12 @@ def estimate_abs_z1_sq(
     1. Fit the large-L behavior of -1/2 log(det A') at fixed edge-length ratios.
     2. Build a large surface at the chosen reference edge lengths.
     3. Use the lambda=1, (n,m)=(g,1) identity to compute |Z_1|^2.
-    4. Convert that into the moduli-independent normalization N_1.
+    4. Compare that against the determinant-based convention
+
+           |Z_chiral|^2 = [det Im(Omega)]^(1/2) exp(c(Omega)),
+           |Z_1|^2 = |Z_chiral|^(-4),
+
+       to extract the moduli-independent normalization N_1.
 
     As in `normalization_factor_from_lambda_one`, the extracted N_1 is tied to
     the sigma normalization convention supplied here.
@@ -1489,7 +2230,11 @@ def estimate_canonical_abs_z1_sq(
     High-level helper for the canonical convention `mathcal{N}_1 = 1`.
 
     This uses the renormalized determinant formula itself as the definition of
-    `|Z_1|^2`, without trying to extract a separate normalization from the
+    `|Z_chiral|^2`, and then converts to the current `|Z_1|^2` convention via
+
+        Z_chiral = Z_1^{-1/2}.
+
+    It therefore does not try to extract a separate normalization from the
     `lambda=1`, `(n,m)=(g,1)` identity.
     """
     fit = fit_renormalized_aprime_factor(

@@ -12,8 +12,6 @@ Agents.md
 Image from iOS.jpg
 
 # Personal notes
-Strebel.tex
-Strebel.pdf
 
 # Python
 __pycache__/
@@ -30,6 +28,11 @@ covariant formalism/python2/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+*-blx.bib
+*.bbl
+*.blg
+*.run.xml
+*.toc
 
 # Claude Code
 .claude/

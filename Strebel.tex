@@ -1,0 +1,540 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{multirow}
+\usepackage{amsthm}
+\usepackage{color}
+\usepackage{framed}
+\usepackage{extarrows}
+\usepackage{rotating} 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[bookmarks=true]{hyperref}
+
+\usepackage[titletoc]{appendix}
+
+\input epsf.sty
+\topmargin -.5cm \textheight 21cm \oddsidemargin -.125cm
+\textwidth 17cm
+\setlength{\parskip}{0.7em}
+
+\def\be{\begin{equation}}
+\def\ee{\end{equation}}
+\def\bea{\begin{eqnarray}}
+\def\eea{\end{eqnarray}}
+\def\ie{\begin{equation}\begin{aligned}}
+\def\fe{\end{aligned}\end{equation}}
+\numberwithin{equation}{section}
+\def\mt{\bar}
+
+\renewcommand{\title}[1]{\vbox{\center\LARGE{#1}}\vspace{5mm}}
+\renewcommand{\author}[1]{\vbox{\center#1}\vspace{5mm}}
+\newcommand{\address}[1]{\vbox{\center\em#1}}
+\newcommand{\email}[1]{\vbox{\center\tt#1}\vspace{5mm}}
+\newcommand{\WT}[1]{\widetilde{#1}}
+
+\newcommand{\mmu}{\boldsymbol{\mu}}
+\newcommand{\ww}{\boldsymbol{w}}
+\newcommand{\XX}{\mathbf{X}}
+\newcommand{\GG}{\boldsymbol{\Gamma}}
+
+\newcommand{\fixme}[1]{{\bf {\color{red}[#1]}}}
+\newcommand{\A}{{\alpha}}
+
+\newcommand{\B}[1]{\bar{#1}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+This is a working notes on computing CFT correlators and string amplitudes on high-genus Riemann surface using ribbon graphs.
+
+\section{Ribbon graphs}
+
+\textbf{[9811024], [2402.09641]}
+
+We review Kontsevich's parametrization of the moduli space $\mathcal{M}_{g,n}$ of genus-$g$, $n$-punctured Riemann surface by ribbon graphs. The claim is that there's an isomorphism
+\ie
+\mathcal{M}_{g,n}\times \mathbb{R}_+^n\rightarrow \mathcal{M}_{g,n}^{\text{comb}}
+\fe
+where $\mathcal{M}_{g,n}^{\text{comb}}$ is the moduli space of genus-$g$, $n$-punctured metric ribbon graphs (namely ribbon graphs with length $\ell$ associated with each edge), and the $n$ positive numbers in $\mathbb{R}_+^n$ parametrizes the total length around each puncture.
+
+The explicit construction of the ribbon graph is achieved by finding the Strebel differential $\omega = \varphi(z) dz^2$. Given any meromorphic quadratic differential $q=f(z)dz^2$, one can consider its horizontal trajectories $z(t)$, along which
+\ie
+\varphi(z(s))\left(\frac{dz}{ds}\right)^2\in \mathbb{R}_+
+\fe
+Namely, if we define the local coordinates near a point $z_0$ by $w(z)=\int_{z_0}^z \sqrt{f(z)}dz$, the horizontal trajectories will locally be straight lines $\mathrm{Im}(w)=\text{const}$. 
+
+If $z_0$ is a zero of degree $m$ of the differential $q$, then one can locally expand $q$ around $z_0$ as $q=(z-z_0)^m (dz)^2$. The horizontal trajectories are then given by $z(s)= z_0+s\exp(\frac{2\pi i k}{m+2})$. Therefore, horizontal trajectories of $q$ can end on zeroes, and a degree-$m$ zero of $q$ is the intersection point of $m+2$ different horizontal trajectories.
+
+Another important case is when $q$ develops a double pole, and near which $q$ can be expanded as $-a(z-z_0)^{-2}(dz)^2$. In this case, the horizontal trajectories around $z_0$ are given by the circles $z_0+re^{is}$, and the length $\oint_C \sqrt{f(z)}dz$ of each circle is $a$. 
+
+The Strebel differential $\omega$ on a Riemann surface $\Sigma_{g,n}$ with $n\geq 1, 2-2g-n<0$ is defined to be the unique quadratic differential given by following theorem due to Strebel:
+\begin{theorem} Let $\Sigma$ be a Riemann surface with $n$ punctures and genus $g$ that satisfies $n\geq 1, 2-2g-n<0$, and the punctures on $\Sigma$ are given by $(a_1,...,a_n)$. Given $(p_1,...,p_n)\in \mathbb{R}_+^n$, there exists an unique meromorphic differential $\omega=\varphi(z) dz^2$ satisfies:
+\begin{enumerate}
+\item[$\bullet$] $\omega$ is holomorphic on $\Sigma/\{a_1,...,a_n\}$.
+\item[$\bullet$] $\omega$ has a double pole on each $a_i$.
+\item[$\bullet$] The union of all non-compact horizontal trajectories forms a closed subset of $\Sigma$ with measure 0.
+\item[$\bullet$] Every compact horizontal trajectory $\alpha$ is a simple loop around one of the $a_i$'s with length $2\pi p_i$. Namely, $p_i=\oint_\alpha \sqrt{\omega}$.
+\end{enumerate}
+\end{theorem}
+
+I'll state without proof that these condition ensures that each non-compact horizontal trajectory $\gamma$ should be critical, namely they are bounded by two zeroes $z_0=\gamma(s_0)$ and $z_1=\gamma(s_1)$ of $\omega$. Therefore, the Riemann surface can be divided into the loops around $a_i$ and the critical horizontal trajectories, which gives a cell decomposition of $\Sigma$: The 0-cells are the zeroes, 1-cells given by the critical horizontal trajectories, and the 2-cells given by the unions of all compact horizontal trajectories around $a_i$'s. The metric ribbon graph $G$ associated with the Riemann surface is then given by the graph of all critical horizontal trajectories $\gamma$, with the edge length given by $\int_\gamma \sqrt{\omega}$.
+
+On each 2-cell associated with the puncture $a_i$, one can take the local coordinates to be:
+\ie
+w_i(z) = \exp\left(\frac{i}{p_i}\int^z \sqrt{\omega}\right)
+\label{diskcoord}
+\fe
+and the horizon trajectories will have constant radius $|w_i|$. One can define the metric
+\ie
+ds^2=|\varphi(z)|dzd\bar{z}=p_i^2 |w_i|^{-2}dw_i d\bar{w}_i
+\label{metricpuncture}
+\fe
+around the puncture, under which the length $\oint \sqrt{\varphi(z)}dz$ is the metric length. Of course one can then perform a Weyl transformation to map it back to a flat disk with a puncture at $w_i=0$. (At the level of CFT correlator, this will introduce an overall factor due to the Weyl anomaly.)
+
+This procedure associates a unique metric ribbon graph with a $n$-punctured Riemann surface. Moreover, it's proven that this map is an isomorphism from $\mathcal{M}_{g,n}\times \mathbb{R}_+^n$ to the combinatorial moduli space $\mathcal{M}_{g,n}^\text{comb}$, \textit{i.e.} the moduli space of metric ribbon graphs with genus $g$ and $n$ faces. The inverse map can be constructed by attaching semi-infinite cylinders with metric $ds^2= p_i^2 |w_i|^{-2}dw_i d\bar{w}_i$ to each face, and then glue the boundary of the cylinders together along the ribbon graph.
+
+\section{CFT correlators from ribbon graph}
+
+For a CFT with a path integral description, one can numerically compute its high-genus correlators from ribbon graphs. Let's take the torus partition function of a free boson for example: A 1-punctured torus can be parametrized by a ribbon graph with 1 face, 3 edges and 2 vertices, and the boundary of the face corresponds to the boundary of the puncture. In other words, the torus can be conformally transformed into a disk with boundary segments glued according to the ribbon graph data. The moduli $(\tau_1, \tau_2)$ of the torus are stored in the relative lengths of the segments $(\theta_1=\pi\frac{\ell_1}{\ell_1+\ell_2+\ell_3}, \theta_2=\pi\frac{\ell_1+\ell_2}{\ell_1+\ell_2+\ell_3})$ and the partition function can be expressed as
+\ie
+Z(\theta_1, \theta_2)&=\int [\mathcal{D}X] \prod_{0<\sigma<\theta_1} \delta(X(1,\sigma)-X(1,\pi+\theta_1-\sigma))
+\\
+&~~~\times \prod_{\theta_1<\sigma< \theta_2} \delta(X(1,\sigma)-X(1,\pi+\theta_1+\theta_2 - \sigma))  \prod_{\theta_2<\sigma< \pi} \delta(X(1,\sigma)-X(1,2\pi+\theta_2 - \sigma))
+\fe
+modulo Weyl anomaly. Here, we've parametrized the boson field in polar coordinates $X(r,\sigma)$. We also know that the path integral inside the disk is given by the wavefunctional $\Psi_1[X(\sigma)]$ of the identity operator
+\ie\label{psionefx}
+\Psi_1[X(\sigma)] \propto \exp\left( - {1\over \A'}\sum_{m\geq 1} m X_m X_{-m} \right),
+\fe
+where $X_m$ is the $m$-th Fourier mode of $X(\sigma)$. Therefore,
+\ie\label{zthetas}
+Z(\theta_1, \theta_2) &= \int [DX(\sigma)]_{0<\sigma<2\pi} \Psi_1[X(\sigma)] \prod_{0<\sigma<\theta_1} \delta(X(\sigma)-X(\pi+\theta_1-\sigma))
+\\
+&~~~\times \prod_{\theta_1<\sigma< \theta_2} \delta(X(\sigma)-X(\pi+\theta_1+\theta_2 - \sigma))  \prod_{\theta_2<\sigma< \pi} \delta(X(\sigma)-X(2\pi+\theta_2 - \sigma)).
+\fe
+since the identity wavefunctional is Gaussian in $X$, $Z(\theta_1, \theta_2)$ can be computed by a Gaussian integral. This relation can be easily generalized to higher genus and more complicated operatore than the identity operator, and the final integral will still be Gaussian. For example, To obtain the genus 2 partition function, the ribbon graph at a generic point in the moduli space has 6 cubic vertices and 9 edges. The partition function can be obtained by integrating $\Psi_1[X(\sigma)]$ with the identification of $X$ on pairs of 18 segments of the unit circle.
+
+In order to numerically compute the partition function, we need to discretize the unit circle into $L$ sites, with a integral variable $X(k)$ on each site $k=1,...,L$. The wavefunctional \eqref{psionefx} can be approximated by
+\ie
+\Psi_1[X] &\propto \exp\left[ - {1\over \pi \A' L} \sum_{m=1}^{L/2} \sin {\pi m \over L} \sum_{k,\ell=1}^L X(k) X(\ell) e^{2\pi i {m\over L} (k-\ell)} \right]
+\\
+&= \exp\left[ - {1\over 2 \pi \A' L} \sum_{k,n=1}^L X(n) X(n+k) { \sin {\pi\over L} \over \cos{2\pi k\over L} - \cos{\pi\over L}} \right] .
+\fe
+note that we have only summed over the modes with $m$ from 1 to $L/2$. This is because there are only $L$ independent discrete Fourier modes on a circle with $L$ sites, hence we need to restrict the modes to the ones with $1\leq m\leq L/2$ in order to write down $\sum X_m X_{-m}$.
+
+The gluing map can be discretized as the following. We will assume that $L$ is even. Next we split $\tfrac{L}{ 2} =\ell_1 + \ell_2 + \ell_3$, where each $\ell_i$ is a positive integer, and make the identification
+\ie\label{pairthree}
+& X(\tfrac{L}{2} + \ell_1+1 - n) = X(n),~~~~ 1\leq n \leq \ell_1,
+\\
+& X(\tfrac{L}{2} + 2 \ell_1 + \ell_2 +1 - n) = X(n),~~~~ \ell_1+1 \leq n \leq \ell_1 + \ell_2,
+\\
+& X(L+\ell_1 + \ell_2+1 - n) = X(n),~~~~ \ell_1+\ell_2+1 \leq n \leq \tfrac{L}{2},
+\fe
+as a discretized version of (\ref{zthetas}). Finally, we perform the integration with respect to the remaining independent variables $X(n)$, $1\leq n \leq \tfrac{L}{2}$.
+
+After imposing the constraint (\ref{pairthree}), there are only $L/2$ independent integral variables, and we can write $\Psi_1[X]$ as proportional to
+\ie
+\exp\left[ - \sum_{k,\ell=1}^{L\over 2} A_{k\ell} X(k) X(\ell) \right],
+\fe
+where the eigenvalues of the matrix $A_{k\ell}$ are positive except for a single zero. The integration over $X(k)$, $1\leq k\leq {L\over 2}$ then produces, up to a constant normalization factor, the determinant
+\ie\label{detprime}
+Z_L(\theta_1, \theta_2) \propto ({\det} A_{k\ell}')^{-{1\over 2}},
+\fe
+where the prime stands for removing the zero mode $\sum_k X(k)$. This can be done by imposing the condition $X({L/2})=\sum_{k=1}^{L/2-1}X(k)$, and the matrix $A'_{kl}$ in the subspace orthogonal to the zero mode is constructed by:
+\ie
+A_{k\ell}= A_{k\ell}-A_{k,\frac{L}{2}}-A_{\frac{L}{2},\ell}+A_{\frac{L}{2}, \frac{L}{2}}
+\fe
+
+One important caveat of this approach is that it's very hard to determine the Weyl anomaly factor that comes with the partition function, and since the Weyl anomaly factor is dependent on the moduli $\ell_i$, one also can't take the ratio of $Z(\ell_i)$ between two points on the moduli space to cancel this factor. However, one can compare the partition function of 2 different theories (with the same central charge) at the same moduli, or compute the 1-point function $\langle \mathcal{O}\rangle$ of nontrivial operators, and such observables will be free from the Weyl anomaly factor. Of course for the latter, one should be careful about the conformal factor that comes with the local coordinates where the operator is inserted.
+
+\section{Complex structure from ribbon graph: Genus 1}
+
+\subsubsection*{Holomorphic 1-form at genus 1}
+
+We also want to know the complex modulus $\tau$ in terms of the ribbon graph data $(L, l_1, l_2)$. This can be done by finding the holomorphic 1-form $f(z)dz$ in the disk frame, which is related to $\tau$ by:
+\ie
+\tau = \frac{\int_\beta f(z)dz}{\int_\alpha f(z)dz}
+\fe
+where $\alpha, \beta$ are a basis of 1-cycles on the torus.
+
+The holomorphic 1-form can be expressed as a power series in $z$, and it can be pinned down by imposing the matching conditions on the identified boundary points. It should be regular for $|z|<1$, but it diverges at the end of the boundary segments $\pm z=1, e^{2\pi i l_1/L}, e^{2\pi i (l_1+l_2)/L}$ that corresponds to the zeroes of the Strebel differential $\varphi(u)du^2$. The disk coordinates are given by equation \eqref{diskcoord}:
+\ie
+z=\exp\left(i\int^u \sqrt{\varphi(u')}du'\right)
+\label{zuzu}
+\fe
+and therefore $f^{-1}(z)=\frac{dz}{du}=iz \sqrt{\varphi(u)}$ has a zero at these points, namely $f(z)$ blows up. Since in our case each zero of $\varphi(z)$ is the intersection of 3 horizontal trajectories, $\varphi(u)$ has behavior $\varphi(u)\sim (u-u_i)$ around these zeroes, and $f(z)$ will behaves like $(u-u_i)^{-1/2}$. In the $z$-coordinates, \eqref{zuzu} translates to $(z-z_i)\sim (u-u_i)^{3/2}$, and hence $f(z)\sim (z-z_i)^{-1/3}$ around these points. 
+
+Given the divergence behavior of $f(z)$, one can make the following ansatz:
+\ie\label{fzoneform}
+f(z) dz &= \frac{\sum_{n=1}^\infty a_n z^{n-1}}{(1-z^2)^{\frac13} (1-z^2 e^{-4 \pi i \frac{\ell_1}{ L}})^{\frac13} (1-z^2 e^{-4 \pi i \frac{\ell_1 +\ell_2}{L}})^{\frac13}} dz\\
+& = i  \frac{\sum_{n=1}^\infty a_n e^{inw} }{(1-e^{2iw})^{\frac13} (1- e^{2i(w-2 \pi \frac{\ell_1}{L})})^{\frac13} (1- e^{2i(w-2 \pi i \frac{\ell_1 +\ell_2}{L}) })^{\frac13}}  dw
+\fe
+where $z=e^{-iw}$. We can normalize with $a_1=1$, and solve $a_2,\cdots, a_L$ numerically by imposing the appropriate matching at discretized points:
+\ie
+{}&\frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k-\frac 12}{L})} }{(1-e^{4i\pi \frac{k-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}\\
+&\qquad\qquad = - \frac{\sum_{n=1}^{L \over 2} a_n e^{in (2 \pi \frac{k'-\frac 12}{L})} }{(1-e^{4i\pi \frac{k'-\frac12}{L}})^{\frac13} (1- e^{4i \pi \frac{k'-\frac12-\ell_1}{L} })^{\frac13} (1- e^{4i\pi \frac{k'-\frac12-\ell_1 -\ell_2}{L} })^{\frac13}}, ~~~~1 \leq k \leq \tfrac{L}{2}.
+\fe
+The relative sign is due to flipping the orientation on $dw$ in the identification. The shift of $k$ by $\frac12$ is to put the Strebel vertices $z_i$, which are halfway between the discretized points at the edges of identified sections of the boundary, precisely at the angles in the ansatz. After computing $f(z)$, evaluating the periods of $f(z) dz$ along $\alpha$ and $\beta$ cycle then determines $\tau$.
+
+\subsubsection*{Weyl anomaly at genus 1}
+
+Knowing the holomorphic 1-form $f(z)dz$, one can also compute the Weyl anomaly factor between the Strebel disk frame and the flat torus frame. Since the flat torus coordinates are given by
+\ie
+u=\frac{\int^z f(z)dz}{\int_\alpha f(z)dz} \equiv \frac{1}{P_\alpha}\int^z f(z)dz
+\fe
+where the denominator $P_\alpha^{-1}$ is introduced such that the period of $\tau$ around the $\alpha$-cycle gives 1. The ribbon graph metric is given by:
+\ie
+ds^2=\frac{dzd\bar{z}}{|z|^2} = \frac{|P_\alpha|^2}{|z f(z)|^2}dud\bar{u}
+\fe
+and one need a Weyl transformation $g_{\mu\nu}\rightarrow e^{2\omega} g_{\mu\nu}$ with $\omega = -\log |zf(z)|+\log |P_\alpha|$ to go from the disk frame to the flat frame. The Weyl anomaly factor is then given by $\exp(S_\text{Weyl})$, where 
+\ie
+S_\text{Weyl}=\frac{c}{12\pi}\int_{\Sigma} d^2z \partial \omega \bar{\partial}\omega = \frac{c}{12\pi i}\oint_{\partial \Sigma}dz \omega \partial \omega
+\fe
+with $c$ the central charge. In the disk frame, the contour $\partial \Sigma$ is given by both the boundary of the disk and the infinitesimal circle around the puncture. 
+
+We've seen that near one of the zeroes of the Strebel differential, $f(z)$ behaves like $f(z)\sim \nu_i (1-z/z_i)^{-\frac{1}{3}}$, or equivalently $f(u)\sim b_i(u-u_i)^{-\frac{1}{2}}$ in the flat frame. The boundary integral of the Weyl anomaly is divergent, and we can impose a cutoff $|z-z_i|>\delta$ on $z$. After imposing the cutoff, the contribution of the boundary circle to the Weyl anomaly can be written as:
+\ie
+\frac{1}{12\pi i}\oint_{\partial D^2}dz \omega \partial \omega = \frac{\log |b_1|+\log|b_2|}{36}-\frac{1}{12}\log |P_\alpha|+\text{ universal divergence }
+\fe
+where the universal divergence part (in $\delta$) is moduli-independent.
+
+For the puncture, one can easily compute:
+\ie
+\frac{1}{12\pi i}\oint_{C_0} dz \omega \partial \omega = \frac{1}{12}\log |P_\alpha|
+\fe
+and therefore the moduli-dependent part of the Weyl anomaly is given by
+\ie
+S_\text{Weyl} = \frac{c\log |b_1|+c\log |b_2|}{36}
+\fe
+
+\section{Compact boson at genus 1}
+
+For a compact boson $X$ with radius $X\sim X+2\pi R$. On a unit circle, a configuration of $X$ can be parametrized by the constant, the winding mode, and nonzero Fourier modes $X_m$:
+\ie
+X_b(\sigma)=x_0+ p \sigma R+\sum_{m=-\infty}^\infty X_m e^{im\sigma}
+\fe
+where $p\in\mathbb{Z}$ is the winding number. For any configuration with nonzero winding number, its classical action will be logarithmically divergent, and the wavefunctional $\Psi_1[X_b]=\int [\mathcal{D}X]_{X_b}e^{-S[X]}$ will be 0. Therefore, the wavefunctional $\Psi_1[X_b]$ is identical to that of a non-compact boson:
+\ie
+\Psi_1[p,X_m]\propto \delta_{p,0}\exp\left[-\frac{1}{\alpha'}\sum_{m\geq 1}mX_m X_{-m}\right]
+\fe
+which can be discretized as:
+\ie
+\Psi_1[X]&=\exp\left(-\frac{1}{2\pi \alpha' L}\sum_{k,n=1}^L X(n)X(n+k)\frac{\sin \frac{\pi}{L}}{\cos \frac{2\pi k}{L}-\cos \frac{\pi}{L}}\right)\\
+&\equiv \exp\left(-\frac{1}{\pi}\sum_{k,l=1}^L M_{kl}X(k)X(l)\right)
+\fe
+
+The torus partition function can be computed as:
+\ie
+Z(l_1,l_2,l_3;R)= \sum_{s_1, s_2, s_3} \int [\mathcal{D}X] \Psi_1[X] \delta_{s_1,s_2,s_3}(...)
+\fe
+where the delta function imposes the following identification:
+\ie
+& X(L/2+l_1+1-n)=X(n)+2\pi R s_1, \quad 1 \leq n \leq l_1, \\
+& X(L/2+2 l_1+l_2+1-n)=X(n)+2\pi R s_2, \quad l_1+1 \leq n \leq l_1+l_2, \\
+& X(L+l_1+l_2+1-n)=X(n)+2\pi R s_3, \quad l_1+l_2+1 \leq n \leq L/2
+\fe
+This can be discretized as:
+\ie
+Z(l_i;R)=\int \prod_{i=1}^{L/2}dX(i) \exp\left[-\frac{1}{\pi}\left(\sum_{k,l=1}^{L/2}A_{kl}X(k)X(l)+2\sum_{k=1}^{L/2}v_k X(k)+C\right)\right]
+\fe
+where:
+\ie
+& A_{kl}=M_{kl}+M_{k'l}+M_{kl'}+M_{k'l'}\\
+& v_k=2\pi R\sum_{i=1}^3 s_i \sum_{m\in \text{seg }i}(M_{km'}+M_{k'm'})\\
+& C=4\pi^2 R^2\sum_{i,j}^3 s_i s_j \sum_{k\in \text{seg }i}\sum_{m\in \text{seg }j}M_{k'm'}
+\label{AvC}
+\fe
+and the primed position $k'$ stands for the position on the other half circle that's identified with $k$.
+
+Now we explicitly perform the Gaussian integral. The matrix $A$ has a zero mode given by $\sum_{k=1}^{L/2}X(k)$. Since
+\ie
+\sum_{k=1}^{L/2}{v_k}&=2\pi R\sum_i s_i \sum_{k=1}^{L/2}\sum_{m\in \text{seg }i}(M_{km'}+M_{k'm'})\\
+&=2\pi R\sum_i s_i \sum_{m\in \text{seg }i}\sum_{k=1}^L M_{km'}=0
+\fe
+the shift $v_k$ is then orthogonal to the zero mode, and hence the zero mode can be factored out, giving a factor of $2\pi R$. We factor out the zero mode by imposing the condition $X(L/2)=-\sum_{k=1}^{L/2-1}X(k)$, and the reduced matrix $A'$ and the vector $v'$ in the subspace of $X(1),...,X(L/2)$ after this condition will be:
+\ie
+A'_{kl}&=A_{kl}-A_{k,L/2}-A_{L/2,m}+A_{L/2,L/2}\\
+v'_k&=v_k-v_{L/2}
+\fe
+and the Gaussian integral will become:
+\ie
+Z(l_i;R)=2\pi R\int \prod_{i=1}^{L/2-1} dX(i) \exp\left[-\frac{1}{\pi}\left(\sum_{k,l=1}^{L/2-1}A_{kl}'X(k)X(l)+2\sum_{k=1}^{L/2-1}v_k' X(k)+C\right)\right]
+\fe
+
+After performing the Gaussian integral in this subspace, the partition function is given by:
+\ie
+Z(l_i;R)&=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2, s_3}\exp(-\pi^{-1}C+\pi^{-1}\sum_{k,l=1}^{L/2-1}v'_k (A')^{-1}_{kl} v_l')\\
+&=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2, s_3}\exp(-4\pi R^2\sum_{i,j}s_is_j T_{ij})
+\fe
+where the matrix $T$ and $W$ are defined as
+\ie
+T_{ij}&= \sum_{m\in \text{seg }i}\sum_{n\in \text{seg }j}\left(M_{m'n'}-\sum_{k,l=1}^{\frac{L}{2}-1}(A')^{-1}_{st}W_{km}W_{ln}\right)\\
+W_{km}&=M_{km'}+M_{k'm'}-M_{\frac{L}{2},m'}-M_{(\frac{L}{2})',m'}
+\fe
+
+The three shifts $s_1, s_2, s_3$ store the same information with the 2 winding numbers around the 2 non-contractible cycles and the winding number around the puncture. Since the wavefunctional $\Psi_1[p,X_m]$ is nonzero only for configurations with winding number $p=0$, we need to restrict onto the configurations with no winding around the puncture. For these configurations, the 3 shifts $s_1, s_2, s_3$ are not independent. We denote the cycle formed by going along segment 1 and then segment 2 as $\alpha$, the one formed by going along segment 3 and then segment 1 backwards as $\beta$. The shifts $s_i$ are then related to the winding numbers $s_\alpha, s_\beta$ around the $\alpha, \beta$-cycles by
+\ie
+s_1=s_\alpha+s_\beta,\quad s_2=s_\beta, \quad s_3=-s_\alpha
+\fe
+hence the three shifts are related by $s_3=s_2-s_1$. One can define the $2\times 2$ matrix
+\ie
+T'_{ij}=T_{ij}+(-1)^i T_{3j}+(-1)^j T_{i3}+(-1)^{i+j} T_{33}
+\fe
+and the partition function can be written as
+\ie
+Z(l_i;R)&=2\pi R(\det A')^{-1/2}\sum_{s_1, s_2}\exp(-4\pi R^2\sum_{i,j=1}^2s_is_j T_{ij}')\\
+&=2\pi R(\det A')^{-1/2}\Theta(4iR^2 T')
+\fe
+where $\Theta(A)$ is the Siegel theta function of the matrix $A$. 
+
+Since the $Z(l_i, R)$ only depend on $R$ via the zero mode factor $2\pi R$ and the theta function, in order to check the T-duality relation $Z(l_i;R)=Z(l_i;R^{-1})$ (taking $\alpha'=1$), we only need to check:
+\ie
+R\Theta(4i R^2 T')= R^{-1}\Theta(4i R^{-2} T')
+\fe
+and this has been checked numerically. We also checked numerically that the ratio between partition functions at different $R$ and the same moduli matches with the analytical value:
+\ie
+\frac{Z(l_i; R_1)}{Z(l_i;R_2)}=\frac{Z_\text{comp}(\tau(l_i),R_1)}{Z_\text{comp}(\tau(l_i),R_1)},\quad Z_\text{comp}(\tau, R)=\frac{1}{\sqrt{\tau_2}|\eta(\tau)|^2}\sum_{m,n}e^{-\frac{\pi R^2}{\tau_2}|m\tau-n|^2}
+\fe
+
+\section{Compact boson at higher genus}
+
+\subsubsection*{Partition function from ribbon graphs}
+
+For genus 2 surface with 1 puncture, the ribbon graph has 1 face, 6 vertices and 9 edges. There are 4 different topologies of graphs that covers different region of $\mathcal{M}_{2,1}$. Given a ribbon graph, we now describe the algorithm of computing the compact boson partition function on the Riemann surface associated with that ribbon graph. Although we use genus 2 as example, this can be trivially generalized to the case of arbitrary genera.
+
+In order to write down the identification map, Let's label the segments $S_i\ (i=1,...,18)$ from $k=1$ with increasing $k$. The edges can be written as $E_a\ (a=1,...,9)$, where each $E_a$ pairs 2 segments $S_{i_1(a)}, S_{i_2(a)}$ (we always take $i_1(a)<i_2(a)$) and glue them in the opposite orientation. We denote the edge associated with segment $S_i$ by $E_{a(i)}$ and its length $\ell_{a(i)}$. The identification map of compact boson on edge $E_a$ is then:
+\ie
+X\left(\sum_{j\leq i_1(a)}\ell_{a(j)}+\sum_{k< i_2(a)}\ell_{a(k)}-k+1\right)=X(k)+2\pi R s_a,\quad \sum_{j<i_1(a)}\ell_{a(j)}+1\leq k \leq \sum_{j\leq i_1(a)}\ell_{a(j)}
+\fe
+One additional complication is that, for higher genus, the independent variables are not simply $X(k)$ with $1\leq k \leq L/2$, since the segments in the same half-circle can be glued together. We take the set of independent variables to be $\mathcal{K}=\cup_{a=1}^9\{k, k\in S_{i_1(a)}\}$, and denote $\mathcal{K}'=\mathcal{K}\backslash \{1\}$.
+
+The condition of no winding around the unit circle can be translated to the following 6 constraints: For each vertex $V_A$, we label the segment that connects to it with the smallest label $S_{i_0(A)}$ (which includes $S_0=S_{18}$), and define
+\ie
+i_1(A)=i_0(A)+1,\quad  i_2(A)=p(i_1(A))+1,\quad i_3(A)=p(i_2(A))+1
+\fe
+where $S_{p(i)}$ is the edge paired with $S_i$. The constraints are given by:
+\ie
+\text{sgn}(i_1(A)) s_{a(i_1(A))}+\text{sgn}(i_2(A)) s_{a(i_2(A))}+\text{sgn}(i_3(A)) s_{a(i_3(A))}=0
+\label{constraint}
+\fe
+where $\text{sgn}(i)$ is defined such that $\text{sgn}(i)=1$ if $i<p(i)$ and $-1$ if $i>p(i)$. In a graph theory way, this can be repacked into a matrix equation
+\ie
+D_{A,a}s_a=0
+\fe
+where $s\in \mathbb{Z}^9$ is the vector of 9 shifts and $D\in \mathbb{Z}^{6\times 9}$. The independent shifts then lives in the kernel $\text{ker}_\mathbb{Z}(D)$. If we orient each edge $E_a$ in the counter-clockwise direction of $S_{i_1(a)}$, then the matrix $D$ is then given by the oriented incidence matrix:
+\ie
+D_{A,a}=\begin{cases}
+ 1 & \text{if edge } a \text{ into vertex } A\\
+ -1 & \text{if edge } a \text{ out of vertex } A \\
+ 0 & \text{if edge } a \text{ not connected to vertex }A
+\end{cases}
+\fe
+and the dimension of $\text{ker}(D)$ is given by $E-V+1=2g$. Namely, among the 6 constraints, only 5 of them are independent. This reduces the independent number of shifts from 9 to 4, which corresponds to the holonomies around the 4 non-contractible 1-cycles.
+
+A basis of $\text{ker}(D)$ can be built in the following way: One first choose a spanning tree of the oriented graph, which contains $V-1=5$ edges. For each of the 4 edges $e=(A_1(e), A_2(e))$ that's not in the spanning tree, one can find a cycle $C_e$ by starting from $A_1(e)$, going through $e$ to get to $A_2(e)$, then take the unique path in the spanning tree from $A_2(e)$ back to $A_1(e)$. From this cycle $C_e$, one then define a vector
+\ie
+(b_e)_a=\begin{cases}
+ 1 & \text{if edge } a \text{ is traversed with same orientation in } C_e\\
+ -1 & \text{if edge } a \text{ is traversed with opposite orientation in } C_e\\
+ 0 & \text{if edge } a \text{ not in } C_e
+\end{cases}
+\fe
+and the 4 $b_e$'s will form a integral basis of $\text{ker}(D)$. If we define the matrix $B\in \mathbb{Z}^{9\times 4}$ by $B_{a,e}=(b_e)_a$, then an arbitrary vector in $\text{ker}(D)$ can be represented by $Bn$, where $n\in \mathbb{Z}^4$ is a lattice vector in the 4-dimensional integral lattice.
+
+The genus-2 compact boson partition function can be discretized as:
+\ie
+Z^{(2)}(\ell_a;R)=2\pi R \int \prod_{k\in \mathcal{K}} dX(k)\exp\left[-\frac{1}{\pi}\left(\sum_{k,l\in \mathcal{K}'}A_{kl}'X(k)X(l)+2\sum_{k\in\mathcal{K}'}v_k' X(k)+C\right)\right]
+\fe
+where, similar to \eqref{AvC},
+\ie
+& A_{kl}=M_{kl}+M_{k'l}+M_{kl'}+M_{k'l'},\quad A'_{kl}=A_{kl}-A_{1,l}-A_{k,1}-A_{1,1}\\
+& v_k=2\pi R\sum_{a=1}^9 s_a \sum_{l\in S_{i_1(a)}}(M_{kl'}+M_{k'l'}),\quad v_{k}'=v_{k}-v_1\\
+& C=4\pi^2 R^2\sum_{a,b=1}^9 s_a s_b \sum_{k\in S_{i_1(a)}}\sum_{l\in S_{i_1(b)}}M_{k'm'}
+\fe
+Following the same procedure with the genus-1 case, the partition function can be computed as:
+\ie
+Z^{(2)}(\ell_a;R)=2\pi R(\det A')^{-1/2}\Theta(4iR^2 T')
+\fe
+where $T'$ is the following matrix $T_{ab}$ restricted to the 4-dimensional subspace.
+\ie
+T_{ab}&=\sum_{k\in S_{i_1}(a)}\sum_{l\in S_{i_1}(b)}\left(M_{k'l'}-\sum_{m,n\in \mathcal{K}'}(A')^{-1}_{mn}W_{mk}W_{nl}\right)\\
+W_{km}&= M_{km'}+M_{k'm'}-M_{1,m'}-M_{1',m'}
+\fe
+The restriction from $T$ to $T'$ can be performed by simply taking
+\ie
+T'=B^T T B
+\fe
+where the matrix $B^T$ is the one that maps $\mathbb{Z}^9$ to the constrained subspace $\text{ker}(D)$.
+
+\subsubsection*{Period matrix from ribbon graph data}
+
+At genus 2, there are 2 holomorphic 1-forms $\omega_1=f_1(z)dz, \omega_2=f_2(z)dz$ on the Riemann surface $\Sigma$, and $H^1(\Sigma, \mathbb{Z})$ has a symplectic basis $\alpha_1, \alpha_2, \beta_1, \beta_2$ that satisfies $\alpha_i\cdot \alpha_j = \beta_i \cdot \beta_j=0, \alpha_i\cdot \beta_j =\delta_{ij}$. The period matrix $\Omega$ is then given by
+\ie
+\Omega_{ij}=\mathcal{B}_{ik}(\mathcal{A}^{-1})_{kj},\quad \mathcal{A}_{ij}=\oint_{\alpha_i}\omega_j,\quad \mathcal{B}_{ij}=\oint_{\beta_i} \omega_j
+\fe
+The cycles can be realized as chords on the disk that connects two identified points, and the intersection number is the intersection number of the two chords. 
+
+The two holomorphic 1-forms can be solved similarly to \eqref{fzoneform}. Starting with the following ansatz:
+\ie
+f(z)dz= \frac{\sum_{n=1}^\infty a_n z^{n-1}}{\prod_{i=1}^{18}\left(1-z\exp\left({-\frac{4\pi i}{L}\sum_{j<i}\ell_{a(j)}}\right)\right)^{\frac{1}{3}}}
+\fe
+and the coefficients can be solved by matching the values of $f(z)dz$ on the identified points. The first holomorphic 1-form is normalized such that $a_1=1, a_2=0$, and the second is normalized with $a_1=0, a_2=1$. The period matrix can be then computed by integrating the two holomorphic 1-forms on the symplectic basis of 1-cycles.
+
+\subsubsection*{Tests against analytic results}
+
+At genus $g$, the T-duality transformation of compact boson partition function is given by
+\ie
+Z^{(g)}(R)=R^{2-2g}Z^{(g)}(R^{-1})
+\fe
+where the additional factor $R^{2-2g}$ comes from the dilaton shift in the Buscher rules. In terms of the matrix $T'$, this reads
+\ie
+R^g \Theta(4 i R^2 T')= R^{-g} \Theta(4 i R^{-2} T')
+\fe
+which has been tested numerically for all 9 topologies of genus 2 and all 1726 topologies of genus 3. For genus 4, there are 1349005 different topologies \textbf{[math/0110025]}, and enumerating and storing all ribbon graph data becomes a problem, but T-duality has been checked for a single topology.
+
+For genus $g$, the compact boson partition function $Z^{(g)}(\Omega, R)$ can be expressed in a lattice sum involving the period matrix $\Omega$:
+\ie
+Z_\text{comp}^{(g)}(\Omega, R)=2\pi R Z_\text{bos}^{(g)}(\Omega)\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)
+\fe
+where the free boson partition function $Z_\text{bos}(\Omega)$ does not depend on the radius $R$. In term of $T'$,
+\ie
+\frac{\Theta(4 i R^2_1 T')}{\Theta(4 i R^2_2 T')}=\frac{\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2_1(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)}{\sum_{m,n\in \mathbb{Z}^g}\exp\left(-\pi R^2_2(m+\Omega n)^T(\operatorname{Im}\Omega)^{-1}(m+\bar{\Omega}n)\right)}
+\fe
+and this has been checked for genus 2 and 3 using codes in \texttt{compact\_partition.py} and \texttt{ell\_to\_tau.py}.
+
+\subsubsection*{Renormalization of $Z(\ell_a;R)$}
+
+The lattice constructed provided us a \textit{regularization} scheme, and if we want to have a finite answer when taking the $L\rightarrow \infty$ limit, we need to further \textit{renormalize} the action by adding counterterms. For the theory at self-dual radius $R=1$, we found numerically that the large-$L$ behavior of $Z^{(g)}(\ell_a;R)$ is given by:
+\ie
+\log Z^{(g)}(L;\Omega;R=1) = c(\Omega) + \gamma L + \alpha(g) \log L
+\fe
+where $c(\Omega)$ is the moduli-dependent finite part, $\gamma, \alpha(g)$ are both independent of the moduli. $\gamma = \frac{1}{4} \log 2$ is a constant while $\alpha(g)$ is given by the following:
+\ie
+&\alpha(1)= -1.13889\\
+&\alpha(2)= -1.41667\\
+&\alpha(3)= -1.69445\\
+&\alpha(4)= -1.97222\\
+&\alpha(5)= -2.24993
+\fe
+which suggests that $\alpha(g)$ has a linear dependence in $g$:
+\ie
+\alpha(g)=\alpha_0+\alpha_1 g,\quad \alpha_0=-0.86112,\quad \alpha_1= - 0.27778
+\fe
+One can also compute the same large-$L$ dependence for theories with $R\neq 1$ and linear fit the parameters $\alpha(g)$. For theories with different $R$, both the slope and the intercept of $\alpha(g)$ depends on $R$, but $\alpha_0+\alpha_1 = -1.1388$ and  $\gamma= \frac{1}{4} \log 2$ stays around the same.
+
+In order to arrive at a finite partition function in the $L\rightarrow \infty$ limit, we choose the renormalization scheme by adding the following counterterms to the (Euclidean) compact boson action:
+\ie
+S_\text{counterterm} = \gamma L + (\alpha_0+\alpha_1)\log L- \frac{\alpha_1}{8\pi}\log L\int_\Sigma \mathrm{d}^2\sigma \sqrt{g}\, R(g)
+\fe
+and the partition function in this renormalization scheme is given by simply $\exp c(\Omega)$.
+
+The analytical value $Z_\text{comp}^{(g)}$ of the compact boson partition function is computed in a different scheme and also a different Weyl frame. One can check numerically that, at genus 1, after taking the Weyl anomaly factor into account, the renormalized partition function $\exp c(\tau)$ and the analytic value $Z_\text{comp}^{(1)}(\tau)$ only differs by a finite renormalization of the cosmological constant, namely:
+\ie
+\frac{\exp(c(\tau)-S_\text{Weyl}(\tau))}{Z_\text{comp}^{(1)}(\tau)} = \text{ Const }
+\fe
+
+\section{The $bc$ System and String Amplitudes}
+
+In order to compute string amplitudes from this formalism, we also need correlators of the $bc$ system. More specifically, we want the correlator $\langle \prod_{a=1}^{6g-3}\mathcal{B}_{\ell_a}\rangle$ that corresponds to the integrand of string amplitudes.
+
+\subsubsection*{Analytic result}
+
+The $(b_\lambda, c_{1-\lambda})$ system correlator on a Riemann surface $\Sigma$ is computed in \textbf{[Verlinde-Verlinde]}. For $n$ b-ghost insertions and $m$ c-ghost insertions that satisfies $m-n=Q(g-1)$, the correlator is given by
+\ie
+\begin{aligned}
+\left\langle\prod_{i=1}^n b_\lambda\left(z_i\right) \prod_{j=1}^m c_{1-\lambda}\left(w_j\right)\right\rangle_{\Sigma}= & Z_1^{-\frac{1}{2}} \theta\left(\sum_i \zeta\left(z_i\right)-\sum_j \zeta\left(w_j\right)-(2 \lambda-1) \Delta \mid \Omega\right) \\
+& \times \frac{\prod_{i<i^{\prime}} E\left(z_i, z_{i^{\prime}}\right) \prod_{j<j^{\prime}} E\left(w_j, w_{j^{\prime}}\right) \prod_i\left(\sigma\left(z_i\right)\right)^{2 \lambda-1}}{\prod_{i, j} E\left(z_i, w_j\right) \prod_j\left(\sigma\left(w_j\right)\right)^{2 \lambda-1}}
+\end{aligned}
+\fe
+where
+\begin{enumerate}
+\item[$\bullet$] $Z_1^{-1/2}$ is equal the chiral boson partition function $Z_\text{chiral}$, namely the contribution of the Fock space generated by holomorphic modes $\alpha_{-n}$ to the partition function, which is dependent on the Weyl frame and subject to gravitational anomaly due to the unbalanced central charge $(-2,0)$. One should avoid using $Z_1$ and use $|Z_1|^2$ instead to cancel the gravitational anomaly. 
+
+This quantity $|Z_1|^2$, which is only dependent on the Weyl frame, can be related to the noncompact boson partition function by:
+\ie
+Z_\text{bos}(\Omega) = V_X\int \frac{d^gk}{(2\pi)^g} e^{-\pi k^I k^J\mathrm{Im}(\Omega_{IJ})}|Z_\text{chiral}|^2 \propto \left[\det \mathrm{Im}(\Omega_{IJ})\right]^{-1/2}|Z_1|^{-1}
+\fe
+We can choose our renormalization scheme such that
+\ie
+|Z_1| = \left[\det \mathrm{Im}(\Omega_{IJ})\right]^{-\frac{1}{2}} [(\det A')^{\frac{1}{2}}]_\text{renormalized}
+\fe
+where the renormalized determinant is the one with $\gamma L+\alpha\log L$ stripped off. The matrix $A'$ is constructed above in the context of free boson partition function.
+
+\item[$\bullet$] $\zeta(z)=(\zeta_1(z),...,\zeta_g(z))$ is the Abel-Jacobi map defined as
+\ie
+\zeta_I(z) = \int_{z_0}^z \omega_I
+\fe
+where $z_0$ is a fixed point on $\Sigma$ and $\omega_I$'s are the holomorphic 1-forms. 
+
+\item[$\bullet$] $\theta(y|\Omega)$ is the Riemann theta function defined as
+\ie
+\theta(y|\Omega)=\sum_{n^I \in \mathbb{Z}} \exp \left(\pi in^I \Omega_{I J}n^J+2 \pi in^I y_I\right)
+\fe
+
+\item[$\bullet$] $\Delta=(\Delta_1,...,\Delta_g)$ is the Riemann class given by
+\ie
+\Delta_I = \frac{1}{2}(1-\Omega_{II}) + \sum_{J\neq I}\int_{\alpha^J} \omega_J(z)\zeta_I(z)dz
+\fe
+
+\item[$\bullet$] $E(z,w)$ is the prime form given by
+\ie
+E(z,w) = \frac{\theta[\delta](\zeta(z)-\zeta(w)|\Omega)}{\sqrt{\omega[\delta](z)\omega[\delta](w)}}
+\label{EZW}
+\fe
+where the characteristic $\delta=(\delta^I, \delta_I')\in \{0,\frac{1}{2}\}^{2g}$ parametrizes the spin structure on $\Sigma$, and we require that $\delta$ gives an odd spin structure. The spinor periodicity along the $\alpha^I$ cycle is given by $\epsilon^I=(-1)^{2\delta^I-1}$ while the periodicity along $\beta_I$ is given by $\epsilon_I'=(-1)^{2\delta'_I-1}$. The Arf invariant can be written in terms of $\delta$ as $\mathrm{Arf}(\delta)=4\sum_{I}\delta^I \delta_I'\ (\text{mod }2)$, and the odd spin structures has $\text{Arf}=1$. The Riemann theta function with characteristic $\theta[\delta](y|\Omega)$ is given by 
+\ie
+\theta[\delta](y |\Omega) \equiv \sum_{n^I \in \mathbb{Z}} \exp \left[\pi i\left(n^I+\delta^I\right) \Omega_{I J}\left(n^J+\delta^J\right)+2 \pi i\left(n^I+\delta^I\right)\left(y_I+\delta_I^{\prime}\right)\right]
+\fe
+and $\omega[\delta](z)$ is defined as
+\ie
+\omega_I(z)\frac{\partial}{\partial y_I}\theta[\delta](y|\Omega)|_{y=0}
+\fe
+for odd spin structures $\delta$. One can prove that the RHS of \eqref{EZW} is independent of the odd spin structure $\delta$.
+
+\item[$\bullet$]Finally, the quantity $\sigma(z_i)$ can be determined by taking the $\lambda = 1, (n,m)=(g,1)$ case, where you have
+\ie
+Z_1 \det(\omega_I(z_i)) = Z_1^{-1/2}\theta\left(\sum_{i=1}^g \zeta(z_i)-\zeta(w)-\Delta|\Omega\right) \frac{\prod_{i\leq i\leq i'\leq g}E(z_i, z_i')\prod_{i=1}^g\sigma(z_i)}{\prod_{i=1}^g E(z_i, w)\sigma(w)}
+\fe
+where we choose the chiral determinant $Z_1$ to be the naive square root of $|Z_1|^2$. This corresponds to a specific choice of worldsheet metric due to the gravitational anomaly, and it won't affect the physical correlators since we always have both holomorphic and anti-holomorphic ghosts.
+
+Note that this equation won't fix the normalization of $\sigma(z)$ for genus 1, but it won't enter physical correlators anyway due to the selection rule.
+
+\end{enumerate}
+
+We can check our result by comparing to the Igusa cusp form at genus 2. On a genus 2 surface, the bc ghost + matter correlator should satisfy
+\ie
+\left|\langle b(z_1)b(z_2)b(z_3) \rangle\right|^2 |Z_\text{chiral}(\Omega)|^{52} \propto |\det(S_i(z_j))|^2|\Phi(\Omega)|^2
+\fe
+where the matrix $S_i(z_j)$ is defined using the holomorphic 1-forms $\omega_1(z)dz, \omega_2(z)dz$ as
+\ie
+S_1(z)=\left(\omega_1(z)\right)^2,\quad S_2(z)=\left(\omega_2(z)\right)^2,\quad S_3=\omega_1(z) \omega_2(z)
+\fe
+and the function $\Phi(\Omega)$ is given by
+\ie
+\Phi(\Omega) = \frac{2\pi i}{\chi_{10}(\Omega)}
+\fe
+where $\chi_{10}$ is the Igusa cusp form. Since the quantity $\left|\langle b(z_1)b(z_2)b(z_3) \rangle\right|^2 |Z_\text{chiral}|^{52}$ is free from Weyl anomaly, one can check numerically that
+\ie
+\frac{\left|\langle b(z_1)b(z_2)b(z_3) \rangle_{\Sigma(\Omega_1)}\right|^2 }{\left|\langle b(z_1)b(z_2)b(z_3) \rangle_{\Sigma(\Omega_2)}\right|^2} \left(\frac{|Z_1(\Omega_1)|^{2}}{|Z_1(\Omega_2)|^{2}}\right)^{26} = \frac{|\det (S_i(z_j;\Omega_1))|^2}{|\det (S_i(z_j;\Omega_2))|^2} \frac{|\chi_{10}(\Omega_2)|^2}{|\chi_{10}(\Omega_1)|^2}
+\fe
+which holds for general moduli $\Omega_1, \Omega_2$.
+
+For genus 3, there's a similar check against the Mumford form $\chi_{18}$. The ghost + matter correlator are given by
+\ie
+\left|\langle \prod_{i=1}^6 b(z_i)\rangle\right|^2 |Z_\text{chiral}(\Omega)|^{52} \propto |\det(S_i(z_j))|^2|\chi_{18}|^{-1}
+\fe
+Similarly, the matrix $S_i(z_j)$ is given by the quadratic products of the 3 normalized holomorphic 1-forms. This can be only done for non-hyperelliptic genus-3 riemann surfaces, as for hyperelliptic genus-3 surfaces the 6 $S_i$'s are no longer linear independent and they no longer span the Cech cohomology $H^0(\Sigma, K^2)$ of global sections. The object $\chi_{18}$ is the genus-3 Mumford form, which can be calculated using the theta product formula
+\ie
+\chi_{18}=\prod_{\delta \text{ even}}\theta[\delta](0|\Omega)
+\fe
+which involves 36 even spin structures $\delta$. This relation has been checked for 4 different genus 3 moduli in \texttt{genus3\_bc\_chi18\_ratio\_check.py}.
+
+For genus 4 and higher, there are no analogous checks one can perform, as $S_i$ constructed using quadratic products of holomorphic 1-form will admit nontrivial relations. There are also no analogous object to the Igusa cusp form or the Mumford form for higher genus.
+
+\end{document}

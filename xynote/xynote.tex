@@ -1,0 +1,1343 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,array}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\numberwithin{equation}{section}
+
+\newcommand{\A}{\alpha'}
+\newcommand{\bC}{\mathbb C}
+\newcommand{\bR}{\mathbb R}
+\newcommand{\bZ}{\mathbb Z}
+\newcommand{\cB}{\mathcal B}
+\newcommand{\cC}{\mathcal C}
+\newcommand{\cF}{\mathcal F}
+\newcommand{\cG}{\mathcal G}
+\newcommand{\cH}{\mathcal H}
+\newcommand{\cI}{\mathcal I}
+\newcommand{\cL}{\mathcal L}
+\newcommand{\cM}{\mathcal M}
+\newcommand{\cQ}{\mathcal Q}
+\newcommand{\cR}{\mathcal R}
+\newcommand{\cS}{\mathcal S}
+\newcommand{\cV}{\mathcal V}
+\newcommand{\cZ}{\mathcal Z}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\ee}{\mathrm e}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\im}{\operatorname{Im}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\Ker}{\operatorname{Ker}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\vol}{\operatorname{vol}}
+\newcommand{\wt}{\widetilde}
+\newcommand{\wh}{\widehat}
+\newcommand{\vev}[1]{\left\langle #1\right\rangle}
+\newcommand{\cA}{\mathcal A}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{regulatorassumption}{Regulator Assumption}
+\newtheorem{remark}{Remark}
+
+\title{Numerical Bosonic String Integrands from One-Face Ribbon Graphs}
+\author{GPT 5.5\\under Xi Yin's supervision}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note extracts the numerical construction of bosonic string integrands from
+the local string Monte Carlo note, the Markdown implementation notes, and the
+Python scripts in the covariant ribbon-graph repository.  The purpose is not to
+replace the draft, but to isolate the precise mathematical object computed by
+the code, the setup in which it represents a continuum worldsheet CFT quantity,
+the one regulator assumption, and the checks that support the construction.
+
+The central object is a Riemann surface obtained by sewing the boundary of a
+disk according to a one-face metric ribbon graph.  The present production
+strategy for the bosonic string integrand is not to discretize the higher-genus
+\(bc\) system.  Rather, the discretization is used to reconstruct the period
+matrix, Abel map, and related holomorphic data as functions of the ribbon graph
+parameters.  The string integrand is then evaluated from the continuum
+Verlinde-Verlinde formula, or equivalently from the corresponding Mumford form,
+on that reconstructed surface.  In the critical combination of the \(bc\) system
+with \(26\) free bosons, the auxiliary chiral determinant \(Z_1\) (equivalently
+\(Z_{\rm ch}=Z_1^{-1/2}\)) cancels out of the final integrand.  The native
+moduli space in this note is \(\cM_{g,1}\); for partition-function applications
+the marked puncture carries the identity operator.
+\end{abstract}
+
+\tableofcontents
+
+\section{Scope and status}
+
+The sources reviewed for this note are:
+\begin{itemize}
+\item the local string Monte Carlo note
+  \path{covariant formalism/tex/string MC.tex};
+\item the Strebel/ribbon working note \path{Strebel.tex} and the draft
+  outline in \path{draft/};
+\item the Markdown implementation notes
+  \path{covariant formalism/markdown/riemann_surface_tools.md} and
+  \path{covariant formalism/markdown/genus3_bc_chi18_ratio_check.md};
+\item the numerical scripts in \path{covariant formalism/python/}, especially
+  the graph-generation, determinant, compact-boson, and period-matrix scripts,
+  together with the diagnostic scripts listed explicitly in the algorithmic
+  summary below;
+\item the relevant sections of the external string notes source
+  \url{https://github.com/xiyin137/stringbook/},
+  namely conformal gauge with moduli, the holomorphic reformulation of
+  \(b\)-ghost insertions, the ghost number anomaly, and the higher-loop
+  bosonic string measure.
+\end{itemize}
+
+I will use the following status labels.
+
+\begin{description}
+\item[Exact CFT.] A statement follows from the continuum CFT or string measure
+formalism, independent of the lattice regulator.
+\item[Setup.] A statement fixes the class of graphs, coordinates, or
+normalization conventions used in this note.
+\item[Theorem/geometric input.] A statement is a standard mathematical input,
+for example the Strebel-Kontsevich cell decomposition or a continuum CFT
+identity.
+\item[Regulator assumption.] A statement asserts convergence of the
+discretized disk construction to the continuum quantity after allowed local
+counterterms.  This is the only nontrivial assumption made by the numerical
+construction.
+\item[Check.] A statement records a diagnostic already implemented in the
+repository.
+\end{description}
+In the body below these labels appear either as theorem-like environments or as
+bold lead-ins to the relevant paragraphs.  They are a bookkeeping device for
+separating definitions from continuum facts, numerical evidence, and the single
+regulator assumption.
+
+The output of the present construction should be read as a local integrand or
+section over the moduli represented by a fixed-perimeter one-face ribbon cell,
+namely a cell in \(\cM_{g,1}\).  It is not, by itself, a completed global
+integral until the cell measure, automorphism factors, and boundary strata are
+treated consistently.
+
+\noindent\textbf{Current integrand strategy.}
+For the critical bosonic string measure, all ghost and oscillator factors are
+organized by the continuum Verlinde-Verlinde/Mumford formula on the reconstructed
+Riemann surface.  The numerical task is to express the period matrix
+\(\Omega(\ell)\), and the associated Abel maps and local evaluations of
+holomorphic differentials, in terms of the ribbon edge lengths \(\ell\).  There
+is at present no independent higher-genus lattice prescription for the \(bc\)
+correlator being used as an input to the string integrand.  The existing
+higher-genus \(bc\)-named scripts are best read as diagnostics of the continuum
+Verlinde-Verlinde implementation after the period matrix has been reconstructed.
+
+\section{Preliminaries and assumptions}
+
+\noindent\textbf{Setup.}
+Unless stated otherwise, the numerical formulas use \(\A=1\).  Factors of
+\(\A\) are restored in a few continuum formulas to identify the convention.
+The worldsheet is a closed oriented genus \(g\) Riemann surface \(\Sigma\).
+The point of this section is to separate definitions and standard theorems from
+the one real analytic assumption in the numerical work.
+
+\begin{definition}[Ribbon-cell setup]
+The primary numerical coordinate system is a positive-length, one-face metric
+ribbon graph \(\Gamma\) of genus \(g\).  On the open top-dimensional cells the
+graph is trivalent, and hence
+\begin{equation}
+        E=6g-3,\qquad V=4g-2,\qquad F=1.
+\end{equation}
+Degenerate cells with vanishing edge lengths are boundary strata and are not
+part of the present local construction.
+\end{definition}
+
+\begin{theorem}[Strebel-Kontsevich input]
+For a genus \(g\) Riemann surface with one marked point and one positive
+perimeter, the Strebel differential determines a one-face metric ribbon graph;
+conversely the corresponding metric ribbon graphs give the standard cell
+decomposition of
+\begin{equation}
+        \cM_{g,1}\times \bR_{+},
+\end{equation}
+with the usual orbifold identifications by graph automorphisms.
+\end{theorem}
+
+\begin{remark}[Marked point and perimeter]
+The preceding theorem is not an assumption of the numerical method; it is the
+geometric setup.  In this note we take \(\cM_{g,1}\), with fixed Strebel
+perimeter, as the native moduli space.  For partition-function applications the
+marked puncture is assigned the identity operator.  Thus the marked point is
+part of the data being integrated over, rather than something to be silently
+removed.  If one later wants an unmarked vacuum amplitude on \(\cM_g\), one
+must specify a separate pushforward or fiber-normalization convention.
+\end{remark}
+
+\begin{definition}[Weyl frame, zero modes, and winding sector]
+The lattice regulator is defined in the disk frame associated with the Strebel
+differential.  Individual matter or ghost partition functions are therefore
+Weyl-frame dependent, while Weyl-invariant combinations, ratios at fixed
+central charge, and the critical matter-plus-ghost combination are the intended
+continuum quantities.
+
+For a noncompact boson, the constant zero mode is factored as a target-space
+volume and the determinant is taken on the orthogonal complement of constants.
+For a compact boson \(X\sim X+2\pi R\), the constant zero mode contributes
+\(2\pi R\).  Winding around the marked puncture is set to zero; equivalently,
+only edge-shift configurations satisfying the vertex incidence constraints are
+summed.  These are conventions defining the regulated quantity.
+\end{definition}
+
+\begin{definition}[Holomorphic data conventions]
+Period matrices are computed from \(A\)-normalized holomorphic one-forms.  Abel
+maps use a fixed basepoint in the disk, and physical formulas only use
+basepoint-independent combinations.  Prime forms use an odd theta
+characteristic and principal square-root branches; the independence of the
+prime form from the odd characteristic is a standard theorem and is checked
+numerically.
+
+For \(g\geq2\), the note and the current checks use the canonical construction
+of the Riemann constant vector described in the implementation notes: zeros of
+an \(A\)-normalized holomorphic one-form determine a canonical divisor, and
+half-period candidates are selected by Riemann-vanishing tests.  The
+higher-genus \(\sigma\) normalization is fixed from the \(\lambda=1\)
+Verlinde-Verlinde identity; in diagnostic scripts this may be expressed with an
+explicit \(Z_1\), while in the final critical integrand that auxiliary
+determinant cancels.
+The older direct cycle-integral routine is not used as an input to the claims
+in this note.
+\end{definition}
+
+\begin{definition}[Normalization convention]
+All absolute amplitudes in this note are defined only up to constants that are
+independent of moduli and of the compactification radius.  The implemented
+checks compare ratios or local sections for which these constants cancel.
+\end{definition}
+
+\begin{regulatorassumption}[Continuum limit modulo local counterterms]
+For integer edge lengths, set
+\begin{equation}
+        m=\sum_{e=1}^{E}\ell_e,\qquad L=2m.
+\end{equation}
+The continuum limit is taken by scaling all edge lengths by a common large
+integer while keeping their ratios fixed.  The nontrivial analytic assumption
+is that the resulting discretized disk construction converges to the intended
+continuum free-boson quantities after multiplication by local counterterms
+allowed by the symmetries of the regulator, such as a lattice cosmological term
+proportional to \(L\) and an Euler-curvature term.  The same large-edge limit is
+also assumed to give the correct continuum period-map data.  The latter
+convergence is not a multiplicative counterterm statement; it is convergence of
+the reconstructed holomorphic one-forms, periods, Abel maps, and local
+evaluations.  The remaining freedom in the free-boson normalization is a finite
+moduli-independent normalization.
+No separate higher-genus lattice \(bc\) convergence assumption is part of the
+present string-integrand strategy.
+
+The large-\(L\) fits used in the code are the practical implementation of this
+assumption.  They require all edge lengths to be large enough that short-edge
+artifacts are negligible; the implementation notes use minimum edge lengths of
+order \(200\) for stable fits.
+\end{regulatorassumption}
+
+\begin{remark}
+There is a counting-convention issue in the working files.  The draft outline
+cites the Bacher--Vdovina counts \(9\) and \(1726\) for one-vertex genus-two
+and genus-three triangulations.  The current compact-boson file
+\path{compact_partition.py} stores \(9\) genus-two one-face graphs, and the
+current genus-three data file \path{genus3_ribbon_graph_data.txt} declares
+\(1726\) stored one-face genus-three ribbon graphs.  The current generator
+describes its output as isomorphism-reduced under graph automorphisms.  An
+older sentence in \path{string MC.tex} says that the compact-boson T-duality
+check was run over \(4\) genus-two topologies and \(818\) genus-three
+topologies.  The reviewed repo files do not identify the enumeration convention
+behind the older \(4\) and \(818\) numbers.  Until this is audited, the
+current-code counts should be quoted as \(9\) and \(1726\), and the older
+\(4\) and \(818\) statements should be treated as unresolved.  No formula below
+depends on these counts.
+\end{remark}
+
+\section{Ribbon graph parameterization of moduli}
+\label{sec:ribbon-parameterization}
+
+By the Strebel theorem, a point of \(\cM_{g,1}\times\bR_+\) can be represented
+by a metric ribbon graph with one face.  In the generic top-dimensional cell
+the graph is trivalent.  Let the oriented boundary of the unique face be traced
+once.  Each edge \(e\) appears twice in this boundary word, with opposite
+orientations.  The disk model places the boundary word on \(|z|=1\), with
+integer edge length \(\ell_e\), so that the boundary has \(L=2\sum_e\ell_e\)
+lattice sites.
+
+Let \(S_a\), \(a=1,\ldots,2E\), be the oriented boundary segments.  If the two
+occurrences of edge \(e\) are \(S_{a(e)}\) and \(S_{b(e)}\), sewing imposes an
+orientation-reversing identification between the corresponding arcs of the
+unit circle.  In the noncompact boson this is simply equality of the boundary
+field values.  In the compact boson it is equality up to an integral shift,
+which will be described in Section~\ref{sec:compact}.
+
+The boundary prevertices are the points of \(|z|=1\) where adjacent boundary
+segments meet.  There are
+\[
+        N_{\rm pv}=2E=3V=12g-6
+\]
+such points in a trivalent one-face cell; triples of boundary prevertices are
+identified to the \(V\) trivalent surface vertices after sewing.  If
+\(q_r\), \(r=1,\ldots,N_{\rm pv}\), denote the boundary prevertices, a
+holomorphic one-form on the sewn surface pulls back to the disk with cubic-root
+singularities at these points.  The numerical ansatz used by the improved
+higher-genus solver has the form
+\begin{equation}
+        \omega(z)
+        =
+        \left[\prod_{r=1}^{N_{\rm pv}}
+        \left(1-\frac{z}{q_r}\right)^{-1/3}\right]
+        P(z)\,\dd z,
+        \label{eq:oneformansatz}
+\end{equation}
+where \(P\) is represented by a polynomial in the truncated disk basis.  The
+branch choices are those inherited from evaluating the singular factor inside
+the disk.
+The exponent \(-1/3\) has a local geometric origin.  At a trivalent surface
+vertex, the three boundary prevertices in its equivalence class contribute
+three disk half-neighborhoods, with total angle \(3\pi\) before passing to a
+smooth surface coordinate.  On each branch, a smooth local coordinate \(\xi\)
+is therefore related to the disk coordinate by
+\(\xi\sim (z-q_r)^{2/3}\), and a regular holomorphic differential \(\dd\xi\)
+pulls back as \((z-q_r)^{-1/3}\dd z\) times a regular factor.
+
+\begin{remark}
+The lattice data are a regulator for the CFT on the sewn Riemann surface, not a
+piecewise-linear approximation to the final worldsheet metric.  The continuum
+complex structure is obtained from the sewing, while the Strebel/disk metric
+only fixes a Weyl frame in which the regulator is defined.
+\end{remark}
+
+\subsection{Holomorphic data and the period map from the sewn disk}
+
+The same ribbon data determine the period matrix and the ingredients of the
+Verlinde-Verlinde \(bc\) correlator.
+
+\subsubsection{Holomorphic one-forms}
+
+The improved higher-genus solver in \path{ell_to_tau.py} uses
+\eqref{eq:oneformansatz}.  Let \(m=\sum_e\ell_e\).  The regular part is
+expanded as
+\begin{equation}
+        P_I(z)=\sum_{a=0}^{m-1}c_{I,a}z^a.
+\end{equation}
+For each edge, the two boundary arcs are sampled at half-integer lattice
+points.  The pulled-back differential must match under orientation-reversing
+sewing.  In the implemented convention the seam equation has the schematic
+form
+\begin{equation}
+        \omega(z_R)+\omega(z_L)=0
+        \label{eq:seamconstraint}
+\end{equation}
+at the paired sample points, after including the singular factor.  The code
+constructs the matrix of these homogeneous constraints, finds its \(g\)
+smallest singular directions, and then performs a Hermitian block solve to
+obtain a stable basis of \(g\) one-forms.
+
+\subsubsection{Homology and periods}
+
+For a one-face graph, each edge defines a chord connecting the two occurrences
+of that edge on the boundary word.  Two such chords intersect exactly when
+their endpoints interleave along the boundary.  This gives an antisymmetric
+integer matrix \(J\) on the free abelian group generated by edge chords.  Its
+rank must be \(2g\).  The code searches for a symplectic basis
+\[
+        \{\alpha_I,\beta_I\}_{I=1}^g
+\]
+made from raw edge chords or small integer combinations, satisfying
+\begin{equation}
+        \alpha_I\cdot\alpha_J=0,\qquad
+        \beta_I\cdot\beta_J=0,\qquad
+        \alpha_I\cdot\beta_J=\delta_{IJ}.
+\end{equation}
+
+Let \(\omega_i\), \(i=1,\ldots,g\), be the unnormalized forms found above.
+Using disk antiderivatives evaluated at edge midpoints, the code computes
+\begin{equation}
+        A_{ij}=\oint_{\alpha_j}\omega_i,
+        \qquad
+        B_{ij}=\oint_{\beta_j}\omega_i.
+\end{equation}
+The normalized period matrix is then
+\begin{equation}
+        \Omega=A^{-1}B.
+        \label{eq:periodmatrix}
+\end{equation}
+The normalized forms are \(A^{-1}\omega\) in the same row convention.  Numerical
+diagnostics check that \(\Omega\) is symmetric and that \(\im\Omega\) is
+positive definite.
+
+\subsubsection{Abel map, prime form, and sigma}
+
+The Abel map is
+\begin{equation}
+        \zeta_I(z)=\int_{z_0}^{z}\wh\omega_I,
+\end{equation}
+where \(z_0\) is the fixed disk basepoint and \(\wh\omega_I\) are the
+\(A\)-normalized holomorphic one-forms.  The Riemann theta function convention
+is
+\begin{equation}
+        \theta[\epsilon,\delta](y|\Omega)
+        =
+        \sum_{n\in\bZ^g}
+        \exp\left[
+        \pi\ii(n+\epsilon)^T\Omega(n+\epsilon)
+        +2\pi\ii(n+\epsilon)^T(y+\delta)
+        \right].
+\end{equation}
+This is the convention implemented in the Python theta routine; other common
+half-characteristic conventions differ by characteristic-dependent phase
+factors.
+For an odd characteristic \(\nu\), the prime form is
+\begin{equation}
+        E(z,w)
+        =
+        \frac{\theta[\nu](\zeta(z)-\zeta(w)|\Omega)}
+        {\sqrt{\omega_\nu(z)\omega_\nu(w)}}.
+        \label{eq:primeform}
+\end{equation}
+Here
+\begin{equation}
+        \omega_\nu(z)
+        =
+        \sum_{I=1}^g
+        \partial_I\theta[\nu](0|\Omega)\,\wh\omega_I(z)
+\end{equation}
+is the holomorphic one-form determined by the odd characteristic.
+The result is independent of the odd characteristic; this is tested
+numerically.
+
+The Riemann constant vector \(\Delta\) is constructed canonically for
+\(g\geq2\) using a canonical divisor from zeros of a normalized holomorphic
+one-form and a half-period search selected by Riemann vanishing.  This replaces
+the older direct cycle-integral formula, which is known not to be reliable for
+\(g\geq2\).
+
+The \(\sigma\) function entering the \(bc\) correlator is used through ratios
+and through a normalization fixed by the \(\lambda=1\) Verlinde-Verlinde
+identity.  The auxiliary divisor points used for this normalization must be
+generic and disjoint from all \(b\)- and \(c\)-insertions.  Same-surface ratios
+are checked to be stable under changing this auxiliary divisor.  In practice
+the scripts reject choices in which divisor points collide with insertion
+points or make the relevant theta, prime-form, or sigma-normalization
+denominators numerically singular.
+
+
+\section{Free boson correlators and the genus-one ghost check}
+\label{sec:free-boson}
+
+This section is a second application of the ribbon-graph discretization, not a
+logical prerequisite for the critical bosonic string integrand of
+Section~\ref{sec:string-integrand}.  The free-boson determinant and compact
+winding sum are genuine lattice path-integral quantities on the sewn disk.  The
+genus-one \(bc\) determinant is also understood directly.  At higher genus,
+however, the present note does not assume a direct discretized \(bc\) path
+integral; the ghost sector of the string integrand is handled separately by the
+continuum Verlinde-Verlinde formula.
+
+\subsection{Noncompact free boson determinant}
+
+For one free noncompact boson on the disk, the boundary field
+\[
+        X(\sigma)=x_0+\sum_{n\neq0}X_n\ee^{\ii n\sigma}
+\]
+has identity wavefunctional
+\begin{equation}
+        \Psi_1[X]
+        \propto
+        \exp\left[-\frac{1}{\A}\sum_{n\geq1}n X_nX_{-n}\right].
+        \label{eq:identitywf}
+\end{equation}
+The scripts use a circulant lattice kernel for this quadratic form.  Up to an
+overall convention-dependent factor, the kernel is
+\begin{equation}
+        \wh K_L(r)
+        =
+        \frac{\sin(\pi/L)}
+        {L\left[\cos(2\pi r/L)-\cos(\pi/L)\right]},
+        \qquad r\in\bZ/L\bZ.
+        \label{eq:circkernel}
+\end{equation}
+Let \(K_L\) denote the associated circulant matrix,
+\begin{equation}
+        (K_L)_{ij}=\wh K_L((j-i)\bmod L),
+        \label{eq:circmatrix}
+\end{equation}
+with indices understood modulo \(L\).  This matrix has the constant vector as
+its null vector and approaches the continuum Dirichlet-to-Neumann quadratic form
+in the low Fourier modes.  The files \path{partition_function.py} and
+\path{compact_partition.py} differ by a factor of \(2\) in this raw matrix;
+this is a regulator normalization convention, provided it is used consistently
+when comparing determinants and winding forms.
+With the sign convention in \eqref{eq:circkernel}, the formula agrees with
+\path{direct_mat_n_fast} in \path{partition_function.py}; the corresponding
+routine in \path{compact_partition.py} returns one half of the same matrix.
+The positive object used in determinant computations is the sewn, reduced
+quadratic form \(A'_{\Gamma,L}\), after removal of the constant zero mode.
+
+Let \(X\in\bR^L\) be the vector of boundary values before sewing.  Sewing the
+disk boundary is represented by a linear map
+\[
+        X=M_{\Gamma}y
+\]
+from independent real variables \(y\) to the full boundary vector.  The
+quadratic form on the sewn surface is
+\begin{equation}
+        A_{\Gamma,L}=M_{\Gamma}^{T}K_LM_{\Gamma}.
+        \label{eq:sewnmattermatrix}
+\end{equation}
+It still has one null vector, the constant mode.  If \(Q\) is any matrix whose
+columns span a complement to constants, define
+\begin{equation}
+        A'_{\Gamma,L}=Q^{T}A_{\Gamma,L}Q.
+\end{equation}
+Then the regulated noncompact one-boson partition function has the form
+\begin{equation}
+        Z^{\rm nc}_{\Gamma,L}
+        =
+        C_L\,V_X\,(\det A'_{\Gamma,L})^{-1/2},
+        \label{eq:noncompactdet}
+\end{equation}
+where \(C_L\) is a local regulator constant and \(V_X\) is the target-space
+zero-mode volume.  For \(D\) noncompact bosons the determinant factor is
+raised to the \(D\)-th power.
+
+\subsection{Compact boson and the winding lattice}
+\label{sec:compact}
+
+Let \(X\sim X+2\pi R\).  For each edge \(e\), the two sewn boundary segments
+may differ by a shift \(2\pi R s_e\) with \(s_e\in\bZ\).  Around every cubic
+vertex the shifts must close.  With an orientation on the graph, this closure
+condition is the integer incidence equation
+\begin{equation}
+        D s=0,\qquad s\in\bZ^E,
+        \label{eq:incidence}
+\end{equation}
+where \(D\) is the \(V\times E\) oriented incidence matrix.  Since the graph is
+connected,
+\[
+        \rank D=V-1,
+        \qquad
+        \dim_{\bZ}\Ker D=E-V+1=2g.
+\]
+Choose an integral basis
+\begin{equation}
+        B:\bZ^{2g}\longrightarrow \Ker_{\bZ}D,\qquad s=Bn.
+        \label{eq:windingbasis}
+\end{equation}
+In the code this basis is constructed from graph cycles, equivalently from a
+spanning tree or from the stored graph incidence data.
+
+In a fixed shift sector, the boundary field can be written
+\begin{equation}
+        X=M_{\Gamma}y+2\pi R\,W s,
+        \label{eq:compactaffine}
+\end{equation}
+where \(W\) inserts the chosen shifts along the identified sites.  Substitution
+into the disk quadratic form gives
+\begin{equation}
+        S_L(y,s)
+        =
+        \frac{1}{2}y^TA'y
+        +2\pi R\,y^TU s
+        +(2\pi R)^2\,\frac{1}{2}s^TCs.
+\end{equation}
+After integrating over \(y\) on the nonzero-mode subspace, the winding sector
+is weighted by the Schur complement
+\begin{equation}
+        T_{\rm Schur}=C-U^T(A')^{-1}U,\qquad
+        T'_{\rm Schur}=B^TT_{\rm Schur}B.
+        \label{eq:Tprime}
+\end{equation}
+The compact-boson scripts use a normalized matrix, denoted \(T'\) below and
+stored as \path{T_reduced}, for which all factors from the \(2\pi R\) shifts,
+the factor \(1/2\) in the Gaussian action, and the raw-kernel normalization have
+already been absorbed.  Equivalently, \(T'\) is defined by the winding weight
+\[
+        \exp[-4\pi R^2 n^TT'n].
+\]
+With this convention,
+\begin{equation}
+        Z^{(g)}_{\Gamma,L}(R)
+        =
+        2\pi R\,C_L(\det A')^{-1/2}
+        \Theta_{2g}(4\ii R^2T'),
+        \label{eq:compactlattice}
+\end{equation}
+where
+\begin{equation}
+        \Theta_N(\Xi)
+        =
+        \sum_{n\in\bZ^N}
+        \exp\left(\pi\ii\,n^T\Xi n\right).
+\end{equation}
+For \(\Xi=4\ii R^2T'\), the summand is
+\(\exp[-4\pi R^2 n^TT'n]\).
+
+The continuum compact-boson partition function on a genus \(g\) surface with
+period matrix \(\Omega\), in the same \(\A=1\) convention and up to a
+radius-independent factor, is
+\begin{equation}
+        Z_{\rm comp}^{(g)}(\Omega,R)
+        =
+        2\pi R\, Z_{\rm bos}^{(g)}(\Omega)
+        \sum_{m,n\in\bZ^g}
+        \exp\left[
+        -\pi R^2
+        (m+\Omega n)^T(\im\Omega)^{-1}(m+\bar\Omega n)
+        \right].
+        \label{eq:continuumcompact}
+\end{equation}
+The code checks that ratios of the lattice theta factor agree with
+\eqref{eq:continuumcompact}.  For a general positive matrix, Poisson summation
+does not return the same theta series; it returns the theta series of the dual
+quadratic form.  Let \(N=2g\) and \(G=4T'\).  Then
+\begin{equation}
+        \Theta_N(\ii R^2G)
+        =
+        R^{-N}(\det G)^{-1/2}
+        \sum_{m\in\bZ^N}
+        \exp\left[-\pi R^{-2}m^TG^{-1}m\right].
+        \label{eq:poissontheta}
+\end{equation}
+Thus a same-matrix T-duality statement is equivalent to a self-duality
+condition on the normalized integral winding lattice: \(G^{-1}\) must be
+integrally equivalent to \(G\), i.e. \(U^TG^{-1}U=G\) for some
+\(U\in GL(N,\bZ)\).  This includes \(\det G=1\).  More generally, any residual
+factor would have to be independent of both \(R\) and the moduli to be
+absorbed into the overall convention.  The matrix \(T'\) stored as
+\path{T_reduced} is normalized so that the following identity is the numerical
+diagnostic being tested:
+\begin{equation}
+        R^g\Theta_{2g}(4\ii R^2T')
+        =
+        R^{-g}\Theta_{2g}(4\ii R^{-2}T'),
+        \label{eq:tdualtheta}
+\end{equation}
+which implies
+\begin{equation}
+        Z^{(g)}(R)=R^{2-2g}Z^{(g)}(R^{-1})
+\end{equation}
+with the compact zero-mode factor included.  In this note \eqref{eq:tdualtheta}
+is used as a numerical check of the compact-boson construction and of the
+normalization of the winding lattice, not as an independent theorem about
+arbitrary positive matrices \(T'\).
+
+\subsection{\texorpdfstring{Large-\(L\) renormalization}{Large-L renormalization}}
+
+The raw lattice quantities are not finite as \(L\to\infty\).  The compact-boson
+working notes introduce the counterterm scheme by fitting the self-dual compact
+partition function,
+\begin{equation}
+        \log Z^{(g)}_{\Gamma,L}(R=1)
+        =
+        c_{\rm comp}(\Omega)+\gamma L+\alpha(g)\log L+o(1).
+        \label{eq:compactfit}
+\end{equation}
+The diagnostic \(Z_1\)-bookkeeping scripts can also use a determinant-only fit,
+\begin{equation}
+        -\frac{1}{2}\log\det A'_{\Gamma,L}
+        =
+        c_{\det}(\Omega)+\gamma_{\det} L+\alpha_{\det}\log L+o(1),
+        \label{eq:detfit}
+\end{equation}
+where the code fits \(\gamma_{\det}\) and \(\alpha_{\det}\) directly for the
+genus and graph families used in the ratio check.  Thus \(\ee^{c_{\det}}\), not
+the compact theta sum, is the finite determinant factor appearing in the
+diagnostic convention \eqref{eq:zch}.  This determinant-only fit is not a
+separate higher-genus \(bc\) discretization.
+
+The empirical self-dual compact-partition values quoted in \path{Strebel.tex}
+and in the string Monte Carlo note are
+\[
+        \gamma\simeq \frac{1}{4}\log2,\qquad
+        \alpha_0\simeq -0.86112,\qquad
+        \alpha_1\simeq -0.27778.
+\]
+Here \(\alpha(g)=\alpha_0+\alpha_1g\) refers to the compact self-dual fit
+\eqref{eq:compactfit}.  The diagnostic Mumford-form checks do not assume the
+quoted \(\alpha_0,\alpha_1\): when they keep explicit \(Z_1\)-bookkeeping, they
+fit the determinant coefficient \(\alpha_{\det}\) from \(A'\)-data in the
+selected genus.
+No analytic derivation of these constants was found in the local notes or
+scripts.  Until a heat-kernel, Liouville, or regulator calculation is supplied,
+the decimal fit coefficients should be treated as empirical inputs to this
+counterterm scheme.
+The script \path{genus1_to_4_scaling_sweep.py} is the current reproduction
+driver for the compact large-\(L\) fits; for the self-dual coefficients above one
+should run the sweep at \(R=1\) and record the chosen \(L\)-window, graph
+families, and theta cutoffs.
+With the current script defaults for the \(L\)-window, an explicit command is
+\begin{quote}
+\small
+\begin{verbatim}
+./.venv/bin/python "covariant formalism/python/genus1_to_4_scaling_sweep.py" \
+  --R 1.0 --L-start 2000 --L-stop 5000 --L-step 200 \
+  --json-out /tmp/radius_1_scaling.json
+\end{verbatim}
+\end{quote}
+The exact status of these constants is an open derivation problem for a final
+draft; they are not used below as an independent theorem.
+The corresponding compact-fit local counterterm convention is
+\begin{equation}
+        S_{\rm ct}
+        =
+        \gamma L+(\alpha_0+\alpha_1)\log L
+        -
+        \frac{\alpha_1}{8\pi}\log L
+        \int_{\Sigma}\dd^2\sigma\,\sqrt g\,R(g).
+        \label{eq:counterterm}
+\end{equation}
+Since
+\[
+        \int_{\Sigma}\sqrt g\,R(g)=4\pi(2-2g),
+\]
+\eqref{eq:counterterm} reproduces \(\alpha_0+\alpha_1g\) in
+\eqref{eq:compactfit}.  In the determinant-only scheme used for
+\eqref{eq:zch}, the fitted finite determinant factor is
+\begin{equation}
+        [(\det A')^{-1/2}]_{\rm ren}=\ee^{c_{\det}(\Omega)}.
+\end{equation}
+
+This is a regulator definition, not a proof of universal convergence.  The
+evidence for the compact fit is that the same \(\gamma\) and genus-linear
+\(\alpha(g)\) stabilize across graph families, and that the resulting finite
+part satisfies the genus-one Weyl-anomaly comparison with the analytic
+compact-boson partition function.  The determinant fit is currently a
+diagnostic normalization for \(Z_1\)-sensitive checks; the production
+matter-plus-ghost integrand is instead organized so that \(Z_1\) cancels before
+the final ribbon-cell density is formed.
+
+
+\subsection{\texorpdfstring{Genus-one direct \(bc\) determinant}{Genus-one direct bc determinant}}
+
+The direct ghost discretization that is presently under analytic control is the
+one-punctured torus case.  In the disk frame the legacy construction discretizes
+the identity wavefunctional of the chiral \(bc\) system, imposes the same
+orientation-reversing boundary identifications used for the boson, and obtains a
+finite matrix \(B\) after the required ghost zero-mode soaking.  Combined with
+\(26\) free bosons, the documented genus-one comparison has the form
+\begin{equation}
+        |\det B|\, (\det{}'A)^{-13}
+        \propto
+        \tau_2^{-13}|\eta(\tau)|^{-48}\,
+        |\kappa|^{-2}|\nu|^4,
+        \label{eq:genus1bclegacy}
+\end{equation}
+up to a moduli-independent normalization.  Here \(\kappa\) is the period used
+to normalize the torus one-form in the disk coordinate, and \(\nu\) denotes the
+local Strebel-vertex factor appearing in \path{string MC.tex}.  The old note
+also checks the dependence on the position of the ghost zero-mode insertion:
+the resulting function transforms as the inverse of the disk-to-torus
+one-form, as expected from the conformal transformation of the \(c\)-ghost.
+
+This genus-one calculation is important evidence that the disk-frame ghost
+sewing has the right local structure in the torus case.  It is not used in this
+note as a higher-genus \(bc\) discretization proposal.  For \(g\geq2\), the
+current string-integrand strategy is instead the continuum Verlinde-Verlinde
+formula evaluated on the numerically reconstructed period map.
+
+\section{Bosonic string integrand from the Verlinde-Verlinde formula}
+\label{sec:string-integrand}
+
+This section uses the period-map output of
+Section~\ref{sec:ribbon-parameterization}, but it does not depend on the
+free-boson discretization of Section~\ref{sec:free-boson}, except when the
+matter CFT itself
+contains a compact boson whose partition-function ratio is most efficiently
+computed by the winding-lattice machinery of Section~\ref{sec:free-boson}.  For
+the critical bosonic string with \(26\) noncompact free bosons, the \(Z_1\)
+factors in the continuum Verlinde-Verlinde ghost formula cancel against the
+matter oscillator contribution, and the remaining task is to pull the resulting
+continuum measure back to ribbon-cell coordinates.
+\subsection{Continuum string measure}
+
+\noindent\textbf{Exact CFT.}
+This section records the continuum target of the numerical construction.  In
+conformal gauge, after fixing puncture positions and a fiducial family of
+metrics \(\hat g(t)\), the Faddeev-Popov procedure gives the usual insertion
+\begin{equation}
+        \cB_{t^k}
+        =
+        \frac{1}{4\pi}
+        \int_{\Sigma}\dd^2\sigma\,\sqrt{\hat g}\,
+        b^{ab}\frac{\partial \hat g_{ab}}{\partial t^k}.
+        \label{eq:Bmetric}
+\end{equation}
+Thus a genus \(h\), \(n\)-point bosonic string amplitude has the schematic
+form
+\begin{equation}
+        \cA_h[V_1,\ldots,V_n]
+        =
+        N_{h,n}\int_{\cM_{h,n}}\Omega_{6h-6+2n},
+        \qquad
+        \Omega=\left\langle \ee^{\cB}\prod_i\cV_i\right\rangle_{\Sigma},
+        \label{eq:stringmeasure}
+\end{equation}
+where
+\begin{equation}
+        \cB=\sum_k \dd t^k\,\cB_{t^k}.
+\end{equation}
+This is the form used in the external string notes.
+
+The holomorphic reformulation is essential for the numerical approach.  If the
+complex structure is described by transition functions \(z_i=f_{ij}(z_j;t)\),
+then \eqref{eq:Bmetric} can be written only in terms of those transition
+functions:
+\begin{equation}
+        \cB_{t^k}
+        =
+        \sum_{(ij)}
+        \int_{C_{ij}}
+        \left[
+        \frac{\dd z_i}{2\pi\ii}\,
+        b_{z_i z_i}
+        \left.\frac{\partial z_i}{\partial t^k}\right|_{z_j}
+        -
+        \frac{\dd\bar z_i}{2\pi\ii}\,
+        b_{\bar z_i\bar z_i}
+        \left.\frac{\partial \bar z_i}{\partial t^k}\right|_{\bar z_j}
+        \right].
+        \label{eq:Btransition}
+\end{equation}
+This formula is the continuum reason that a construction based on sewing maps
+and holomorphic data is enough to recover the string integrand.
+
+For a genus \(g\geq2\) vacuum amplitude in complex coordinates
+\(\tau^a\), \(a=1,\ldots,3g-3\), the top form is
+\begin{equation}
+        \Omega_{6g-6}
+        =
+        \left\langle
+        \prod_{a=1}^{3g-3}
+        \dd\tau^a\,\dd\bar\tau^a\,
+        \cB_{\bar\tau^a}\cB_{\tau^a}
+        \right\rangle_{\Sigma}^{\rm matter+ghost}.
+        \label{eq:vacuumform}
+\end{equation}
+This unmarked formula is the standard continuum benchmark.  The one-face
+ribbon construction used below works instead on \(\cM_{g,1}\).  For the
+partition-function application we regard the marked puncture as carrying the
+identity operator, so the corresponding top form has degree
+\begin{equation}
+        \dim_{\bR}\cM_{g,1}=6g-4.
+        \label{eq:mg1dim}
+\end{equation}
+Equivalently, in a local split of the marked moduli as
+\((\tau^a,p)\), \(a=1,\ldots,3g-3\), one should write the identity-marked
+partition-function density schematically as
+\begin{equation}
+        \Omega_{6g-4}^{\mathbf 1}
+        =
+        \left[
+        \left\langle
+        \prod_{a=1}^{3g-3}
+        \dd\tau^a\,\dd\bar\tau^a\,
+        \cB_{\bar\tau^a}\cB_{\tau^a}
+        \right\rangle_{\Sigma}^{\rm matter+ghost}
+        \right]\wedge \nu_p^{\mathbf 1}.
+        \label{eq:identityform}
+\end{equation}
+Here \(p\) is the marked point and \(\nu_p^{\mathbf 1}\) denotes the chosen
+two-real-dimensional measure on the marked-point fiber.  The operator inserted
+at \(p\) is the identity \(1\), not \(c\widetilde c\,1\).  Indeed
+\(c\widetilde c\,1\) should not be treated as an on-shell BRST-closed
+unintegrated vertex.  In the ribbon-graph construction the role of
+\(\nu_p^{\mathbf 1}\) is played implicitly by the fixed-perimeter
+\(\cM_{g,1}\) cell coordinates.  Any comparison with an unmarked vacuum
+amplitude on \(\cM_g\) must therefore specify a pushforward or normalization of
+this marked fiber.
+If period-matrix coordinates are available, the \(b\)-ghost zero modes are
+paired with holomorphic quadratic differentials.  In genus two the quadratic
+differentials may be written
+\begin{equation}
+        S_1=\omega_1^2,\qquad
+        S_2=\omega_2^2,\qquad
+        S_3=\omega_1\omega_2,
+\end{equation}
+with \(A\)-normalized holomorphic one-forms \(\omega_I\).  Writing \(V_X\) for
+the noncompact target-space zero-mode volume, the genus-two critical bosonic
+string vacuum form is
+\begin{equation}
+        \Omega_6
+        =
+        -
+        \frac{V_X}{(4\pi^2\A)^{26}(\det\im\Omega)^{13}}
+        \left|
+        \frac{2\pi\ii}{\chi_{10}(\Omega)}
+        \dd\Omega_{11}\dd\Omega_{22}\dd\Omega_{12}
+        \right|^2,
+        \label{eq:genus2critical}
+\end{equation}
+up to the standard overall normalization convention.  Equation
+\eqref{eq:genus2critical} is the principal genus-two analytic benchmark for
+the continuum string integrand.
+
+\subsection{\texorpdfstring{Verlinde-Verlinde \(bc\) formula and cancellation of \(Z_1\)}
+{Verlinde-Verlinde bc formula and cancellation of Z1}}
+
+For a \((b_\lambda,c_{1-\lambda})\) system, the selection rule is
+\begin{equation}
+        n_c-n_b=(1-2\lambda)(g-1).
+        \label{eq:bcselection}
+\end{equation}
+The Verlinde-Verlinde formula is written in the local notes with a chiral
+boson determinant \(Z_1\).  The current code often uses the equivalent symbol
+\(Z_{\rm ch}\), defined by
+\[
+        Z_1:=Z_{\rm ch}^{-2},\qquad Z_{\rm ch}=Z_1^{-1/2}.
+\]
+With this notation the holomorphic correlator is
+\begin{equation}
+\begin{aligned}
+&\left\langle
+\prod_{i=1}^{n_b} b_\lambda(z_i)
+\prod_{j=1}^{n_c} c_{1-\lambda}(w_j)
+\right\rangle_{\Sigma}
+\\
+&\quad =
+Z_{\rm ch}\,
+\theta\left(
+\sum_i\zeta(z_i)-\sum_j\zeta(w_j)-(2\lambda-1)\Delta
+\mid \Omega
+\right)
+\\
+&\qquad\times
+\frac{
+\prod_{i<i'}E(z_i,z_{i'})
+\prod_{j<j'}E(w_j,w_{j'})
+\prod_i\sigma(z_i)^{2\lambda-1}}
+{\prod_{i,j}E(z_i,w_j)
+\prod_j\sigma(w_j)^{2\lambda-1}}.
+\end{aligned}
+        \label{eq:vv}
+\end{equation}
+The function \path{bc_correlator_geometric_factor} returns the theta,
+prime-form, and sigma product in \eqref{eq:vv}; equivalently, it is the
+holomorphic correlator with the single \(Z_{\rm ch}=Z_1^{-1/2}\) prefactor
+stripped off.
+
+For the critical bosonic string, \(Z_1\) is not a separate numerical input to
+the higher-genus integrand.  The overall \(Z_1\)-dependence in the
+Verlinde-Verlinde expression, including the \(Z_1\)-dependence of the
+\(\sigma\)-normalization fixed from the \(\lambda=1\) identity, cancels against
+the chiral determinant factors of the \(26\) free bosons.  The final
+matter-plus-ghost measure can therefore be evaluated from the geometric
+Verlinde-Verlinde/Mumford data: \(\Omega\), Abel maps, prime forms,
+\(\sigma\)-ratios or their \(\lambda=1\) normalization, and holomorphic
+quadratic differentials.  The discretization supplies these as functions of
+ribbon edge lengths; it does not supply an independent higher-genus lattice
+\(bc\) correlator.
+
+Some diagnostic scripts still keep an explicit \(Z_{\rm ch}\) or \(Z_1\) to
+check the bookkeeping against known Mumford forms.  If \(\exp c_{\det}(\Omega)\)
+denotes the finite part extracted from \(-\frac12\log\det A'\), their canonical
+normalization convention is
+\begin{equation}
+        |Z_{\rm ch}(\Omega)|^2
+        =
+        [\det\im\Omega]^{1/2}\,\ee^{c_{\det}(\Omega)}
+        \label{eq:zch}
+\end{equation}
+up to one moduli-independent normalization factor.  Equivalently,
+\[
+        |Z_1|^2=|Z_{\rm ch}|^{-4}.
+\]
+This convention is useful for reproducing the checks in the repository, but it
+should not be confused with a required determinant input for the production
+string-integrand strategy described in this note.
+
+\subsection{Critical integrand and pullback to ribbon cells}
+
+The CFT part of the critical bosonic string measure is evaluated as a continuum
+quantity on the Riemann surface reconstructed from the ribbon graph.  Let
+\[
+        \Phi_\Gamma:\{\ell_e>0,\ \sum_e\ell_e={\rm fixed}\}\longrightarrow
+        \cM_{g,1}
+\]
+denote the period-map construction implemented numerically by sewing the disk,
+solving for holomorphic one-forms, and computing \(\Omega(\ell)\).  After this
+map has been computed, the ghost and oscillator factors are those of the
+continuum Verlinde-Verlinde/Mumford formula; no higher-genus lattice \(bc\)
+correlator is inserted.
+
+Let \(q_a(z)\), \(a=1,\ldots,3g-3\), be a basis of holomorphic quadratic
+differentials.  For generic points \(z_b\), define
+\begin{equation}
+        D_q(z_1,\ldots,z_{3g-3})=\det[q_a(z_b)].
+\end{equation}
+The point-insertion representative of the critical matter-plus-ghost measure may
+be written as
+\begin{equation}
+        \left[
+        \left|
+        \left\langle \prod_{b=1}^{3g-3} b(z_b)\right\rangle_{\Sigma}
+        \right|^2 Z_X(\Sigma)^{26}
+        \right]_{\rm crit}
+        =
+        C_g\,(\det\im\Omega)^{-13}
+        |D_q(z_1,\ldots,z_{3g-3})|^2\,|\mu_g(\Omega)|^2.
+        \label{eq:mumfordpoint}
+\end{equation}
+Here \(C_g\) is moduli independent, target-space zero-mode factors are omitted,
+and the subscript ``crit'' means that the displayed \(b\)-correlator is not a
+standalone script output with an extra \(Z_{\rm ch}\) still to be attached.
+It denotes the continuum Verlinde-Verlinde ghost factor after its
+\(Z_1\) or \(Z_{\rm ch}\) bookkeeping has already been combined with the
+\(26\)-boson oscillator factors and canceled.  Equation
+\eqref{eq:mumfordpoint} is the point-insertion version of the section that
+appears after contracting \(b\)-ghost zero modes with Beltrami differentials in
+the string measure.  It is the continuum formula pulled back by
+\(\Phi_\Gamma\), not a claim of a separate lattice construction of the
+higher-genus ghost correlator.
+In the coordinate-split description of the identity-marked \(\cM_{g,1}\)
+density, the unmarked Mumford factor above is the CFT scalar factor pulled back
+along the forgetful map to the underlying surface.  The remaining marked
+coordinate is accounted for by the chosen marked-fiber measure
+\(\nu_p^{\mathbf 1}\) in \eqref{eq:identityform}; no \(c\widetilde c\)
+identity vertex is inserted.
+
+For genus two,
+\begin{equation}
+        \mu_2(\Omega)=\frac{2\pi\ii}{\chi_{10}(\Omega)}.
+        \label{eq:mu2}
+\end{equation}
+Thus the genus-two critical integrand in period-matrix coordinates is
+proportional to
+\[
+        (\det\im\Omega)^{-13}
+        |D_q(z_1,z_2,z_3)|^2\,|\chi_{10}(\Omega)|^{-2}.
+\]
+The genus-two script with explicit \(Z_{\rm ch}\) bookkeeping checks the same
+continuum Mumford identity before the final cancellation is made; it is a
+diagnostic of the continuum formula and the reconstructed holomorphic data.
+
+For genus three, the six quadratic differentials are
+\[
+        \omega_1^2,\quad \omega_1\omega_2,\quad \omega_1\omega_3,\quad
+        \omega_2^2,\quad \omega_2\omega_3,\quad \omega_3^2.
+\]
+For nonhyperelliptic genus-three surfaces,
+\begin{equation}
+        |\mu_3(\Omega)|^2\propto \frac{1}{|\chi_{18}(\Omega)|},
+        \qquad
+        \chi_{18}=\prod_{\delta\ {\rm even}}\theta[\delta](0|\Omega),
+        \label{eq:mu3}
+\end{equation}
+where the product is over the \(36\) even spin structures.  The current
+genus-three check compares the corresponding continuum Mumford relation using
+\eqref{eq:mu3}; the documented relative errors are at the \(10^{-4}\) to
+\(10^{-3}\) level for the tested examples.  Again, the check uses the
+reconstructed period matrix and continuum theta/prime-form data; it is not a
+higher-genus lattice \(bc\) proposal.
+
+For genus four and above, the products \(\omega_I\omega_J\) are not an
+independent basis without relations.  On the generic nonhyperelliptic genus-four
+locus there is one quadric relation among the ten products.  The script
+\path{genus4_bc_local_mumford_check.py} therefore performs a same-surface
+local-chart diagnostic of the continuum formula.  On a fixed surface, choose
+two generic nine-tuples of \(b\)-insertion points \(P_1\) and \(P_2\).  For each
+usable chart obtained by omitting a quadratic monomial with nonzero quadric
+coefficient, form the two determinants \(D_q^{(r)}(P_1)\) and
+\(D_q^{(r)}(P_2)\).  The diagnostic compares
+\[
+        \frac{|\vev{b^9(P_1)}|^2}{|\vev{b^9(P_2)}|^2}
+        \quad\hbox{with}\quad
+        \frac{|D_q^{(r)}(P_1)|^2}{|D_q^{(r)}(P_2)|^2}
+\]
+on that same surface, and reports the relative error, the quadric residual, and
+the spread across usable omission charts.  Hyperelliptic or otherwise special
+loci require separate treatment.
+
+\subsubsection{Compact radius dependence}
+
+For a \(c=1\) matter factor consisting of a compact boson of radius \(R\) and a
+radius-independent compensating CFT, the radius dependence of the fixed-surface
+integrand is
+\begin{equation}
+        \cR_R(\Sigma)
+        =
+        \frac{Z_{\rm comp}^{\rm ren}(\Sigma,R)}
+        {Z_{\rm comp}^{\rm ren}(\Sigma,R_0)}.
+        \label{eq:radiusratio}
+\end{equation}
+At fixed surface, Weyl-frame and determinant factors cancel in this ratio
+except for the compact winding theta functions and the zero-mode factor.  This
+is the cleanest numerical observable for testing the compact-boson part of the
+integrand.  The self-dual radius \(R_0=1\) is the most common reference in the
+local notes.
+
+\subsubsection{Cell-coordinate measure}
+
+Let \(\ell_a\), \(a=1,\ldots,E-1=6g-4\), be local real edge-length
+coordinates in a fixed-perimeter one-face ribbon cell.  The pullback of the
+marked identity form \eqref{eq:identityform} to the cell is schematically
+\begin{equation}
+        \Phi_{\Gamma}^{*}\Omega_{6g-4}^{\mathbf 1}
+        =
+        \cI_{\Gamma}^{\mathbf 1}(\ell)\,
+        \dd\ell_1\cdots \dd\ell_{6g-4},
+        \label{eq:cellmeasure}
+\end{equation}
+after imposing the fixed-perimeter condition.  The scalar
+\(\cI_{\Gamma}^{\mathbf 1}\) is the critical continuum
+Verlinde-Verlinde/Mumford integrand evaluated on the surface
+\(\Phi_\Gamma(\ell)\), with an additional compact-radius ratio if a compact
+matter factor is being varied.  More precisely, the period matrix
+\(\Omega(\ell)\) is the projection of \(\Phi_\Gamma(\ell)\) to the unmarked
+moduli, while the marked point and the fiber measure are inherited from the
+one-face Strebel construction.  A global Monte Carlo integral over
+\(\cM_{g,1}\) must also include the cell automorphism factor
+\(1/|\Aut\Gamma|\) and a consistent treatment of cell boundaries.
+The present ratio checks do not test the automorphism factor: they compare
+fixed-surface or same-cell scalar quantities, so \(1/|\Aut\Gamma|\) cancels.
+The automorphism weight becomes a genuine input only in a global sum or
+integration over ribbon cells.
+
+The current code has strong tests for the period-map reconstruction,
+free/compact-boson quantities, and continuum Verlinde-Verlinde/Mumford
+diagnostics.  A final production integrand should still make explicit the
+fixed-perimeter cell measure and the normalization convention for the
+identity-marked puncture.  A later comparison with an unmarked integral on
+\(\cM_g\) would require an additional pushforward or fiber-normalization step,
+but that is not part of the native ribbon-cell prescription used here.
+
+\section{Algorithmic summary}
+
+For a fixed one-face ribbon graph \(\Gamma\) and integer edge lengths
+\(\ell_e\), the implemented pipeline is:
+
+\begin{enumerate}
+\item Trace the unique boundary word and build the oriented segment pairings.
+\item Construct the matter sewing matrix \(A'_{\Gamma,L}\) from the disk
+identity wavefunctional for free-boson and determinant diagnostics.
+\item For a compact boson, build the incidence matrix \(D\), an integral basis
+\(B\) of \(\Ker D\), the Schur complement and script-normalized matrix \(T'\),
+and the theta function \(\Theta_{2g}(4\ii R^2T')\).
+\item Reconstruct \(g\) holomorphic one-forms using the cubic-prevertex
+singular ansatz and the sewn-boundary matching equations.
+\item Construct a symplectic homology basis from edge-chord intersections and
+compute the period matrix \(\Omega=A^{-1}B\).
+\item Build Abel maps, prime forms, canonical Riemann constants, and
+\(\sigma\)-values.
+\item Evaluate the continuum Verlinde-Verlinde/Mumford expression on the
+reconstructed surface.  In the critical matter-plus-ghost integrand the
+auxiliary \(Z_1\) or \(Z_{\rm ch}\) bookkeeping cancels before the final scalar
+is pulled back to ribbon coordinates.
+\item Combine this continuum scalar with the fixed-perimeter ribbon-cell
+measure, automorphism weights, and any compact-radius ratio required by the
+target CFT under study.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{L{0.36\textwidth}L{0.56\textwidth}}
+\hline
+File & Role \\
+\hline
+\path{Fast_Ribbon_Generator.py} &
+Enumeration of one-face ribbon-graph topologies, graph-isomorphism reduction,
+automorphism data, and genus-four topology generation used by the current
+diagnostics. \\
+\path{partition_function.py} &
+Generic one-face sewing matrices, reduced matter determinant, and historical
+ghost wavefunctional experiments. \\
+\path{compact_partition.py} &
+Compact-boson winding matrices, stored genus-one/genus-two graph data, and
+theta-function tests. \\
+\path{ell_to_tau.py} &
+Improved holomorphic one-form solver, homology basis, period matrix, local
+prevertex factors, and genus-two modular forms. \\
+\path{riemann_surface_tools.py} &
+Surface data object, Abel maps, prime form, canonical Riemann constants,
+\(\sigma\), continuum Verlinde-Verlinde correlators, determinant diagnostics,
+and chiral-normalization bookkeeping. \\
+\path{genus2_bc_igusa_ratio_check.py} &
+Genus-two continuum Verlinde-Verlinde/Mumford diagnostic against the Igusa cusp
+form. \\
+\path{genus3_bc_chi18_ratio_check.py} &
+Genus-three continuum Verlinde-Verlinde/Mumford diagnostic against the
+\(\chi_{18}\) relation. \\
+\path{genus4_bc_local_mumford_check.py} &
+Genus-four same-surface continuum local Mumford chart diagnostic using the
+quadric relation. \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Checks and evidence}
+
+\noindent\textbf{Check.}
+The strongest existing checks are the following.  Their accuracy is limited by
+different effects in different rows: finite \(L\) extrapolation and fit-window
+choice for the free-boson/determinant diagnostics, theta-series truncation,
+numerical quadrature near singular prevertices, and conditioning of local
+determinant charts.
+
+\begin{center}
+\begin{tabular}{L{0.31\textwidth}L{0.61\textwidth}}
+\hline
+Source & Reproducibility data quoted in the notes \\
+\hline
+\path{Strebel.tex}, \path{string MC.tex}, and
+\path{genus1_to_4_scaling_sweep.py} &
+At \(R=1\), the working compact partition-function fit targets
+\(\gamma\simeq \frac14\log2\) and
+\(\alpha(g)\simeq -0.86112-0.27778g\).  No analytic derivation of these
+constants is contained in the local notes or scripts.  The sweep script records
+the \(L\)-window, selected graph families, and theta cutoffs; run it with
+\path{--R 1.0} for the self-dual scan.
+\\
+\path{covariant formalism/markdown/riemann_surface_tools.md} &
+For Abel-jump consistency on stored genus-two topology \(1\), the reported
+worst componentwise errors are \(6.14\times10^{-6}\), \(1.63\times10^{-6}\),
+and \(7.42\times10^{-7}\) for edge lists \([50]^9\), \([100]^9\), and
+\([150]^9\), respectively. \\
+\path{genus2_bc_igusa_ratio_check.py} &
+For \(\ell_1=[300]^9\) and
+\(\ell_2=(250,250,250,250,250,250,250,250,700)\), the documented Igusa
+diagnostic gives \( {\rm LHS}=7.139760447638384\),
+\({\rm RHS}=7.139757771156295\), relative difference
+\(3.75\times10^{-7}\).  This is a check of the continuum
+Verlinde-Verlinde/Mumford formula after period reconstruction, not an
+independent lattice \(bc\) path integral. \\
+\path{genus3_bc_chi18_ratio_check.py} and
+\path{covariant formalism/markdown/genus3_bc_chi18_ratio_check.md} &
+With topology \(1\), safe divisor points, and \(n_{\max}=4\), the documented
+\(\chi_{18}\) comparisons against the symmetric modulus \(M_1=[300]^{15}\)
+give relative errors \(4.91\times10^{-4}\), \(5.96\times10^{-4}\), and
+\(4.24\times10^{-4}\) for the three listed comparison moduli. \\
+\path{genus4_bc_local_mumford_check.py} &
+Reports a same-surface nine-\(b\) ratio, the local quadric-chart determinant
+ratio, the relative error, the quadric residual, and chart/divisor stability
+diagnostics.  No representative numerical tolerance is fixed in this note; the
+claim supported here is local and generic, not a global genus-four integral. \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{description}
+\item[Genus one compact boson.]
+The lattice compact partition function agrees with the analytic torus lattice
+sum after mapping edge lengths to \(\tau\), and satisfies T-duality in the form
+\eqref{eq:tdualtheta}.
+
+\item[Higher-genus compact boson.]
+The incidence-kernel construction gives a rank-\(2g\) winding lattice.  The
+genus-\(g\) T-duality identity is then a numerical diagnostic: the notes report
+tests for all stored genus-two cases, the stored genus-three cases, and one
+genus-four topology.
+
+\item[Period matrices.]
+The reconstructed \(\Omega\) is symmetric up to numerical error and has
+positive definite imaginary part.  Abel jumps across sewn boundary pairs land
+on the period lattice with errors decreasing as the edge lengths increase.
+
+\item[Prime form.]
+Spin-structure independence of the prime form is checked numerically.  The
+genus-two notes quote relative differences of order \(10^{-6}\) or smaller in
+representative large-edge tests.
+
+\item[Genus two Mumford form.]
+The Igusa-ratio diagnostic agrees at the level of roughly \(4\times10^{-7}\)
+in the documented run.  Its explicit \(Z_1\)-normalization is bookkeeping for
+the check; the production critical integrand uses the canceled
+matter-plus-ghost combination.
+
+\item[Genus three Mumford form.]
+The \(\chi_{18}\) check uses the corrected squared-absolute relation
+\[
+        |\mu_3|^2\propto \frac{1}{|\chi_{18}|}.
+\]
+The documented runs agree at roughly \(10^{-4}\) to \(10^{-3}\).  The weaker
+precision compared with the genus-two Igusa check is consistent with the
+higher-dimensional theta sums, the sigma-normalization sensitivity, and the
+larger number of \(b\)-ghost insertions; it should be treated as a numerical
+accuracy budget to be reported, not as a new analytic assumption.
+
+\item[Genus four local chart.]
+The same-surface nine-\(b\) ratio is implemented as a comparison against the
+determinant ratio in a local quadric chart.  It is a continuum Mumford
+diagnostic, with chart spread used as a test of numerical stability.  A
+draft-ready statement should quote a specific run, relative error, quadric
+residual, and divisor/chart stability tolerance.
+\end{description}
+
+\section{Reference anchors}
+
+This note is primarily a code-to-continuum synthesis.  A polished draft should
+replace the path-style references above by ordinary citations.  The minimum
+source list should include the following anchors.
+
+\begin{itemize}
+\item Strebel's theory of quadratic differentials for the correspondence
+between metric ribbon graphs and punctured Riemann surfaces with perimeters.
+\item Kontsevich's matrix-Airy construction, and the Mulase--Penkava
+exposition, for the ribbon-cell decomposition and its relation to moduli-space
+forms.
+\item Faddeev--Popov, Friedan--Martinec--Shenker, Belavin--Knizhnik, and
+Polchinski for the covariant string measure, \(bc\)-ghost insertions, and the
+BRST descent between unintegrated and integrated physical vertex insertions.
+\item Mumford's determinant-line formalism, together with the Verlinde--
+Verlinde bosonization formulae, for the chiral measure and the continuum ghost
+correlator used in the integrand and in the Mumford-form diagnostics.
+\item Igusa's work on Siegel modular forms for the genus-two \(\chi_{10}\)
+and genus-three \(\chi_{18}\) modular forms used as analytic benchmarks.
+\item Deconinck--Patterson--Swierczewski for the canonical-divisor algorithm
+used in the current Riemann-constant computation.
+\item Bacher--Vdovina and the local ribbon-graph enumeration scripts for
+one-vertex triangulation counts and topology bookkeeping.
+\end{itemize}
+
+\section{Open points for the draft}
+
+The following issues should be stated explicitly in any polished draft.
+
+\begin{enumerate}
+\item The one-face Strebel coordinates naturally describe
+\(\cM_{g,1}\times\bR_+\).  This note works natively on fixed-perimeter
+\(\cM_{g,1}\), with the marked puncture carrying the identity operator for
+partition-function applications.  A comparison to an unmarked amplitude on
+\(\cM_g\) would require an additional pushforward or fiber-normalization
+convention.
+\item The absolute normalization of the full amplitude is not fixed by the
+current period-map, free-boson, and Verlinde-Verlinde diagnostics.  Ratios and
+local Mumford sections are the controlled quantities.
+\item The determinant finite part \(\ee^{c_{\det}(\Omega)}\) is a renormalized
+quantity defined by the large-\(L\) fit.  It is needed for free-boson and
+explicit \(Z_1\)-bookkeeping diagnostics, while the critical bosonic string
+integrand is organized so that \(Z_1\) cancels.  Any production use of this fit
+should report convergence tests in the relevant regime.
+\item No higher-genus discretized \(bc\) path integral is currently assumed for
+the production integrand.  The higher-genus ghost sector is evaluated by the
+continuum Verlinde-Verlinde formula after the period matrix and holomorphic data
+have been reconstructed from the ribbon graph.
+\item Numerical values quoted in the draft should be tied to a script, command
+line, graph or topology choice, edge-length data, theta cutoff, fit window, and
+code revision.  The source table in the checks section is a starting point, not a
+replacement for a reproducibility table in a paper.
+\item Lower-dimensional ribbon cells, automorphism factors, the fixed-perimeter
+cell measure, and boundary behavior of the integrand are required for a global
+Monte Carlo integral on \(\cM_{g,1}\).
+\item The legacy one-form and Riemann-constant routines should not be used in
+the final pipeline.  The improved cubic-singularity solver and canonical
+Riemann-constant construction are the versions supported by the current tests.
+\item In genus four and higher, the quadratic-differential basis must account
+for canonical-curve relations on the relevant stratum.  The genus-two and
+genus-three closed modular forms do not generalize naively.
+\item The path-style references in this note should be converted into precise
+\verb|\cite| entries in a polished draft, using the anchors in the preceding
+section as a starting point.  When older notes disagree with current scripts or
+Markdown diagnostics, the current code and the checked numerical diagnostic
+should be treated as the source of record until the disagreement is resolved
+explicitly.
+\end{enumerate}
+
+\end{document}

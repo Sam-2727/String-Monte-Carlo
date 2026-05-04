@@ -79,6 +79,74 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         self.assertAlmostEqual(fit.alpha, alpha, places=12)
         self.assertAlmostEqual(fit.finite_part, np.exp(c0), places=11)
 
+    def test_universal_large_l_fit_recovers_shared_coefficients(self):
+        gamma = 0.027
+        alpha = -1.125
+        c_values = [1.2, -0.4, 0.75]
+        family_samples = []
+        length_sets = [
+            [1200, 1600, 2200],
+            [1400, 1800, 2600, 3200],
+            [1000, 1500, 2100],
+        ]
+
+        for c0, total_lengths in zip(c_values, length_sets):
+            log_values = [
+                c0 + gamma * L + alpha * np.log(L)
+                for L in total_lengths
+            ]
+            family_samples.append((total_lengths, log_values))
+
+        fit = rst.fit_universal_large_l_coefficients(family_samples)
+
+        self.assertAlmostEqual(fit.gamma, gamma, places=12)
+        self.assertAlmostEqual(fit.alpha, alpha, places=12)
+        for got, expected in zip(fit.family_constants, c_values):
+            self.assertAlmostEqual(got, expected, places=12)
+
+    def test_renormalized_factor_from_fixed_coefficients_recovers_finite_part(self):
+        total_lengths = [1200, 1600, 2000, 2600]
+        c0 = 0.85
+        gamma = 0.019
+        alpha = -1.5
+        log_values = [
+            c0 + gamma * L + alpha * np.log(L)
+            for L in total_lengths
+        ]
+        determinants = [np.exp(-2.0 * value) for value in log_values]
+
+        finite_from_logs = rst.renormalized_aprime_factor_from_raw_log_values(
+            total_lengths,
+            log_values,
+            gamma=gamma,
+            alpha=alpha,
+        )
+        finite_from_det = rst.renormalized_aprime_factor_from_raw_det(
+            total_lengths,
+            determinants,
+            gamma=gamma,
+            alpha=alpha,
+        )
+
+        self.assertAlmostEqual(finite_from_logs, np.exp(c0), places=12)
+        self.assertAlmostEqual(finite_from_det, np.exp(c0), places=12)
+
+    def test_fixed_large_l_coefficients_allow_single_sample(self):
+        L = 1800
+        c0 = 0.42
+        gamma = 0.013
+        alpha = -1.25
+        log_value = c0 + gamma * L + alpha * np.log(L)
+
+        finite = rst.renormalized_aprime_factor_from_raw_log_values(
+            [L],
+            [log_value],
+            gamma=gamma,
+            alpha=alpha,
+        )
+
+        self.assertAlmostEqual(finite, np.exp(c0), places=12)
+
     def test_genus1_riemann_constant_matches_half_period_formula(self):
         surface = rst.build_surface_data(L=20, l1=3, l2=4)
         Delta = rst.riemann_constant_vector(surface)
@@ -329,6 +397,110 @@ class TestRiemannSurfaceTools(unittest.TestCase):
         self.assertAlmostEqual((scale * a_tilde).real, target.real, places=9)
         self.assertAlmostEqual((scale * a_tilde).imag, target.imag, places=9)
 
+    def test_genus2_direct_sigma_values_satisfy_lambda_one_equations(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+
+        z1 = np.complex128(1.7)
+        points = [0.12 + 0.08j, -0.07 + 0.18j, 0.04 - 0.19j]
+        Delta = rst.riemann_constant_vector(surface)
+        s1, s2, s3 = rst.genus2_sigma_values_from_lambda_one(
+            points,
+            surface,
+            z1=z1,
+            Delta=Delta,
+            nmax=8,
+        )
+        h12 = rst.genus2_lambda_one_sigma_kernel(
+            points[0],
+            points[1],
+            points[2],
+            surface,
+            z1=z1,
+            Delta=Delta,
+            nmax=8,
+        )
+        h13 = rst.genus2_lambda_one_sigma_kernel(
+            points[0],
+            points[2],
+            points[1],
+            surface,
+            z1=z1,
+            Delta=Delta,
+            nmax=8,
+        )
+        h23 = rst.genus2_lambda_one_sigma_kernel(
+            points[1],
+            points[2],
+            points[0],
+            surface,
+            z1=z1,
+            Delta=Delta,
+            nmax=8,
+        )
+
+        self.assertLess(abs(s3 - s1 * s2 * h12), 1e-9)
+        self.assertLess(abs(s2 - s1 * s3 * h13), 1e-9)
+        self.assertLess(abs(s1 - s2 * s3 * h23), 1e-9)
+
+    def test_genus2_direct_bbb_correlator_is_anchor_free(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+
+        z1 = np.complex128(1.7)
+        b_points = [0.12 + 0.08j, -0.07 + 0.18j, 0.04 - 0.19j]
+        direct = rst.genus2_bbb_correlator_from_lambda_one(
+            b_points,
+            surface,
+            z1=z1,
+            nmax=8,
+        )
+
+        anchor_b_points = [0.21 + 0.17j, -0.11 + 0.14j]
+        anchor_c_point = 0.03 - 0.12j
+        divisor_points = [0.23 + 0.11j, -0.17 + 0.14j]
+        old_style = np.complex128(1.0)
+        Delta = rst.riemann_constant_vector(surface)
+        theta_arg = np.sum(
+            np.asarray([rst.abel_map(point, surface) for point in b_points], dtype=np.complex128),
+            axis=0,
+        ) - 3.0 * Delta
+        theta_val = rst.riemann_theta(theta_arg, surface.Omega, nmax=8)
+        for idx, zi in enumerate(b_points):
+            for zj in b_points[idx + 1 :]:
+                old_style *= rst.prime_form(zi, zj, surface, nmax=8)
+        sigma_prod = np.complex128(1.0)
+        for zi in b_points:
+            sigma_prod *= rst.canonical_sigma_value(
+                zi,
+                surface,
+                anchor_b_points=anchor_b_points,
+                anchor_c_point=anchor_c_point,
+                divisor_points=divisor_points,
+                normalization_point=anchor_c_point,
+                z1=z1,
+                Delta=Delta,
+                nmax=8,
+            ) ** 3
+        old_style = np.complex128(theta_val * old_style * sigma_prod / np.sqrt(z1))
+
+        rel_diff = abs(abs(direct) - abs(old_style)) / abs(direct)
+        self.assertGreater(rel_diff, 1e-3)
+
     def test_bc_correlator_selection_rule_is_enforced(self):
         surface = rst.build_surface_data(L=20, l1=3, l2=4)
         with self.assertRaises(ValueError):
@@ -369,6 +541,151 @@ class TestRiemannSurfaceTools(unittest.TestCase):
 
         self.assertAlmostEqual((geometric / omega_z).real, special.real, places=10)
         self.assertAlmostEqual((geometric / omega_z).imag, special.imag, places=10)
+
+    def test_canonical_riemann_constant_matches_genus1_half_period_modulo_lattice(self):
+        surface = rst.build_surface_data(L=20, l1=3, l2=4)
+        Delta_can = rst.riemann_constant_vector_canonical(surface, nmax=8)
+        Delta_old = rst.riemann_constant_vector(surface)
+        diff = Delta_can[0] - Delta_old[0]
+        tau = surface.tau
+        a_re = diff.real - round(diff.real)
+        a_im = diff.imag
+        m_n_n = a_im / tau.imag
+        n = round(m_n_n)
+        m = round(diff.real - n * tau.real)
+        residual = diff - (m + n * tau)
+        self.assertLess(abs(residual), 1e-8)
+
+    def test_canonical_riemann_constant_satisfies_vanishing_genus2_symmetric(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [100] * 9
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        test_points = [
+            0.08 + 0.12j,
+            -0.14 + 0.16j,
+            0.19 - 0.09j,
+            0.21 + 0.09j,
+            -0.16 + 0.12j,
+        ]
+        values = [
+            abs(rst.riemann_theta(
+                rst.abel_map(p, surface) - Delta,
+                surface.Omega,
+                nmax=6,
+            ))
+            for p in test_points
+        ]
+        self.assertLess(max(values), 1e-4)
+
+    def test_canonical_riemann_constant_satisfies_vanishing_genus2_asymmetric(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        test_points = [
+            0.08 + 0.12j,
+            -0.14 + 0.16j,
+            0.19 - 0.09j,
+            0.21 + 0.09j,
+            -0.16 + 0.12j,
+        ]
+        values = [
+            abs(rst.riemann_theta(
+                rst.abel_map(p, surface) - Delta,
+                surface.Omega,
+                nmax=6,
+            ))
+            for p in test_points
+        ]
+        self.assertLess(max(values), 1e-4)
+
+    def test_canonical_riemann_constant_makes_sigma_ratio_divisor_independent_genus2(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        z = 0.08 + 0.12j
+        w = -0.19 + 0.13j
+        divisors = [
+            [0.21 + 0.09j, -0.16 + 0.12j],
+            [0.17 + 0.05j, -0.12 + 0.11j],
+            [0.22 + 0.08j, -0.09 + 0.16j],
+        ]
+        ratios = [
+            rst.sigma_ratio(z, w, surface, divisor_points=d, Delta=Delta, nmax=6)
+            for d in divisors
+        ]
+        mags = [abs(r) for r in ratios]
+        spread = max(mags) / min(mags)
+        self.assertLess(spread - 1.0, 1e-4)
+
+    def test_default_sigma_ratio_uses_canonical_delta_at_genus2(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [210, 230, 250, 270, 290, 310, 330, 350, 370]
+        forms = elt.make_cyl_eqn_improved_higher_genus(ribbon_graph, edge_lengths)
+        surface = rst.build_surface_data(
+            forms=forms,
+            ribbon_graph=ribbon_graph,
+            ell_list=edge_lengths,
+        )
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        z = 0.08 + 0.12j
+        w = -0.19 + 0.13j
+        divisor = [0.21 + 0.09j, -0.16 + 0.12j]
+        ratio_default = rst.sigma_ratio(z, w, surface, divisor_points=divisor, nmax=6)
+        ratio_explicit = rst.sigma_ratio(
+            z,
+            w,
+            surface,
+            divisor_points=divisor,
+            Delta=Delta,
+            nmax=6,
+        )
+        self.assertAlmostEqual(ratio_default.real, ratio_explicit.real, places=10)
+        self.assertAlmostEqual(ratio_default.imag, ratio_explicit.imag, places=10)
+
+    def test_default_genus2_bbb_correlator_uses_canonical_delta(self):
+        graph_data = cp.get_stored_genus2_graph(1)
+        ribbon_graph = _stored_graph_to_ribbon_graph(graph_data)
+        edge_lengths = [300] * 9
+        surface = rst.build_surface_from_ribbon_graph(ribbon_graph, edge_lengths)
+        b_points = [0.08 + 0.12j, -0.14 + 0.16j, 0.19 - 0.09j]
+        Delta = rst.riemann_constant_vector_canonical(surface, nmax=6)
+        correlator_default = rst.genus2_bbb_correlator_from_lambda_one(
+            b_points,
+            surface,
+            z1=1.0,
+            nmax=6,
+        )
+        correlator_explicit = rst.genus2_bbb_correlator_from_lambda_one(
+            b_points,
+            surface,
+            z1=1.0,
+            Delta=Delta,
+            nmax=6,
+        )
+        self.assertAlmostEqual(correlator_default.real, correlator_explicit.real, places=10)
+        self.assertAlmostEqual(correlator_default.imag, correlator_explicit.imag, places=10)
 
 
 if __name__ == "__main__":
